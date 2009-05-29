@@ -1,0 +1,132 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN">
+<head><title>mClient</title>
+<style type="text/css">
+  html, body { 
+    background-color: black;
+    color: white;
+    font-family: sans-serif;
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+  }
+
+  div {
+    padding: 0 0 0 0;
+    margin: 0 0 0 0;
+  }
+
+  .container {
+    //border: 1px solid red;
+    display: none;
+  }
+
+  .section {
+    //border: 1px solid yellow;
+    //margin: 1px 1px;
+    overflow: auto;
+    white-space: pre;
+  }
+
+  .bold {
+    font-weight: bold;
+  }
+
+  .underline {
+    text-decoration: underline;
+  }
+
+  .blink {
+    text-decoration: blink;
+  }
+
+  .strikethrough {
+    text-decoration: line-through;
+  }
+
+  .black {
+    color: black;
+  }
+
+  .red {
+    color: red;
+  }
+
+  .green {
+    color: green;
+  }
+
+  .yellow {
+    color: yellow;
+  }
+
+  .blue {
+    color: blue;
+  }
+
+  .magenta {
+    color: magenta;
+  }
+
+  .cyan {
+    color: cyan;
+  }
+
+  .gray {
+    color: gray;
+  }
+
+  .black-bg {
+    background-color: black;
+  }
+
+  .red-bg {
+    background-color: red;
+  }
+
+  .green-bg {
+    background-color: green;
+  }
+
+  .yellow-bg {
+    background-color: yellow;
+  }
+
+  .blue-bg {
+    background-color: blue;
+  }
+
+  .magenta-bg {
+    background-color: magenta;
+  }
+
+  .cyan-bg {
+    background-color: cyan;
+  }
+
+  .gray-bg {
+    background-color: gray;
+  }
+</style>
+<script type="text/javascript" src="qrc:/webkitdisplay/jquery.min.js"></script>
+<script type="text/javascript">
+$(function(){
+  $('#welcome').fadeIn(1000, function () {
+    $('#welcome').fadeOut(1000, function () {
+       $('#welcome').remove();
+       $('.container').slideDown(1000);
+       });
+    } );
+  }
+)(jQuery);
+</script>
+</head>
+<body>
+<div id="welcome" style="display: none;">
+<h1>Welcome to mClient!</h1>
+<p>A next generation client for all your <b>MUME</b> needs...</p>
+</div>
+<div class="container">
+<div class="section">Please help <a href="#">beta test!</a><P>
+</div>
+</div>
+</body>
+</html>

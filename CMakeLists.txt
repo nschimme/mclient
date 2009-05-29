@@ -1,0 +1,27 @@
+cmake_minimum_required (VERSION 2.6)
+project(mclient)
+
+# Set up Qt4
+find_package(Qt4 REQUIRED)
+set(QT_USE_QTNETWORK TRUE)
+set(QT_USE_QTXML TRUE)
+set(QT_USE_QTWEBKIT TRUE)
+include(${QT_USE_FILE})
+
+# Get SVN revision number
+find_package(Subversion)
+if (Subversion_FOUND)
+    if (EXISTS ${PROJECT_SOURCE_DIR}/.svn)
+        Subversion_WC_INFO(${PROJECT_SOURCE_DIR} PROJECT)
+        message(STATUS "Current SVN revision is ${PROJECT_WC_REVISION}")
+        add_definitions(-DSVN_REVISION=${PROJECT_WC_REVISION})
+    endif (EXISTS ${PROJECT_SOURCE_DIR}/.svn)
+endif (Subversion_FOUND)
+
+# 64bit Support
+if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC"  )
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC"  )
+endif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+
+add_subdirectory(src)

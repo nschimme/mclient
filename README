@@ -1,0 +1,8 @@
+To make it go, run ./build.sh.  If everything builds smoothly, 
+
+cd build
+bin/plugin_skeleton
+
+
+It *might* not work on windows due to how I've handled library names (*.so),
+but I intend to fix this so that it's platform-independent.
