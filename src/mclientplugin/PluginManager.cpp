@@ -263,8 +263,8 @@ void PluginManager::customEvent(QEvent* e) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     //qDebug() << "* copying posted event with payload" << me->payload();
   
-    QString s;
-    foreach (s, me->dataTypes()) {
+    bool found = false;
+    foreach (QString s, me->dataTypes()) {
       // Iterate through all the data types
       //qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
 
@@ -280,10 +280,14 @@ void PluginManager::customEvent(QEvent* e) {
 
 	// Post the event
 	QApplication::postEvent(it.value()->instance(), nme);
-	
+	found = true;
+
 	++it; // Iterate
       }
     }
+
+    if (!found) qWarning() << "* No plugins accepted data types"
+			   << me->dataTypes();
 }
 
 

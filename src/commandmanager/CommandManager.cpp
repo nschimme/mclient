@@ -88,6 +88,7 @@ void CommandManager::parseInput(const QString &input,
   // Display Data
   QVariant* qv = new QVariant(input + "\n");
   QStringList sl("XMLDisplayData");
+  if (input.isEmpty()) sl << "SendToSocketData";
   postEvent(qv, sl, session);
 
   QStringList tokens = input.split(_delim, QString::SkipEmptyParts);
