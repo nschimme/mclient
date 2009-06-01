@@ -2,15 +2,13 @@
 #define SOCKETREADER_H
 
 #include <QThread>
-
+#include <QTcpSocket>
 #include <QNetworkProxy>
 #include <QString>
 
 class SocketManagerIO;
-
 class QNetworkProxy;
 class QTcpSocket;
-
 
 class SocketReader : public QThread {
     Q_OBJECT
@@ -20,7 +18,7 @@ class SocketReader : public QThread {
         SocketReader(QString s, SocketManagerIO* sm, QObject* parent=0);
         ~SocketReader();
 
-        void connectToHost();//const QString host, const int& port);
+        void connectToHost();
         
         const int& port() const;
         void port(const int);
@@ -53,7 +51,6 @@ class SocketReader : public QThread {
         void on_disconnect();
         void on_readyRead();
         void on_error();
-
 };
 
 

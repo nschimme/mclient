@@ -24,7 +24,8 @@ DisplayWidget::DisplayWidget(QString s, WebKitDisplay* wkd, QWidget* parent)
 
     // Connect Signals/Slots
     connect(this, SIGNAL(loadFinished(bool)), SLOT(finishLoading(bool)));
-    connect(_wkd, SIGNAL(dataReceived(const QString&)), SLOT(appendText(const QString&)));
+    connect(_wkd, SIGNAL(dataReceived(const QString&, const QString&)),
+	    SLOT(appendText(const QString&, const QString&)));
 
     // Debugging Information
     qDebug() << "* WebKitDisplay thread:" << _wkd->thread();
@@ -46,7 +47,10 @@ DisplayWidget::~DisplayWidget() {
 }
 
 
-void DisplayWidget::appendText(const QString &output) {
+void DisplayWidget::appendText(const QString &output, const QString &session) {
+  if (session != _session)
+    return;
+
   // Maximum Amount of Permitted Characters/Sections
   _currentCharacterCount += output.size();
   if (_currentCharacterCount >= _maxCharacterCount) {

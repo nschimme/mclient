@@ -94,9 +94,9 @@ void MClientPlugin::postEvent(QVariant* payload, QStringList tags,
     MClientEvent* me = new MClientEvent(new MClientEventData(payload), tags,
 					session);
 
-    //QApplication::postEvent(pm, me);
+    QApplication::postEvent(pm, me);
     // Why post it if you can access the object directly!?
-    pm->customEvent(me);
+    //pm->customEvent(me);
 }
 
 

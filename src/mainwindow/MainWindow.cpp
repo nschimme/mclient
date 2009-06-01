@@ -23,6 +23,7 @@
 
 #include "ConfigManager.h"
 #include "PluginManager.h"
+#include "CommandManager.h"
 
 MainWindow* MainWindow::_pinstance = 0;
 
@@ -44,6 +45,7 @@ MainWindow::MainWindow() {
 
   /** Connect Other Necessary Widgets */
   connect(PluginManager::instance(), SIGNAL(doneLoading()), SLOT(start()));
+  connect(CommandManager::instance(), SIGNAL(quit()), SLOT(close()));
 
   /** Create Other Child Widgets */
   createActions();
@@ -52,7 +54,7 @@ MainWindow::MainWindow() {
   createStatusBar();
 
   setCurrentProfile("");
-  qDebug("MainWindow created.");
+  qDebug() << "MainWindow created with thread:" << this->thread();
 }
 
 void MainWindow::start() {
@@ -70,6 +72,9 @@ void MainWindow::receiveWidget(const QWidget* widget) {
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
+  qDebug() << "MainWindow received closeEvent";
+  PluginManager *pm = PluginManager::instance();
+  pm->stopSession("test");
   writeSettings();
   if (maybeSave()) {
     event->accept();
@@ -169,8 +174,8 @@ bool MainWindow::maybeSave()
     else if (ret == QMessageBox::Cancel)
       return false;
   }
-  return true;
   */
+  return true;
 }
 
 void MainWindow::setCurrentProfile(const QString &profile)
@@ -188,15 +193,13 @@ void MainWindow::setCurrentProfile(const QString &profile)
 }
 
 MainWindow::~MainWindow() {
-  PluginManager* pm = PluginManager::instance();
-  ConfigManager* cm = ConfigManager::instance();
-  pm->destroy();
-  cm->destroy();
+  PluginManager::instance()->destroy();
+  ConfigManager::instance()->destroy();
+  CommandManager::instance()->destroy();
   qDebug("MainWindow Destroyed");
 }
 
 void MainWindow::changeConfiguration() {
-  PluginManager* pm = PluginManager::instance();
-  pm->configure();
+  PluginManager::instance()->configure();
 }
 

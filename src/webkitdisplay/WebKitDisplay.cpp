@@ -68,11 +68,12 @@ void WebKitDisplay::customEvent(QEvent* e) {
     if(me->dataTypes().contains("XMLDisplayData")) {
         QByteArray ba = me->payload()->toByteArray();
         QVariant* qv = new QVariant(ba);
-	parseDisplayData(qv->toByteArray());
+	parseDisplayData(qv->toByteArray(), me->session());
     }
 }
 
-void WebKitDisplay::parseDisplayData(const QByteArray& data) {
+void WebKitDisplay::parseDisplayData(const QByteArray &data,
+				     const QString &session) {
   QString text(data);
 
   text.replace(greatherThanChar, greatherThanTemplate);
@@ -95,13 +96,15 @@ void WebKitDisplay::parseDisplayData(const QByteArray& data) {
   } else {
     output += blocks.takeFirst();
   }
-
+  
+  /*
   qDebug() << blocks.count() << blocks << "\n"
 	   << ansi.count() << ansi;
+  */
   
   // Add subsequent ANSI codes
   for (int i = 0; i < blocks.count(); i++) {
-    qDebug() << i << blocks.at(i);
+    //qDebug() << i << blocks.at(i);
     // Add current output block
     output += blocks.at(i);
     
@@ -112,7 +115,8 @@ void WebKitDisplay::parseDisplayData(const QByteArray& data) {
 	output += convertANSI(codes.at(j).toInt());
     }
   }
-  emit dataReceived(output);
+
+  emit dataReceived(output, session);
 }
 
 QString WebKitDisplay::convertANSI(int code) {
@@ -263,14 +267,19 @@ const bool WebKitDisplay::startSession(QString s) {
 
 
 const bool WebKitDisplay::stopSession(QString s) {
-    int removed =  _runningSessions.removeAll(s);
-    return removed!=0?true:false;
+  foreach(DisplayWidget *dw, _widgets.values(s)) {
+    if (dw->close())
+      qDebug() << "* removed WebKit DisplayWidget for session" << s;
+  }
+  _widgets.remove(s);
+  int removed = _runningSessions.removeAll(s);
+  return removed!=0?true:false;
 }
 
 
 // Display plugin members
 const bool WebKitDisplay::initDisplay(QString s) {
-    DisplayWidget* dw = new DisplayWidget(s, this);
+    DisplayWidget *dw = new DisplayWidget(s, this);
     _widgets.insert(s, dw); 
     dw->show();
 

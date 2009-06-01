@@ -39,7 +39,8 @@ class PluginManager : public QThread {
         void configure();
 
         //const bool doneLoading() const;
-        void initSession(QString s);
+        void initSession(const QString &s);
+        void stopSession(const QString &s);
     
     protected:
         // short name -> other info

@@ -46,6 +46,9 @@ PluginManager::PluginManager(QWidget* display, QObject* io, QObject* filter,
     _filterParent = filter;
 
     _pluginDir = "./plugins";
+
+    // IS THIS EVER EVEN SEEN>???
+    qDebug() << "PluginManager created with thread:" << this->thread();
 }
 
 
@@ -92,6 +95,8 @@ PluginManager::PluginManager(QObject* parent) : QThread(parent) {
 
     // Load plugins using data in that file, which should now be accurate.
     _doneLoading = false;
+    
+    qDebug() << "PluginManager created with thread:" << this->thread();
 }
 
 
@@ -256,18 +261,18 @@ const QPluginLoader* PluginManager::pluginWithAPI(const QString& api) const {
 
 void PluginManager::customEvent(QEvent* e) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
-    qDebug() << "* copying posted event with payload" << me->payload();
+    //qDebug() << "* copying posted event with payload" << me->payload();
   
     QString s;
     foreach (s, me->dataTypes()) {
       // Iterate through all the data types
-      qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
+      //qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
 
       QMultiHash<QString, QPluginLoader*>::iterator it = _pluginTypes.find(s);
   
       while (it != _pluginTypes.end() && it.key() == s) {
 	MClientEvent* nme = new MClientEvent(*me);
-	qDebug() << "* copied payload to" << nme->payload();
+	//qDebug() << "* copied payload to" << nme->payload();
 	// Need to make a copy, since the original event
 	// will be deleted when this function returns
 	qDebug() << "* posting" << nme->dataTypes() << "to" 
@@ -297,7 +302,7 @@ void PluginManager::configure() {
 }
 
 
-void PluginManager::initSession(QString s) {
+void PluginManager::initSession(const QString &s) {
     foreach(QPluginLoader* pl,_loadedPlugins) {
         MClientPluginInterface* pi;
         pi = qobject_cast<MClientPluginInterface*>(pl->instance());
@@ -318,6 +323,17 @@ void PluginManager::initSession(QString s) {
 	  }
         }
     }
+}
+
+void PluginManager::stopSession(const QString &s) {
+   foreach(QPluginLoader* pl,_loadedPlugins) {
+        MClientPluginInterface* pi;
+        pi = qobject_cast<MClientPluginInterface*>(pl->instance());
+        if(pi) {
+	  pi->stopSession(s);
+	}
+   }
+   qDebug() << "* All" << s << "sessions have been stopped.";
 }
 
 

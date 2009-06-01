@@ -5,7 +5,7 @@
 
 
 MClientEventData::MClientEventData(QVariant* payload) : QSharedData() {
-    qDebug() << "* creating a shared data containing" << payload;
+    //qDebug() << "* creating a shared data containing" << payload;
     //qDebug() << "* payload is:" << payload->toByteArray().data();
     _payload = payload;
     
@@ -26,8 +26,8 @@ MClientEventData::MClientEventData(const MClientEventData& med) {
 
 
 MClientEventData::~MClientEventData() {
-    qDebug() << "* deleting payload" << _payload << ref;
-//    qDebug() << "Deleting payload";
+  //qDebug() << "* deleting payload" << _payload << ref;
+  //qDebug() << "Deleting payload";
     delete _payload;
 }
 

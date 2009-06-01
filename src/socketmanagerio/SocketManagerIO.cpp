@@ -30,6 +30,13 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
 
     // SocketManager members
     _settingsFile = "config/"+_shortName+".xml";
+
+    // register commands
+    QStringList commands;
+    commands << _shortName
+	     << "connect" << "ConnectToHost"
+	     << "zap" << "DisconnectFromHost";
+    CommandManager::instance()->registerCommand(commands);
 }
 
 
@@ -47,10 +54,10 @@ void SocketManagerIO::customEvent(QEvent* e) {
     MClientEvent* me;
     me = static_cast<MClientEvent*>(e);
 
+    qDebug() << "* SocketManagerIO received event";
+
     if(me->dataTypes().contains("SendToSocketData")) {
         QByteArray ba = me->payload()->toByteArray();
-        //qDebug() << "* ba.data() in SocketManagerIO:" << ba.data();
-        qDebug() << "* me->payload() is" << me->payload();
 	sendData(ba, me->session());
 
     } else if (me->dataTypes().contains("ConnectToHost")) {
@@ -270,23 +277,14 @@ const bool SocketManagerIO::startSession(QString s) {
         qDebug() << "* added proxy" << proxy_host << proxy_port
             << "to SocketReader in session" << s;
     }
-    
-    qDebug() << "* threads:" << sr->thread() << this->thread();
-    sr->moveToThread(this->thread());
-    qDebug() << "* threads:" << sr->thread() << this->thread();
+    //qDebug() << "* SockerReaderIO threads (sr, io):" << sr->thread() << this->thread();
+    //sr->moveToThread(this->thread());
+    //qDebug() << "* SockerReaderIO threads (sr, io):" << sr->thread() << this->thread();
     sr->host(host);
     sr->port(port);
     _socketReaders.insert(s, sr);
     _runningSessions << s;
     qDebug() << "* inserted SocketReader for session" << s;
-
-    // register Commands for CommandManager
-    QStringList commands;
-    commands << _shortName
-	     << "connect" << "ConnectToHost"
-	     << "zap" << "DisconnectFromHost";
-    CommandManager *cm = CommandManager::instance();
-    cm->registerCommand(commands);
 
     return true;
 }
@@ -308,8 +306,7 @@ void SocketManagerIO::connectDevice(QString s) {
     qDebug() << "* SocketManagerIO thread:" << this->thread();
     // Attempts to connect every socket associated with the session s
     foreach(SocketReader* sr, _socketReaders.values(s)) {
-        qDebug() << "* threads:" << sr->thread() << this->thread();
-        sr->connectToHost();//"mume.org",4242);
+        sr->connectToHost();
         qDebug() << "* connected socket for session" << s;
     }
 }
@@ -324,8 +321,9 @@ void SocketManagerIO::disconnectDevice(QString s) {
 
 
 void SocketManagerIO::sendData(const QByteArray& ba, const QString& session) {
+  qDebug() << "attempting to send data to sockets for session" << session;
     // Send data to the sockets.
-    if (_openSockets.values(session).size() == 0) {
+    if (_openSockets.values(session).isEmpty()) {
 
       displayMessage("#no open connections. Use '#connect' to open a connection.\n", session);
 

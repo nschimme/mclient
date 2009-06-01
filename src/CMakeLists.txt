@@ -81,7 +81,8 @@ add_subdirectory(simplelineinput)
 add_subdirectory(telnet)
 add_subdirectory(mumexml)
 add_subdirectory(webkitdisplay)
-#add_subdirectory(simpletestdisplay)
+add_subdirectory(qtscriptplugin)
+add_subdirectory(aliasplugin)
 
 # Installer
 set(CPACK_RESOURCE_FILE_LICENSE )

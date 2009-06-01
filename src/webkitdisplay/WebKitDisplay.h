@@ -40,11 +40,11 @@ class WebKitDisplay : public MClientDisplayPlugin {
 	QString _settingsFile;
 	QHash<QString, DisplayWidget*> _widgets;
 
-	void parseDisplayData(const QByteArray& text);
+	void parseDisplayData(const QByteArray&, const QString&);
 	QString convertANSI(int code);
-	
-    signals:
-        void dataReceived(QString s);
+
+ signals:
+	void dataReceived(const QString&, const QString&);
 };
 
 

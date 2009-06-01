@@ -25,6 +25,7 @@ void ConfigManager::destroy() {
 ConfigManager::ConfigManager(QObject* parent) : QObject(parent) {
     readApplicationSettings();
     readPluginSettings();
+    qDebug() << "ConfigManager created with thread:" << this->thread();
 }
 
 

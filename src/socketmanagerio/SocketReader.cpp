@@ -5,7 +5,6 @@
 #include <QString>
 #include <QTcpSocket>
 
-
 SocketReader::SocketReader(QString s, SocketManagerIO* sm, QObject* parent) 
     : QThread(parent) { 
    
@@ -15,29 +14,26 @@ SocketReader::SocketReader(QString s, SocketManagerIO* sm, QObject* parent)
     _socket = new QTcpSocket(this);
     _proxy.setType(QNetworkProxy::NoProxy);
     _socket->setProxy(_proxy);
-    
-    connect(_socket, SIGNAL(connected()), this, SLOT(on_connect())); 
-    connect(_socket, SIGNAL(disconnected()), this, SLOT(on_disconnect())); 
-    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)), 
-            this, SLOT(on_error())); 
-    connect(_socket, SIGNAL(readyRead()), this, SLOT(on_readyRead())); 
+
+    qDebug() << "* SocketManagerIO thread:" << _sm->thread();
+    qDebug() << "* SocketReader thread:" << this->thread();
+    qDebug() << "* Socket thread:" << _socket->thread();
+
+    connect(_socket, SIGNAL(connected()), SLOT(on_connect())); 
+    connect(_socket, SIGNAL(disconnected()), SLOT(on_disconnect())); 
+    connect(_socket, SIGNAL(readyRead()), SLOT(on_readyRead())); 
+    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
+	    SLOT(on_error())); 
 }
 
 
-void SocketReader::connectToHost() {//const QString host, const int& port) {
-    //_host = host;
-    //_ports = port;
-    //FIXME: HACK! :(
-    if(_socket->thread() != this->thread()) {
-        qDebug() << "* threads in SocketReader:" << this->thread() 
-            << _socket->thread();
-        _socket->moveToThread(this->thread());
-    }
+void SocketReader::connectToHost() {
+  //_socket->moveToThread(this);
 
-    _sm->displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port),
-			_session);
-
-    _socket->connectToHost(_host, _port);
+  _sm->displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port),
+		      _session);
+  
+  _socket->connectToHost(_host, _port);
 }
 
 
@@ -68,7 +64,7 @@ void SocketReader::on_disconnect() {
 void SocketReader::on_error() {
     qWarning() << "Error involving" 
        << _host << _port << _socket->errorString();
-    _sm->displayMessage(_socket->errorString().append("\n"), _session);
+    _sm->displayMessage(_socket->errorString().append(".\n"), _session);
 }
 
 

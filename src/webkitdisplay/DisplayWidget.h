@@ -25,7 +25,7 @@ class DisplayWidget : public QWebView {
         ~DisplayWidget();
 
 public slots:
-	void appendText(const QString&);
+	void appendText(const QString&, const QString&);
 
 protected slots:
         void finishLoading(bool);

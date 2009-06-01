@@ -6,6 +6,7 @@ find_package(Qt4 REQUIRED)
 set(QT_USE_QTNETWORK TRUE)
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTWEBKIT TRUE)
+set(QT_USE_QTSCRIPT TRUE)
 include(${QT_USE_FILE})
 
 # Get SVN revision number

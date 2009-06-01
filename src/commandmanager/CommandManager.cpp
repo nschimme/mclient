@@ -6,6 +6,7 @@
 #include <QDebug>
 #include <QStringList>
 #include <QVariant>
+#include <QApplication>
 
 CommandManager* CommandManager::_pinstance = 0;
 
@@ -22,13 +23,26 @@ void CommandManager::destroy() {
     delete this;
 }
 
-CommandManager::CommandManager(QObject* parent) : QObject(parent) {
-  // Command prefix symbol
-  _symbol = QChar('#');
+CommandManager::CommandManager(QObject* parent) : QThread(parent) {
+  _symbol = QChar('#'); // Command prefix symbol
+  _delim = QChar(';');  // Command delimeter
+
+  // Internal Commands have a Null datatype.
+  _mapping.insert("quit", QString());
+  _mapping.insert("qui", QString());
+  _mapping.insert("help", QString());
+  _mapping.insert("version", QString());
+  _mapping.insert("emulate", QString());
+  _mapping.insert("delim", QString());
 }
 
 
 CommandManager::~CommandManager() {
+}
+
+void CommandManager::run() {
+  qDebug() << "CommandManager running in thread:" << this->thread();
+  exec();
 }
 
 bool CommandManager::unregisterCommand(const Source& source) {
@@ -69,55 +83,121 @@ void CommandManager::registerCommand(const QStringList& sl) {
 }
 
 
-bool CommandManager::parseInput(const QString& input,
-				const QString& session) {
+void CommandManager::parseInput(const QString &input,
+				const QString &session) {
   // Display Data
-  QByteArray ba(input.toAscii());
-  ba.append("\n");
-  QVariant* qv = new QVariant(ba);
+  QVariant* qv = new QVariant(input + "\n");
   QStringList sl("XMLDisplayData");
   postEvent(qv, sl, session);
+
+  QStringList tokens = input.split(_delim, QString::SkipEmptyParts);
+  for (int i = 0; i < tokens.size(); ++i) {
+    QString input = tokens.at(i);
   
-  if (!input.startsWith(_symbol)) {
-      // Send to Socket
+    if (!input.startsWith(_symbol)) {
+      // Non-command; check if it is an alias
+      qv = new QVariant(input);
       sl.clear();
-      sl << "SendToSocketData";
+      sl << "AliasInput";
       postEvent(qv, sl, session);
-      return true;
 
-  } else {
-    // Parse as a Plugin's Command
-    Command command(input);
-    QString arguments;
-    QRegExp whitespace("\\s+");
-
-    int whitespaceIndex = input.indexOf(whitespace);
-    if (whitespaceIndex >= 0) {
-      command = input.mid(1, whitespaceIndex-1);
-      arguments = input.mid(whitespaceIndex+1);
     } else {
-      command = input.mid(1);
-    }
-
-    qDebug() << "* CommandManager got an event: " << command << arguments;
-  
-    if (_mapping.contains(command)) {
-      // Relay command to corresponding plugin
-      QVariant* qv = new QVariant(arguments);
-      QStringList sl;
-      sl << _mapping.value(command);
-      postEvent(qv, sl, session);
-      return true;
+      // Parse as a Plugin's Command
+      Command command;
+      QString arguments;
+      QRegExp whitespace("\\s+");
+      int whitespaceIndex = input.indexOf(whitespace);
+      if (whitespaceIndex >= 0) {
+	command = input.mid(1, whitespaceIndex-1);
+	arguments = input.mid(whitespaceIndex+1);
+      } else {
+	command = input.mid(1);
+      }
+    
+      qDebug() << "* CommandManager got an event: " << command << arguments << ".";
       
-    } else {
-      // Unknown command!
-      QString errorString = "#unknown command \"" + command + "\"\n";
-      QVariant* qv = new QVariant(errorString);
-      QStringList sl;
-      sl << "XMLDisplayData";
-      postEvent(qv, sl, session);
+      parseCommand(command, arguments, session);
     }
   }
+}
+
+bool CommandManager::parseCommand(QString command,
+				  const QString &arguments,
+				  const QString &session) {
+  if (command.isEmpty()) command = "help";
+    
+  // Identify Command
+  QMapIterator<Command, DataType> i(_mapping);
+  while (i.hasNext()) {
+    if (i.next().key().startsWith(command)) {
+      // Command was identified
+      command = i.key();
+      
+      if (!i.value().isNull()) {
+	// External commands
+
+	// Relay command to corresponding plugin
+	QVariant* qv = new QVariant(arguments);
+	QStringList sl;
+	sl << _mapping.value(command);
+	postEvent(qv, sl, session);
+
+      } else {
+	// Internal Commands
+	if (command == "emulate") {
+	  QVariant* qv = new QVariant(arguments);
+	  QStringList sl;
+	  sl << "TelnetData";
+	  postEvent(qv, sl, session);
+	  
+	} else if (command == "delim") {
+	  if (arguments.size() == 1 && arguments.at(0) != ' ') {
+	    _delim = arguments.at(0);
+	    displayData("#delimeter is now " + arguments + "\n", session);
+	  } else
+	    displayData("#not allowed\n", session);
+
+	} else if (command == "qui") {
+	  displayData("#you have to write '#quit' - no less, to quit!\n",
+		      session);
+	  
+	} else if (command == "quit") {
+	  emit quit();
+
+	} else if (command == "version") {
+	  displayData("mClient Version ???, \251 Jahara\n",
+		      session);
+	  
+	} else if (command == "help") {
+	  QString output = "#commands available:\n";
+	  QMapIterator<Command, DataType> i(_mapping);
+	  while (i.hasNext())
+	    output += QString("#%1\n").arg(i.next().key());
+	  displayData(output, session);
+
+	}
+      }
+      // Command run
+      return true;
+    }
+  }
+
+  // Check if it is a repeat
+  bool ok;
+  int repeat = command.toInt(&ok);
+  if (ok) {
+    if (repeat <= 500) {
+      for (int i = 0; i < repeat; i++) {
+	parseInput(arguments, session);
+      }
+    } else {
+      displayData("#command ignored; too many repeats.", session);
+    }
+    return true;
+  }
+
+  // Unknown command!
+  displayData(QString("#unknown command \"" + command + "\"\n"), session);
   return false;
 }
 
@@ -134,11 +214,20 @@ const bool CommandManager::saveSettings() const {
     return true;
 }
 
+void CommandManager::displayData(const QString &output,
+				 const QString &session) {
+  QVariant* qv = new QVariant(output);
+  QStringList sl;
+  sl << "XMLDisplayData";
+  postEvent(qv, sl, session);  
+}
 
 void CommandManager::postEvent(QVariant *payload, const QStringList& tags, 
         const QString& session) {
-    PluginManager* pm = PluginManager::instance();
-    MClientEvent* me = new MClientEvent(new MClientEventData(payload), tags,
+    MClientEvent *me = new MClientEvent(new MClientEventData(payload),
+					tags,
 					session);
-    pm->customEvent(me);
+    QApplication::postEvent(PluginManager::instance(),
+			    me);
+    //PluginManager::instance()->customEvent(me);
 }

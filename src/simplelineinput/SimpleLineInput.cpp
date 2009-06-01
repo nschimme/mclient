@@ -54,9 +54,7 @@ void SimpleLineInput::customEvent(QEvent* e) {
 }
 
 void SimpleLineInput::sendUserInput(const QString &session, const QString &input) {
-    qDebug() << "posting command: " << input;
-    CommandManager *cmdmgr = CommandManager::instance();
-    cmdmgr->parseInput(input, session);
+  CommandManager::instance()->parseInput(input, session);
 }
 
 void SimpleLineInput::configure() {
@@ -81,8 +79,13 @@ const bool SimpleLineInput::startSession(QString s) {
 
 
 const bool SimpleLineInput::stopSession(QString s) {
-    int removed =  _runningSessions.removeAll(s);
-    return removed!=0?true:false;
+  foreach(InputWidget *iw, _widgets.values(s)) {
+    if (iw->close())
+      qDebug() << "* removed SimpleLineInput InputWidget for session" << s;
+  }
+  _widgets.remove(s);
+  int removed = _runningSessions.removeAll(s);
+  return removed!=0?true:false;
 }
 
 
