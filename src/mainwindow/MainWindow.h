@@ -37,6 +37,7 @@ class MainWindow:public QMainWindow
   void destroy();
 
   void receiveWidget(const QWidget *widget);
+  const QString& session() const { return _session; }
 
   protected:
     // It's a singleton, so these go here
@@ -57,6 +58,8 @@ class MainWindow:public QMainWindow
     void setCurrentProfile(const QString &profile);
 
   private:
+    QString _session;
+
     void createActions();
     void createMenus();
     void createToolBars();
@@ -64,8 +67,6 @@ class MainWindow:public QMainWindow
     void readSettings();
     void writeSettings();
     bool maybeSave();
-
-    QString currentProfile;
 
     QMenu *fileMenu;
     QMenu *viewMenu;

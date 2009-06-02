@@ -83,6 +83,7 @@ add_subdirectory(mumexml)
 add_subdirectory(webkitdisplay)
 add_subdirectory(qtscriptplugin)
 add_subdirectory(aliasplugin)
+add_subdirectory(actionplugin)
 
 # Installer
 set(CPACK_RESOURCE_FILE_LICENSE )

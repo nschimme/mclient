@@ -53,7 +53,7 @@ MainWindow::MainWindow() {
   createToolBars();
   createStatusBar();
 
-  setCurrentProfile("");
+  setCurrentProfile("test");
   qDebug() << "MainWindow created with thread:" << this->thread();
 }
 
@@ -62,7 +62,7 @@ void MainWindow::start() {
   show();
 
   PluginManager* pm = PluginManager::instance();
-  pm->initSession("test");
+  pm->initSession(_session);
 }
 
 void MainWindow::receiveWidget(const QWidget* widget) {
@@ -178,16 +178,16 @@ bool MainWindow::maybeSave()
   return true;
 }
 
-void MainWindow::setCurrentProfile(const QString &profile)
+void MainWindow::setCurrentProfile(const QString &session)
 {
-  currentProfile = profile;
+  _session = session;
   setWindowModified(false);
 
   QString shownName;
-  if (currentProfile.isEmpty())
+  if (_session.isEmpty())
     shownName = "No connection";
   else
-    shownName = currentProfile;
+    shownName = _session;
 
   setWindowTitle(tr("%1 - mClient").arg(shownName));
 }

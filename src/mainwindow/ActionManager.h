@@ -52,16 +52,21 @@ class ActionManager: public QObject {
 
     void disableActions(bool value);
 
-  public slots:
+public slots:
     void about();
     void clientHelp();
     void alwaysOnTop();
+
+    void connectSession();
+    void disconnectSession();
+    void reconnectSession();
 
   private:
     ActionManager (MainWindow *);
     static ActionManager *_self;
 
-    void createActions ();
+    void createActions();
+    void postEvent(QVariant *payload, const QStringList& tags);
 
     MainWindow *_mainWindow;
 };

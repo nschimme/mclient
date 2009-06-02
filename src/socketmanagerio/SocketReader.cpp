@@ -5,7 +5,7 @@
 #include <QString>
 #include <QTcpSocket>
 
-SocketReader::SocketReader(QString s, SocketManagerIO* sm, QObject* parent) 
+SocketReader::SocketReader(QString s, SocketManagerIO *sm, QObject *parent) 
     : QThread(parent) { 
    
     _session = s;

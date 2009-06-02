@@ -50,7 +50,6 @@ void MumeXML::customEvent(QEvent* e) {
         QStringList types = me->dataTypes();
         foreach(s, types) {
 	  if (s.startsWith("TelnetData")) {
-	    qDebug() << "MumeXML got an event";
 	    _eventQueue.enqueue(qMakePair(me->payload()->toByteArray(),
 					  me->session()));
 	    if(!isRunning()) start(LowPriority);
@@ -81,12 +80,11 @@ const bool MumeXML::startSession(QString s) {
 
 
 const bool MumeXML::stopSession(QString s) {
-    int removed =  _runningSessions.removeAll(s);
+    int removed = _runningSessions.removeAll(s);
     return removed!=0?true:false;
 }
 
 void MumeXML::parse(const QByteArray& line, const QString& session) {
-  qDebug() << "Parsing the XML: ";// << line.data();
   int index;
   for (index = 0; index < line.size(); index++) {
     if (_readingTag) {
@@ -263,7 +261,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	    // Post Dynamic Description Event
 	    QVariant* qv = new QVariant(_multiBuffer);
 	    QStringList sl;
-	    sl << "XMLDynamicDescription" << "XMLDisplayData";
+	    sl << "XMLDynamicDescription" << "XMLAll";
 	    postEvent(qv, sl, session);
 
 	  }
@@ -277,7 +275,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	// Post Room Name Event
 	QVariant* qv = new QVariant(_singleBuffer);
 	QStringList sl;
-	sl << "XMLName" << "XMLDisplayData";
+	sl << "XMLName" << "XMLAll";
 	postEvent(qv, sl, session);
 
       }
@@ -292,7 +290,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Static Room Description Event
 	  QVariant* qv = new QVariant(_multiBuffer);
 	  QStringList sl;
-	  sl << "XMLDescription" << "XMLDisplayData";
+	  sl << "XMLDescription" << "XMLAll";
 	  postEvent(qv, sl, session);
 
 	  _multiBuffer = emptyString; // reset buffer for dynamic desc
@@ -310,7 +308,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Room Exits Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLExits" << "XMLDisplayData";
+	  sl << "XMLExits" << "XMLAll";
 	  postEvent(qv, sl, session);
 
 	}
@@ -327,7 +325,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Prompt Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLPrompt" << "XMLDisplayData";
+	  sl << "XMLPrompt" << "XMLAll";
 	  postEvent(qv, sl, session);
 
 	}
@@ -343,7 +341,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Terrain Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLTerrain" << "XMLDisplayData";
+	  sl << "XMLTerrain" << "XMLAll";
 	  postEvent(qv, sl, session);
 
 	}
@@ -358,7 +356,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Magic Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLMagic" << "XMLDisplayData";
+	  sl << "XMLMagic" << "XMLAll";
 	  postEvent(qv, sl, session);
 
 	}
@@ -373,7 +371,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Tell Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLTell" << "XMLDisplayData" << "XMLCommunication";
+	  sl << "XMLTell" << "XMLAll" << "XMLCommunication";
 	  postEvent(qv, sl, session);
 
 	}
@@ -388,7 +386,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Say Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLSay" << "XMLDisplayData" << "XMLCommunication";
+	  sl << "XMLSay" << "XMLAll" << "XMLCommunication";
 	  postEvent(qv, sl, session);
 
 	}
@@ -403,7 +401,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Narrate Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLNarrate" << "XMLDisplayData" << "XMLCommunication";
+	  sl << "XMLNarrate" << "XMLAll" << "XMLCommunication";
 	  postEvent(qv, sl, session);
 
 	}
@@ -418,7 +416,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Song Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLSong" << "XMLDisplayData" << "XMLCommunication";
+	  sl << "XMLSong" << "XMLAll" << "XMLCommunication";
 	  postEvent(qv, sl, session);
 
 	}
@@ -433,7 +431,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Pray Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLPray" << "XMLDisplayData" << "XMLCommunication";
+	  sl << "XMLPray" << "XMLAll" << "XMLCommunication";
 	  postEvent(qv, sl, session);
 
 	}
@@ -448,7 +446,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Shout Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLShout" << "XMLDisplayData" << "XMLCommunication";
+	  sl << "XMLShout" << "XMLAll" << "XMLCommunication";
 	  postEvent(qv, sl, session);
 
 	}
@@ -463,7 +461,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Yell Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLYell" << "XMLDisplayData" << "XMLCommunication";
+	  sl << "XMLYell" << "XMLAll" << "XMLCommunication";
 	  postEvent(qv, sl, session);
 
 	}
@@ -478,7 +476,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Emote Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLEmote" << "XMLDisplayData" << "XMLCommunication";
+	  sl << "XMLEmote" << "XMLAll" << "XMLCommunication";
 	  postEvent(qv, sl, session);
 
 	}
@@ -493,7 +491,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Damage Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLDamage" << "XMLDisplayData" << "XMLCombat";
+	  sl << "XMLDamage" << "XMLAll" << "XMLCombat";
 	  postEvent(qv, sl, session);
 
 	}
@@ -508,7 +506,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Hit Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLHit" << "XMLDisplayData" << "XMLCombat";
+	  sl << "XMLHit" << "XMLAll" << "XMLCombat";
 	  postEvent(qv, sl, session);
 
 	}
@@ -523,7 +521,7 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
 	  // Post Weather Event
 	  QVariant* qv = new QVariant(_singleBuffer);
 	  QStringList sl;
-	  sl << "XMLWeather" << "XMLDisplayData";
+	  sl << "XMLWeather" << "XMLAll";
 	  postEvent(qv, sl, session);
 	}
         break;
@@ -579,7 +577,7 @@ bool MumeXML::characters(QByteArray& ch, const QString& session) {
       */
       //emit sendToUser(ch);
       qv = new QVariant(ch);
-      sl << "XMLDisplayData";
+      sl << "XMLNone" << "XMLAll";
       postEvent(qv, sl, session);
       break;
       

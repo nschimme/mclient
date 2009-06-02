@@ -17,6 +17,9 @@
 #include "ActionManager.h"
 #include "MainWindow.h"
 
+#include "PluginManager.h"
+#include "MClientEvent.h"
+
 ActionManager *ActionManager::_self = 0;
 
 ActionManager *ActionManager::self(MainWindow *parent)
@@ -40,15 +43,15 @@ ActionManager::~ActionManager() {
 void ActionManager::createActions() {
   connectAct = new QAction(QIcon(":/mainwindow/connect.png"), tr("&Connect..."), this);
   connectAct->setStatusTip(tr("Load a new session and connect to the remote host"));
-  //connect(connectAct, SIGNAL(triggered()), _mainWindow, SLOT(selectProfile() ));
+  connect(connectAct, SIGNAL(triggered()), SLOT(connectSession()) );
   
   disconnectAct = new QAction(QIcon(":/mainwindow/disconnect.png"), tr("&Disconnect"), this);
   disconnectAct->setStatusTip(tr("Disconnect from the current session"));
-  //connect(disconnectAct, SIGNAL(triggered()), PowwowWrapper::self(), SLOT(disconnectSession()));
+  connect(disconnectAct, SIGNAL(triggered()), SLOT(disconnectSession()) );
 
   reconnectAct = new QAction(QIcon(":/mainwindow/reconnect.png"), tr("&Reconnect"), this);
   reconnectAct->setStatusTip(tr("Reconnect to the current session's remote host"));
-  //connect(reconnectAct, SIGNAL(triggered()), PowwowWrapper::self(), SLOT(connectSession()) );
+  connect(reconnectAct, SIGNAL(triggered()), SLOT(reconnectSession()) );
 
   exitAct = new QAction(QIcon(":/mainwindow/exit.png"), tr("E&xit"), this);
   exitAct->setStatusTip(tr("Exit the application"));
@@ -127,14 +130,12 @@ void ActionManager::disableActions(bool value)
   alwaysOnTopAct->setDisabled(value);
 }
 
-void ActionManager::alwaysOnTop()
-{
+void ActionManager::alwaysOnTop() {
   _mainWindow->setWindowFlags(_mainWindow->windowFlags() ^ Qt::WindowStaysOnTopHint);
   _mainWindow->show();
 }
 
-void ActionManager::about()
-{
+void ActionManager::about() {
 #ifdef SVN_REVISION
 QString version = tr("<b>Subversion Revision ") + QString::number(SVN_REVISION) + tr("</b><br><br>");
 #else
@@ -147,8 +148,33 @@ QString version = tr("<b>Subversion Revision ") + QString::number(SVN_REVISION) 
                          "for more information."));
 }
 
-void ActionManager::clientHelp()
-{
+void ActionManager::clientHelp() {
   if (!QDesktopServices::openUrl(QUrl::fromEncoded("http://mume.org/wiki/index.php/mClient_Help")))
-    qDebug("Failed to open web browser");
+    qWarning() << "Failed to open web browser";
+}
+
+void ActionManager::connectSession() {
+  QVariant *payload = new QVariant();
+  QStringList tags("ConnectToHost");
+  postEvent(payload, tags);
+}
+
+void ActionManager::disconnectSession() {
+  QVariant *payload = new QVariant();
+  QStringList tags("DisconnectFromHost");
+  postEvent(payload, tags);  
+}
+
+void ActionManager::reconnectSession() {
+  disconnectSession();
+  connectSession();
+}
+
+void ActionManager::postEvent(QVariant *payload, const QStringList& tags) {
+    MClientEvent *me = new MClientEvent(new MClientEventData(payload),
+					tags,
+					_mainWindow->session());
+    QApplication::postEvent(PluginManager::instance(),
+			    me);
+    //PluginManager::instance()->customEvent(me);
 }

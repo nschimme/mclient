@@ -80,8 +80,10 @@ void DisplayWidget::appendText(const QString &output, const QString &session) {
     page()->mainFrame()->evaluateJavaScript(code);
   }
 
-  QString scrollCode = QString("$(window).scrollTop($(document).height());");
-  page()->mainFrame()->evaluateJavaScript(scrollCode);
+  //QString scrollCode = QString("$(window).scrollTop($(document).height());");
+  //page()->mainFrame()->evaluateJavaScript(scrollCode);
+  int height = page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
+  page()->mainFrame()->setScrollBarValue(Qt::Vertical, height);
   
 #endif
 }

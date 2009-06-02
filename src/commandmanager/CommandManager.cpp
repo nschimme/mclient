@@ -34,6 +34,7 @@ CommandManager::CommandManager(QObject* parent) : QThread(parent) {
   _mapping.insert("version", QString());
   _mapping.insert("emulate", QString());
   _mapping.insert("delim", QString());
+  _mapping.insert("beep", QString());
 }
 
 
@@ -110,7 +111,7 @@ void CommandManager::parseInput(const QString &input,
       int whitespaceIndex = input.indexOf(whitespace);
       if (whitespaceIndex >= 0) {
 	command = input.mid(1, whitespaceIndex-1);
-	arguments = input.mid(whitespaceIndex+1);
+	arguments = input.mid(whitespaceIndex+1).trimmed();
       } else {
 	command = input.mid(1);
       }
@@ -175,6 +176,9 @@ bool CommandManager::parseCommand(QString command,
 	  while (i.hasNext())
 	    output += QString("#%1\n").arg(i.next().key());
 	  displayData(output, session);
+
+	} else if (command == "beep") {
+	  QApplication::beep();
 
 	}
       }
