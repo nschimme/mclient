@@ -5,6 +5,7 @@ JFLAG=$PROCESSORS+1
 
 if [ -d build ]; then
     cd build
+    cmake ../ -DCMAKE_INSTALL_PREFIX=.
     make -j$JFLAG
     make install
 else

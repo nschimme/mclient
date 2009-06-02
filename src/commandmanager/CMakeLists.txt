@@ -1,5 +1,3 @@
-include_directories(${CMAKE_CURRENT_SRC_DIR})
-
 add_definitions(${QT_DEFINITIONS})
 add_definitions(-DQT_NO_DEBUG)
 add_definitions(-DQT_SHARED)

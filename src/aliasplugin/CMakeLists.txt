@@ -1,5 +1,3 @@
-include_directories(${mclient_plugin_SOURCE_DIR}/src)
-
 add_definitions(${QT_DEFINITIONS})
 add_definitions(-DQT_PLUGIN)
 add_definitions(-DQT_NO_DEBUG)
