@@ -17,6 +17,7 @@
 #include <QtGui>
 #include <QTextStream>
 #include <QCloseEvent>
+#include <QTabWidget>
 
 #include "MainWindow.h"
 #include "ActionManager.h"
@@ -43,9 +44,13 @@ MainWindow::MainWindow() {
   setWindowIcon(QIcon(":/mainwindow/m.png"));
   readSettings();
 
-  /** Connect Other Necessary Widgets */
+  /** Connect Other Necessary Objects */
   connect(PluginManager::instance(), SIGNAL(doneLoading()), SLOT(start()));
   connect(CommandManager::instance(), SIGNAL(quit()), SLOT(close()));
+
+  /** Create Primary Display Widgets */
+  _tabWidget = new QTabWidget;
+//   setCentralWidget(_tabWidget);  
 
   /** Create Other Child Widgets */
   createActions();
@@ -65,9 +70,10 @@ void MainWindow::start() {
   pm->initSession(_session);
 }
 
-void MainWindow::receiveWidget(const QWidget* widget) {
+void MainWindow::receiveWidget(QWidget *widget) {
   // TODO: Different widget locations
-  setCentralWidget((QWidget*)widget);  
+  //_tabWidget->addTab(widget, QString("%1").arg(_tabWidget->count()));
+  setCentralWidget(widget);
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

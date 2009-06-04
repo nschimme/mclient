@@ -23,12 +23,9 @@ WebKitDisplay::WebKitDisplay(QWidget* parent)
     _description = "A display plugin using WebKit.";
 //   _dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _dataTypes << "XMLDisplayData";
+    _dataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";
-
-    // SocketManager members
-    _settingsFile = "config/"+_shortName+".xml";
 
     // Set up the Browser
     QWebSettings::globalSettings()->setAttribute(QWebSettings::AutoLoadImages, true);
@@ -65,7 +62,7 @@ void WebKitDisplay::customEvent(QEvent* e) {
     MClientEvent* me;
     me = static_cast<MClientEvent*>(e);
 
-    if(me->dataTypes().contains("XMLDisplayData")) {
+    if(me->dataTypes().contains("DisplayData")) {
         QByteArray ba = me->payload()->toByteArray();
         QVariant* qv = new QVariant(ba);
 	parseDisplayData(qv->toByteArray(), me->session());
@@ -115,7 +112,7 @@ void WebKitDisplay::parseDisplayData(const QByteArray &data,
 	output += convertANSI(codes.at(j).toInt());
     }
   }
-
+  
   emit dataReceived(output, session);
 }
 
@@ -286,6 +283,6 @@ const bool WebKitDisplay::initDisplay(QString s) {
     return true;
 }
 
-const QWidget* WebKitDisplay::getWidget(QString s) {
-    return (QWidget*)_widgets[s];
+QWidget* WebKitDisplay::getWidget(QString s) {
+    return _widgets[s];
 }

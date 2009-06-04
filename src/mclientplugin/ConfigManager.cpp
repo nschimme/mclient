@@ -102,9 +102,11 @@ const bool ConfigManager::readPluginSettings() {
                 } else {
                     QString tag = xml->name().toString();
                     QXmlStreamAttributes attr = xml->attributes();
-                    id = attr.value("id").toString();
+                    //id = attr.value("id").toString();
+		    id = tag; // Why use an id and not the tag?
+
                     if(!_config[plugin][profile].contains(id)) {
-                        QHash<QString, QString> h;
+		        QHash<QString, QString> h;
                         _config[plugin][profile].insert(id, h);
                     }
                     
@@ -130,7 +132,7 @@ const bool ConfigManager::writePluginSettings() const {
 }
 
 
-const QHash<QString, QHash<QString, QString> >& 
+const QHash<QString, QHash<QString, QString> > 
 ConfigManager::pluginProfileConfig(const QString plugin, 
         const QString profile) const {
     return _config[plugin][profile];

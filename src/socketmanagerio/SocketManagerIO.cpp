@@ -6,6 +6,7 @@
 #include "MClientEvent.h"
 #include "PluginManager.h"
 #include "CommandManager.h"
+#include "ConfigManager.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -85,181 +86,24 @@ void SocketManagerIO::configure() {
 
 
 const bool SocketManagerIO::loadSettings() {
-    QIODevice* device = new QFile(_settingsFile);
-    if(!device->open(QIODevice::ReadOnly)) {
-        qCritical() << "Can't open file for reading:" << _settingsFile;
-        return false;
-    }
-
-    QXmlStreamReader* xml = new QXmlStreamReader(device);
-    QString profile;
-    QPair<QString, QVariant> p;
-    bool in_proxy = false;
-    while(!xml->atEnd()) {
-        xml->readNext();
-
-        if(xml->isEndElement()) {
-            if(xml->name() == "profile") {
-                // found </profile>
-            } else if(xml->name() == "proxy") {
-                in_proxy = false;
-            }
-
-        } else if(xml->isStartElement()) {
-            if(xml->name() == "config") {
-                QXmlStreamAttributes attr = xml->attributes();
-                QString version = attr.value("version").toString();
-                if(version.toDouble() < _configVersion.toDouble()) {
-                    qWarning() << "Config file is too old! Trying anyway...";                }
-
-            } else if(xml->name() == "profile") {
-                QXmlStreamAttributes attr = xml->attributes();
-                profile = attr.value("name").toString();
-                qDebug() << "* found profile:" << profile;
-
-            } else if(xml->name() == "connection") {
-                QXmlStreamAttributes attr = xml->attributes();
-                QString host = attr.value("host").toString();
-                QString port = attr.value("port").toString();
-                p.first = "host";
-                p.second = host;
-                _settings.insert(profile, p);
-                qDebug() << "* inserted host:" << host;
-                p.first = "port";
-                p.second = port;
-                _settings.insert(profile, p);
-                qDebug() << "* inserted port:" << port;
-            
-            } else if(xml->name() == "proxy") {
-                QXmlStreamAttributes attr = xml->attributes();
-                QString host = attr.value("host").toString();
-                QString port = attr.value("port").toString();
-                p.first = "proxy_host";
-                p.second = host;
-                _settings.insert(profile, p);
-                qDebug() << "* inserted proxy_host:" << host;
-                p.first = "proxy_port";
-                p.second = port;
-                _settings.insert(profile, p);
-                qDebug() << "* inserted proxy_port:" << port;
-                
-                in_proxy = true;
-            
-            } else if(xml->name() == "username" && in_proxy == true) {
-                QString proxy_user = xml->readElementText();
-                p.first = "proxy_username";
-                p.second = proxy_user;
-                _settings.insert(profile, p);
-                qDebug() << "* inserted proxy_username:" << proxy_user;
-            
-            } else if(xml->name() == "password" && in_proxy == true) {
-                QString proxy_pass = xml->readElementText();
-                p.first = "proxy_password";
-                p.second = proxy_pass;
-                _settings.insert(profile, p);
-                qDebug() << "* inserted proxy_password:" << proxy_pass;
-            }
-        }
-    }
-
-    delete device;
-    delete xml;
-    
     return true;
 }
 
 
 const bool SocketManagerIO::saveSettings() const {
-    QIODevice* device = new QFile(_settingsFile);
-    if(!device->open(QIODevice::WriteOnly)) {
-        qCritical() << "Can't open file for writing:" << _settingsFile;
-        return false;
-    }
-
-    QXmlStreamWriter* xml = new QXmlStreamWriter(device);
-    xml->setAutoFormatting(true);
-    xml->writeStartDocument();
-    xml->writeStartElement("config");
-    xml->writeAttribute("version", _configVersion);
-
-    foreach(QString s, _settings.uniqueKeys()) {
-        xml->writeStartElement("profile");
-        xml->writeAttribute("name", s);
-        
-        QPair<QString, QVariant> p;
-        
-        xml->writeEmptyElement("connection");
-        foreach(p, _settings.values(s)) {
-            if(p.first == "host") {
-                xml->writeAttribute("host", p.second.toString());
-            } else if(p.first == "port") {
-                xml->writeAttribute("port", p.second.toString());
-            }
-        }
-
-        xml->writeStartElement("proxy");
-        foreach(p, _settings.values(s)) {
-            if(p.first == "proxy_host") {
-                xml->writeAttribute("host", p.second.toString());
-            } else if(p.first == "proxy_port") {
-                xml->writeAttribute("port", p.second.toString());
-            }
-        }
-        
-        foreach(p, _settings.values(s)) {
-            if(p.first == "proxy_username") {
-                xml->writeStartElement("username");
-                xml->writeCharacters(p.second.toString());
-                xml->writeEndElement();
-            }
-            else if(p.first == "proxy_password") {
-                xml->writeStartElement("password");
-                xml->writeCharacters(p.second.toString());
-                xml->writeEndElement();
-            }
-        }
-        xml->writeEndElement(); // proxy
-        
-        xml->writeEndElement(); // profile
-    }
-
-    xml->writeEndElement(); // config
-    xml->writeEndDocument();
-    qDebug() << "* wrote xml";
-
-    delete device;
-    delete xml;
-
     return true;
 }
 
 
 const bool SocketManagerIO::startSession(QString s) {
+    _settings = ConfigManager::instance()->pluginProfileConfig(_shortName, s);
     
-    QString host;
-    int port = 0;
-    QString proxy_host;
-    int proxy_port = 0;
-    QString proxy_user;
-    QString proxy_pass;
-
-    //qDebug() << _settings.values(s);
-    
-    QPair<QString, QVariant> p;
-    foreach(p, _settings.values(s)) {
-        if(p.first == "host") host = p.second.toString();
-        else if(p.first == "port") port = p.second.toInt();
-        else if(p.first == "proxy_host") {
-            proxy_host = p.second.toString();
-            qDebug() << "* proxy_host" << proxy_host;
-
-        } else if(p.first == "proxy_port") proxy_port = p.second.toInt();
-        else if(p.first == "proxy_username") { 
-            proxy_host = p.second.toString();
-        } else if(p.first == "proxy_password") {
-            proxy_pass = p.second.toString();
-        }
-    }
+    QString host = _settings["connection"]["host"];
+    int port = _settings["connection"]["port"].toInt();
+    QString proxy_host = _settings["proxy"]["host"];
+    int proxy_port = _settings["proxy"]["port"].toInt();
+    QString proxy_user = _settings["proxy"]["proxy_user"];
+    QString proxy_pass = _settings["proxy"]["proxy_pass"];
 
     SocketReader* sr = new SocketReader(s, this);
     if(proxy_port != 0 && !proxy_host.isEmpty()) {
@@ -348,7 +192,7 @@ void SocketManagerIO::socketReadData(const QByteArray& data, const QString& s) {
 
 void SocketManagerIO::displayMessage(const QString& message, const QString& s) {
     QVariant* qv = new QVariant(message);
-    QStringList sl("XMLDisplayData");
+    QStringList sl("DisplayData");
     postEvent(qv, sl, s);
 }
 

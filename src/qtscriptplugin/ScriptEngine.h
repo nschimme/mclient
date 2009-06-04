@@ -1,6 +1,7 @@
 #ifndef SCRIPTENGINE_H
 #define SCRIPTENGINE_H
 
+
 #include <QScriptEngine>
 
 class QtScriptPlugin;
@@ -21,13 +22,15 @@ class ScriptEngine : public QScriptEngine {
 	void postEvent(QVariant *payload, const QStringList& tags);
 
 protected slots:
-        void evaluateExpression(const QString&, const QString&);
+        bool evaluateExpression(const QString&, const QString&);
+        bool variableCommand(const QString&, const QString&);
 	void handleException(const QScriptValue &value);
 
     private:
         QString _session;
 	QtScriptPlugin *_qsp;
 
+	void displayData(const QString&);
 };
 
 

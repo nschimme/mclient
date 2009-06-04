@@ -324,6 +324,9 @@ void PluginManager::initSession(const QString &s) {
 	    pd = qobject_cast<MClientDisplayInterface*>(pl->instance());
 	    MainWindow* mw = MainWindow::instance();
 	    mw->receiveWidget(pd->getWidget(s));
+	  } else {
+	    qDebug() << "* Display Locations for"
+		     << pi->shortName() << pi->displayLocations();
 	  }
         }
     }

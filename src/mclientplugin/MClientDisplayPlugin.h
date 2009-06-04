@@ -22,7 +22,7 @@ class MClientDisplayPlugin : public MClientPlugin,
 
         // Display members
         virtual const bool initDisplay(QString s);
-	virtual const QWidget* getWidget(QString s);
+	virtual QWidget* getWidget(QString s);
 };
 
 

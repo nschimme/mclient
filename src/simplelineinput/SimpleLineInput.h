@@ -25,7 +25,7 @@ class SimpleLineInput : public MClientIOPlugin {
 
         // Display members
         const bool initDisplay(QString s);
-        const QWidget* getWidget(QString s);
+        QWidget* getWidget(QString s);
 
         void sendUserInput(const QString&, const QString&);
 

@@ -88,11 +88,12 @@ void CommandManager::parseInput(const QString &input,
 				const QString &session) {
   // Display Data
   QVariant* qv = new QVariant(input + "\n");
-  QStringList sl("XMLDisplayData");
+  QStringList sl("DisplayData");
   if (input.isEmpty()) sl << "SendToSocketData";
   postEvent(qv, sl, session);
-
-  QStringList tokens = input.split(_delim, QString::SkipEmptyParts);
+  
+  // TODO: only split given the #delim command
+  QStringList tokens = input.split("\n", QString::SkipEmptyParts);
   for (int i = 0; i < tokens.size(); ++i) {
     QString input = tokens.at(i);
   
@@ -222,8 +223,7 @@ const bool CommandManager::saveSettings() const {
 void CommandManager::displayData(const QString &output,
 				 const QString &session) {
   QVariant* qv = new QVariant(output);
-  QStringList sl;
-  sl << "XMLDisplayData";
+  QStringList sl("DisplayData");
   postEvent(qv, sl, session);  
 }
 

@@ -29,7 +29,7 @@ class ConfigManager : public QObject {
         // Return a list of plugins for a given profile
         const QStringList profilePlugins(const QString profile) const;
 
-        const QHash<QString, QHash<QString, QString> >& 
+        const QHash<QString, QHash<QString, QString> > 
             pluginProfileConfig(const QString pl, const QString pr) const;
 
 

@@ -16,14 +16,15 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
     _description = "A JavaScript scripting language";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _dataTypes << "QtScript";
+    _dataTypes << "QtScriptEvaluate" << "QtScriptVariable";
     _configurable = false;
     _configVersion = "2.0";
 
     // register commands
     QStringList commands;
     commands << _shortName
-	     << "qtscript" << "QtScript";
+	     << "script" << "QtScriptEvaluate"
+	     << "var" << "QtScriptVariable";
     CommandManager::instance()->registerCommand(commands);
 }
 
@@ -39,8 +40,12 @@ void QtScriptPlugin::customEvent(QEvent* e) {
     MClientEvent* me;
     me = static_cast<MClientEvent*>(e);
 
-    if(me->dataTypes().contains("QtScript")) {
+    if(me->dataTypes().contains("QtScriptEvaluate")) {
       emit evaluate(me->payload()->toString(), me->session());
+      
+    } else if (me->dataTypes().contains("QtScriptVariable")) {
+      emit variable(me->payload()->toString(), me->session());
+
     }
 }
 

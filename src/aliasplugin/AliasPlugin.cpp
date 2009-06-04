@@ -97,7 +97,7 @@ bool AliasPlugin::handleCommand(const QString &arguments,
       output = "#no aliases are defined.\n";
 
     else {
-      output = QString("#the following alias%1 defined\n").arg(h->aliases.size()==1?" is":"es are");
+      output = QString("#the following alias%1 defined:\n").arg(h->aliases.size()==1?" is":"es are");
 
       // Attach the aliases
       QHashIterator<QString, Alias*> i(h->aliases);
@@ -235,7 +235,6 @@ const bool AliasPlugin::stopSession(QString s) {
 void AliasPlugin::displayData(const QString &output,
 			      const QString &session) {
   QVariant* qv = new QVariant(output);
-  QStringList sl;
-  sl << "XMLDisplayData";
+  QStringList sl("DisplayData");
   postEvent(qv, sl, session);  
 }

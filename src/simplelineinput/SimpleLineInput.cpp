@@ -97,6 +97,6 @@ const bool SimpleLineInput::initDisplay(QString s) {
     return true;
 }
 
-const QWidget* SimpleLineInput::getWidget(QString s) {
-    return (QWidget*)_widgets[s];
+QWidget* SimpleLineInput::getWidget(QString s) {
+    return _widgets[s];
 }

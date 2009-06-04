@@ -50,6 +50,8 @@ class MumeXML : public MClientFilterPlugin {
 	bool _readingTag;
 	XmlMode _xmlMode;
 
+	bool _removeXmlTags;
+
 	QQueue< QPair<QByteArray, QString> > _eventQueue;
 };
 

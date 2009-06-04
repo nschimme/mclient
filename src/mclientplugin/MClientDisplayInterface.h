@@ -11,7 +11,7 @@ class MClientDisplayInterface {
         // The plugin developer MUST do this, or the plugin will cause a
         // segfault.  (actually I'm not positive that's such a strong 'must')
         virtual const bool initDisplay(QString s)=0;
-	virtual const QWidget* getWidget(QString s)=0;
+	virtual QWidget* getWidget(QString s)=0;
 };
 
 Q_DECLARE_INTERFACE(MClientDisplayInterface,

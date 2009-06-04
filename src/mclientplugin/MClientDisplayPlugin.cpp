@@ -20,6 +20,6 @@ const bool MClientDisplayPlugin::initDisplay(QString s) {
 }
 
 
-const QWidget* MClientDisplayPlugin::getWidget(QString s) {
+QWidget* MClientDisplayPlugin::getWidget(QString s) {
 }
 

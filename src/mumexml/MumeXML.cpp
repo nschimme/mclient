@@ -32,6 +32,7 @@ MumeXML::MumeXML(QObject* parent)
     _readingTag = false;
     _readingRoomDesc = false;
     _xmlMode = XML_NONE;
+    _removeXmlTags = true;
 }
 
 
@@ -95,11 +96,10 @@ void MumeXML::parse(const QByteArray& line, const QString& session) {
 
         _tempTag.clear();
 
-	// fix from MMapper2
-	if (!_tempCharacters.isEmpty()) {
-	  qDebug() << "Removing tempCharacters due to tag closure!" << _tempCharacters;
-	  _tempCharacters.clear();
-	}
+// 	if (!_tempCharacters.isEmpty()) {
+// 	  qDebug() << "Removing tempCharacters due to tag closure!" << _tempCharacters;
+// 	  _tempCharacters.clear();
+// 	}
 
         _readingTag = false;
         continue;
@@ -529,12 +529,12 @@ bool MumeXML::element(const QByteArray& line, const QString& session) {
       break;
   }
 
-  /*
-  if (!Config()._removeXmlTags)
-  {
-    emit sendToUser("<"+line+">");
+  if (!_removeXmlTags) {
+    QString output = "<"+line+">";
+    QVariant* qv = new QVariant(output);
+    QStringList sl("XMLTag");
+    postEvent(qv, sl, session);
   }
-  */
   return true;
 }
 

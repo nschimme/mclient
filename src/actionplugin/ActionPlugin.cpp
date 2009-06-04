@@ -54,7 +54,7 @@ class Action {
 };
 
 struct ActionHolder {
-  QMultiMap<int, QMultiHash<QString, Action*> > actions;
+  QMultiMap<int, QMultiHash<QString, Action*>* > actions;
   QMultiHash<QString, Action*> groups;
   QMultiHash<QString, Action*> tags;
 };
@@ -111,27 +111,29 @@ bool ActionPlugin::handleCommand(const QString &arguments,
 
     // Iterate through all the priorities
     QStringList output;
-    QMapIterator<int, QMultiHash<QString, Action*> > i(h->actions);
-    while (i.hasNext()) {
-      i.next();
-      qDebug() << "* Looking through actions of priority" << i.key();
+    QMap<int, QMultiHash<QString, Action*>* >::const_iterator i;
+    for (i = h->actions.constBegin(); i != h->actions.constEnd(); ++i) {
+      qDebug() << "* Looking through actions of priority" << i.key()
+	       << "hash has a size of" << i.value()->size();
       
-      QHashIterator<QString, Action*> j(i.value());
-      while (j.hasNext()) {
-	j.next();
-	output << QString("#action >%1%2@%3=%4\n").arg(j.value()->label(),
-						       QString(j.value()->priority()),
-						       j.value()->group(),
-						       j.value()->command());
+      QHash<QString, Action*>::const_iterator j;
+      for (j = i.value()->constBegin(); j != i.value()->constEnd(); ++j) {
+	QString out = QString("#action >%1@%2=%3 {%4} {%5}\n").arg(j.value()->label(),
+								   j.value()->group(),
+								   j.value()->command(),
+								   j.key(),
+								   QString("%1").arg(j.value()->priority()));
 	
+	output << out;
       }
     }
-
+    qDebug() << output;
+    
     // Attach initial text:
     if (output.size() == 0)
       output.prepend("#no actions are defined.\n");
     else
-      output.prepend(QString("#the following action%1 defined\n").arg(h->actions.size()==1?" is":"es are"));
+      output.prepend(QString("#the following action%1 defined:\n").arg(output.size()==1?" is":"s are"));
     
     // Display the string
     displayData(output.join(""), session);
@@ -139,10 +141,8 @@ bool ActionPlugin::handleCommand(const QString &arguments,
     return true;
   }
   
-  //                  add/del  toggle      label         pattern
-  QRegExp actionRx("^([<|>]?)([\\+|-]?)([^\\s<>\\+-]+) (\\{.*\\})"
-		   "[ \\{(\\d+)\\}]*[ \\{([^}]+)\\}]*[ \\{([^}]+)\\}]*");
-  //                 priority      group       tag(s)
+  //                  add/del  toggle      label        pattern
+  QRegExp actionRx("^([<|>]?)([+|-]?)([^\\s<>+-]+)\\s+\\{(.+)\\}=(.+)");
 
   if (!actionRx.exactMatch(arguments)) {
     // Incorrect command syntax
@@ -152,9 +152,42 @@ bool ActionPlugin::handleCommand(const QString &arguments,
   }
   // Parse the command
   QStringList cmd = actionRx.capturedTexts();
-
   qDebug() << cmd;
 
+  QString label(cmd.at(3));
+  QRegExp pattern(cmd.at(4));
+  QString command(cmd.at(5));
+  QStringList tags("XMLNone");
+  
+  if (!label.isEmpty()) {
+    qDebug() << "trying to make a new action";
+    Action *action = new Action(label, pattern, command, tags);
+    qDebug() << "created action";
+
+    bool newHash = false;
+    QMultiHash<QString, Action*> *actions;
+    if (h->actions.contains(0)) {
+      actions = h->actions.value(0);
+      qDebug() << "received hash of size" << actions->size();
+      
+    } else {
+      actions = new QMultiHash<QString, Action*>;
+      qDebug() << "created NEW hash";
+      newHash = true;
+    }
+
+    foreach(QString tag, tags) {
+      qDebug() << "adding for tag" << tag;
+      actions->insert(tag, action);
+      qDebug() << "inserted action! hash is now size of" << actions->size();
+      displayData("#new action \""+label+"\": "+label+"="+command+"\n",
+		  session);
+    }
+
+    if (newHash) h->actions.insert(0, actions);
+
+  }
+  
   return true;
 }
 
@@ -169,23 +202,35 @@ bool ActionPlugin::parseAction(const QString &text, QStringList tags,
 
   // Iterate through all the priorities
   QMultiMap<int,
-    QMultiHash<QString, Action*> >::const_iterator i = h->actions.constBegin();
+    QMultiHash<QString, Action*>* >::const_iterator i = h->actions.constBegin();
   while (i != h->actions.constEnd()) {
     qDebug() << "* Looking through actions of priority" << i.key();
     
     // Iterate through the tag in question
     QString tag = tags.at(0);
-    QMultiHash<QString, Action*>::const_iterator j = i.value().find(tag);
-    while (j != i.value().end() && j.key() == tag) {
+    qDebug() << "looking at tag" << tag;
+    QMultiHash<QString, Action*>::iterator j = i.value()->find(tag);
+    while (j != i.value()->end() && j.key() == tag) {
+
+      qDebug() << "matching against action" << j.value()->label();
       
-      if (j.value()->pattern().indexIn(text)) {
+      if (j.value()->pattern().indexIn(text) >= 0) {
 	// Pattern matched
-	qDebug() << "found action" << j.key()
+	qDebug() << "found action" << j.value()->label()
 		 << j.value()->command()
 		 << "for tag" << tag;
 	qDebug() << j.value()->pattern().capturedTexts();
 	
+	// TODO: replace command stuff with capturedTexts().
+	QString command = j.value()->command();
+	CommandManager::instance()->parseInput(command,
+					       session);
+
 	return true;
+
+      } else {
+	qDebug() << j.value()->pattern().errorString();
+
       }
       ++j;
     }
@@ -227,7 +272,6 @@ const bool ActionPlugin::stopSession(QString s) {
 void ActionPlugin::displayData(const QString &output,
 			      const QString &session) {
   QVariant* qv = new QVariant(output);
-  QStringList sl;
-  sl << "XMLDisplayData";
+  QStringList sl("DisplayData");
   postEvent(qv, sl, session);  
 }

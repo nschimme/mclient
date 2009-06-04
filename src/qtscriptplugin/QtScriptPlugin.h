@@ -28,6 +28,7 @@ class QtScriptPlugin : public MClientPlugin {
 
  signals:
 	void evaluate(const QString&, const QString&);
+	void variable(const QString&, const QString&);
 };
 
 #endif /* QTSCRIPTPLUGIN_H */

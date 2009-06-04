@@ -25,7 +25,7 @@ class WebKitDisplay : public MClientDisplayPlugin {
 
         // Display members
         const bool initDisplay(QString s);
-        const QWidget* getWidget(QString s);
+        QWidget* getWidget(QString s);
 
   protected:
 	static const QByteArray greatherThanChar;
@@ -37,7 +37,6 @@ class WebKitDisplay : public MClientDisplayPlugin {
 	bool _foreground, _background, _bold, _underline;
 	bool _blink, _inverse, _strikethrough;
 
-	QString _settingsFile;
 	QHash<QString, DisplayWidget*> _widgets;
 
 	void parseDisplayData(const QByteArray&, const QString&);

@@ -36,7 +36,7 @@ class MainWindow:public QMainWindow
   static MainWindow* instance();
   void destroy();
 
-  void receiveWidget(const QWidget *widget);
+  void receiveWidget(QWidget *widget);
   const QString& session() const { return _session; }
 
   protected:
@@ -59,6 +59,7 @@ class MainWindow:public QMainWindow
 
   private:
     QString _session;
+    QTabWidget *_tabWidget;
 
     void createActions();
     void createMenus();
