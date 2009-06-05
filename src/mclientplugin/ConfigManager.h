@@ -5,7 +5,10 @@
 
 #include <QHash>
 #include <QStringList>
+#include <QSettings>
 
+bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map);
+bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map);
 
 class ConfigManager : public QObject {
     Q_OBJECT

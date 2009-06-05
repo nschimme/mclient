@@ -40,15 +40,14 @@
 #define ISNOTSET(src,bit) (!(src & bit))
 #define KEEP(dest,bit) (dest = dest)
 
-enum MClientPluginType { UNKNOWN = 0, FILTER, DISPLAY, IO };
-
 typedef quint8 MClientDisplayLocations;
-#define DL_FLOAT      bit1
-#define DL_CENTER     bit2
-#define DL_LEFT       bit3
-#define DL_RIGHT      bit4
-#define DL_BOTTOM     bit5
-#define DL_TOP        bit6
-#define DL_OTHER      bit7
+#define DL_DISPLAY    bit1 // Primary Display (Center Layout)
+#define DL_INPUT      bit2 // Primary Input   (Bottom Layout)
+#define DL_LEFT       bit3 // Dock Left
+#define DL_RIGHT      bit4 // Dock Right
+#define DL_BOTTOM     bit5 // Dock Bottom
+#define DL_TOP        bit6 // Dock Top
+#define DL_FLOAT      bit1 // Floating
+
 
 #endif /* MCLIENTDEFINITIONS_H */

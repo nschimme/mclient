@@ -26,8 +26,34 @@ class ActionManager: public QObject {
   Q_OBJECT
 
   public:
-    static ActionManager *self (MainWindow *parent = 0);
-    ~ActionManager ();
+    static ActionManager* instance(MainWindow *parent = 0);
+    void destroy();
+
+    void createActions();
+    void createMenus();
+    void createToolBars();
+    void createStatusBar();
+
+public slots:
+    void about();
+    void clientHelp();
+    void alwaysOnTop();
+
+    void connectSession();
+    void disconnectSession();
+    void reconnectSession();
+
+ protected:
+    ActionManager(MainWindow*);
+    ~ActionManager();
+    
+    static ActionManager* _pinstance;
+
+  private:
+    void disableActions(bool value);
+    void postEvent(QVariant *payload, const QStringList& tags);
+
+    MainWindow *_mainWindow;
 
     /* MainWindow (i.e. Normal) Actions */
     QAction *exitAct;
@@ -50,25 +76,14 @@ class ActionManager: public QObject {
 
     QAction *alwaysOnTopAct;
 
-    void disableActions(bool value);
+    QMenu *fileMenu;
+    QMenu *viewMenu;
+    QMenu *editMenu;
+    QMenu *helpMenu;
+    QMenu *settingsMenu;
 
-public slots:
-    void about();
-    void clientHelp();
-    void alwaysOnTop();
-
-    void connectSession();
-    void disconnectSession();
-    void reconnectSession();
-
-  private:
-    ActionManager (MainWindow *);
-    static ActionManager *_self;
-
-    void createActions();
-    void postEvent(QVariant *payload, const QStringList& tags);
-
-    MainWindow *_mainWindow;
+    QToolBar *editToolBar;
+    QToolBar *connectToolBar;
 };
 
 #endif /* _ACTIONMANAGER_H_ */

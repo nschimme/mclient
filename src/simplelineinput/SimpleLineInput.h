@@ -1,14 +1,14 @@
 #ifndef SIMPLELINEINPUT_H
 #define SIMPLELINEINPUT_H
 
-#include "MClientIOPlugin.h"
+#include "MClientDisplayPlugin.h"
 
 #include <QHash>
 
 class InputWidget;
 class QEvent;
 
-class SimpleLineInput : public MClientIOPlugin {
+class SimpleLineInput : public MClientDisplayPlugin {
     Q_OBJECT
     
     public:
@@ -27,6 +27,7 @@ class SimpleLineInput : public MClientIOPlugin {
         const bool initDisplay(QString s);
         QWidget* getWidget(QString s);
 
+public slots:
         void sendUserInput(const QString&, const QString&);
 
     private:

@@ -15,11 +15,12 @@ class InputWidget : public QLineEdit {
 protected slots:
         void gotInput();
 
- protected:
-	SimpleLineInput* _sli;
-
     private:
 	QString _session;
+	SimpleLineInput* _sli;
+
+ signals:
+	void sendUserInput(const QString&, const QString&);
 };
 
 

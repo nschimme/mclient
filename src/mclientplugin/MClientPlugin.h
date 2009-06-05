@@ -19,9 +19,6 @@ class MClientPlugin : public QThread, public MClientPluginInterface {
         MClientPlugin(QObject* parent=0);
         ~MClientPlugin();
 
-        // The field of possible display locations
-        virtual const MClientDisplayLocations& displayLocations() const;
-
         // The type of plugin
         virtual const MClientPluginType& type() const;
 
@@ -86,7 +83,6 @@ class MClientPlugin : public QThread, public MClientPluginInterface {
         QString _description;
         QString _version;
 	MClientPluginType _type;
-	MClientDisplayLocations _displayLocations;
 
         bool _configurable;
         QString _configVersion;

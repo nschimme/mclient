@@ -20,9 +20,16 @@ class MClientDisplayPlugin : public MClientPlugin,
         // Plugin members
         virtual void customEvent(QEvent* e);
 
+        // The field of possible display locations
+        virtual const MClientDisplayLocations& displayLocations() const;
+
         // Display members
         virtual const bool initDisplay(QString s);
 	virtual QWidget* getWidget(QString s);
+
+   protected:
+	MClientDisplayLocations _displayLocations;
+
 };
 
 

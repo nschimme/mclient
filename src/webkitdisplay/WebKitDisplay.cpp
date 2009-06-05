@@ -36,7 +36,7 @@ WebKitDisplay::WebKitDisplay(QWidget* parent)
     QWebSettings::globalSettings()->setAttribute(QWebSettings::DeveloperExtrasEnabled, true);
 
     // Allowable Display Locations
-    SET(_displayLocations, DL_CENTER);
+    SET(_displayLocations, DL_DISPLAY);
 
     // ANSI
     _foreground = false;
@@ -278,7 +278,7 @@ const bool WebKitDisplay::stopSession(QString s) {
 const bool WebKitDisplay::initDisplay(QString s) {
     DisplayWidget *dw = new DisplayWidget(s, this);
     _widgets.insert(s, dw); 
-    dw->show();
+    //dw->show();
 
     return true;
 }

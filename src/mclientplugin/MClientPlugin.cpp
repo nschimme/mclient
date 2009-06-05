@@ -17,16 +17,10 @@ MClientPlugin::MClientPlugin(QObject* parent) : QThread(parent) {
     _description = "If you see this text, the plugin author did not replace the default description.";
     _configurable = false;
     _configVersion = "none";
-    _displayLocations = 0;
 }
 
 
 MClientPlugin::~MClientPlugin() {
-}
-
-
-const MClientDisplayLocations& MClientPlugin::displayLocations() const {
-    return _displayLocations;
 }
 
 

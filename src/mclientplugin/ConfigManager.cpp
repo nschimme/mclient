@@ -22,6 +22,56 @@ void ConfigManager::destroy() {
 }
 
 
+bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map) {
+  QXmlStreamReader xml(&device);
+
+  QStringList elementStack;
+
+  while (!xml.atEnd()) {
+    xml.readNext();
+    if(xml.isStartElement()) {
+      elementStack.append(xml.name().toString());
+      foreach(QXmlStreamAttribute a, xml.attributes()) {
+	QString key = elementStack.join("/") + "/" + a.name().toString();
+	QVariant value = QVariant(a.value().toString());
+	map.insert(key, value);
+      }
+    }
+    else if (xml.isEndElement())
+      elementStack.removeLast();
+    else if (xml.hasError())
+      qWarning() << "* Error parsing XML configuration file";
+  }
+  qDebug() << "* read in XML file" << map;
+}
+
+bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map) {
+  QXmlStreamWriter xml(&device);
+  
+  QHash<QString, QVariant> h;
+
+  QMap<QString, QVariant>::const_iterator i = map.constBegin();
+  while (i != map.constEnd()) {
+    QStringList parts = i.key().split("/");
+    ++i;
+  }
+
+  //QList<QList<QString> > list;
+
+  // xml.setAutoFormatting(true);
+//   xml.writeStartDocument();
+//   xml.writeStartElement(parts.takeFirst());
+//   xml.writeAttribute(parts.join("/"), i.value().toString());
+//   xml.writeEndElement();
+//   xml.writeEndDocument();
+
+  qDebug() << "* wrote out XML file" << map;
+}
+
+const QSettings::Format XmlFormat = 
+QSettings::registerFormat("xml", readXmlFile, writeXmlFile);
+
+
 ConfigManager::ConfigManager(QObject* parent) : QObject(parent) {
     readApplicationSettings();
     readPluginSettings();
@@ -34,16 +84,31 @@ ConfigManager::~ConfigManager() {
 
 
 const bool ConfigManager::readApplicationSettings() {
-    QSettings s;
-    _configPath = s.value("general/config_path", "./config").toString();
-    return true;
+  QSettings conf("config/mClient.xml", XmlFormat);
+
+//   QSettings conf(XmlFormat, QSettings::UserScope, "MUME", "mClient");
+//   conf.setPath(XmlFormat, QSettings::UserScope, "./config");
+
+  conf.beginGroup("General");
+  _configPath = conf.value("config_path", "./config").toString();
+  conf.endGroup();
+
+  //  QSettings test("config/socketmanagerio.xml", XmlFormat);
+
+  qDebug() << "* read in application settings";
+  return true;
 }
 
 
 const bool ConfigManager::writeApplicationSettings() const {
-    QSettings s;
-    s.setValue("general/config_path", _configPath);
-    return true;
+  QSettings conf("config/mClient.xml", XmlFormat);
+
+  conf.beginGroup("General");
+  conf.setValue("config_path", _configPath);
+  conf.endGroup();
+
+  qDebug() << "* wrote out application settings";
+  return true;
 }
 
 

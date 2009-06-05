@@ -307,29 +307,32 @@ void PluginManager::configure() {
 
 
 void PluginManager::initSession(const QString &s) {
+  QList< QPair<int, QWidget*> > widgetList;
+
     foreach(QPluginLoader* pl,_loadedPlugins) {
         MClientPluginInterface* pi;
         pi = qobject_cast<MClientPluginInterface*>(pl->instance());
         if(pi) {
 	  pi->startSession(s);
-	  
-	  /*
-	  // Display type plugins need QWidget transfers
+
 	  if (pi->type() == DISPLAY) {
-	  */
-	  if (pi->displayLocations() > 0 &&
-	      ISNOTSET(pi->displayLocations(), DL_FLOAT)) {
 	    qDebug() << "* Found a DISPLAY plugin! " << pi->shortName();
+
 	    MClientDisplayInterface* pd;
 	    pd = qobject_cast<MClientDisplayInterface*>(pl->instance());
-	    MainWindow* mw = MainWindow::instance();
-	    mw->receiveWidget(pd->getWidget(s));
-	  } else {
+
 	    qDebug() << "* Display Locations for"
-		     << pi->shortName() << pi->displayLocations();
+		     << pi->shortName() << pd->displayLocations();
+
+	    QPair<int, QWidget*> pair(pd->displayLocations(), pd->getWidget(s));
+	    widgetList.append(pair);
 	  }
         }
     }
+    
+    if (!widgetList.isEmpty())
+      MainWindow::instance()->receiveWidgets(widgetList);
+
 }
 
 void PluginManager::stopSession(const QString &s) {

@@ -12,6 +12,8 @@ InputWidget::InputWidget(QString s, SimpleLineInput* sli, QWidget* parent)
 
     // Connect Signals/Slots
     connect(this, SIGNAL(returnPressed()), SLOT(gotInput()));
+    connect(this, SIGNAL(sendUserInput(const QString&, const QString&)),
+	    _sli, SLOT(sendUserInput(const QString&, const QString&)));
 
     // Debugging Information
     qDebug() << "* SimpleLineInput thread:" << _sli->thread();
@@ -24,5 +26,5 @@ InputWidget::~InputWidget() {
 
 void InputWidget::gotInput() {
     selectAll();
-    _sli->sendUserInput(_session, text());
+    emit sendUserInput(_session, text());
 }

@@ -29,9 +29,6 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
     _configurable = true;
     _configVersion = "2.0";
 
-    // SocketManager members
-    _settingsFile = "config/"+_shortName+".xml";
-
     // register commands
     QStringList commands;
     commands << _shortName
@@ -115,7 +112,7 @@ const bool SocketManagerIO::startSession(QString s) {
         proxy->setPassword(proxy_pass);
         sr->proxy(proxy);
         qDebug() << "* added proxy" << proxy_host << proxy_port
-            << "to SocketReader in session" << s;
+		 << "to SocketReader in session" << s;
     }
     //qDebug() << "* SockerReaderIO threads (sr, io):" << sr->thread() << this->thread();
     //sr->moveToThread(this->thread());
@@ -124,7 +121,7 @@ const bool SocketManagerIO::startSession(QString s) {
     sr->port(port);
     _socketReaders.insert(s, sr);
     _runningSessions << s;
-    qDebug() << "* inserted SocketReader for session" << s;
+    //qDebug() << "* inserted SocketReader for session" << s;
 
     return true;
 }
@@ -144,9 +141,9 @@ const bool SocketManagerIO::stopSession(QString s) {
 // IO members
 void SocketManagerIO::connectDevice(QString s) {
     // Attempts to connect every socket associated with the session s
-    foreach(SocketReader* sr, _socketReaders.values(s)) {
+    if (_openSockets.values(s).isEmpty()) {
+      foreach(SocketReader* sr, _socketReaders.values(s))
         sr->connectToHost();
-        qDebug() << "* connected socket for session" << s;
     }
 }
 

@@ -26,6 +26,8 @@
 #include "PluginManager.h"
 #include "CommandManager.h"
 
+#include "MClientDefinitions.h"
+
 MainWindow* MainWindow::_pinstance = 0;
 
 MainWindow* MainWindow::instance() {
@@ -48,104 +50,84 @@ MainWindow::MainWindow() {
   connect(PluginManager::instance(), SIGNAL(doneLoading()), SLOT(start()));
   connect(CommandManager::instance(), SIGNAL(quit()), SLOT(close()));
 
+  /** Create Other Child Widgets */
+  ActionManager *actMgr = ActionManager::instance(this); // Initialize ActionManager
+  actMgr->createActions();
+  actMgr->createMenus();
+  actMgr->createToolBars();
+  actMgr->createStatusBar();
+
   /** Create Primary Display Widgets */
   _tabWidget = new QTabWidget;
-//   setCentralWidget(_tabWidget);  
-
-  /** Create Other Child Widgets */
-  createActions();
-  createMenus();
-  createToolBars();
-  createStatusBar();
 
   setCurrentProfile("test");
   qDebug() << "MainWindow created with thread:" << this->thread();
 }
 
 void MainWindow::start() {
-  // Display Main Window
-  show();
-
-  PluginManager* pm = PluginManager::instance();
-  pm->initSession(_session);
+  PluginManager::instance()->initSession(_currentProfile);
 }
 
-void MainWindow::receiveWidget(QWidget *widget) {
-  // TODO: Different widget locations
-  //_tabWidget->addTab(widget, QString("%1").arg(_tabWidget->count()));
-  setCentralWidget(widget);
+void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList) {
+  // Create the layout
+  QVBoxLayout *_layout = new QVBoxLayout();
+  _layout->setSpacing(0);
+  _layout->setContentsMargins(0, 0, 0, 0);
+
+  QWidget *display, *input;
+  bool displaySet, inputSet = false;
+  for (int i = 0; i < widgetList.size(); ++i) {
+    int position = widgetList.at(i).first;
+    QWidget *widget = widgetList.at(i).second;
+    
+    // Differentiate between the types
+    if (ISSET(position, DL_DISPLAY) && !displaySet) {
+      // Primary Display Widget
+      display = widget;
+      displaySet = true;
+      _layout->addWidget(widget);
+
+    } else if (ISSET(position, DL_INPUT) && !inputSet) {
+      // Primary Input Widget
+      input = widget;
+      inputSet = true;
+      _layout->insertWidget(-1, widget); // insert to the bottom
+
+    } else {
+      // Display the widget if it floats (or is unsupported)
+      widget->show();
+      
+    }
+
+  }
+
+  // Add the widgets
+  //_tabWidget->setLayout(_layout);
+  QWidget *widget = new QWidget();
+  widget->setLayout(_layout);
+  _tabWidget->addTab(widget, _currentProfile);
+  setCentralWidget(_tabWidget);
+
+  // Connect the signals/slots
+  if (displaySet && inputSet) {
+    display->setFocusProxy(input);
+    input->setFocus();
+  }
+
+  // Display Main Window
+  show();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   qDebug() << "MainWindow received closeEvent";
-  PluginManager *pm = PluginManager::instance();
-  pm->stopSession("test");
+  PluginManager::instance()->stopSession(_currentProfile);
   writeSettings();
   if (maybeSave()) {
     event->accept();
   } else {
     event->ignore();
   }
-}
-
-void MainWindow::createActions() {
-  ActionManager::self(this);
-}
-
-void MainWindow::createMenus() {
-  ActionManager *actMgr = ActionManager::self();
-
-  fileMenu = menuBar()->addMenu(tr("&File"));
-  fileMenu->addAction(actMgr->connectAct);
-  fileMenu->addAction(actMgr->disconnectAct);
-  fileMenu->addAction(actMgr->reconnectAct);
-  fileMenu->addSeparator();
-  fileMenu->addAction(actMgr->exitAct);
-
-  editMenu = menuBar()->addMenu(tr("&Edit"));
-  editMenu->addAction(actMgr->cutAct);
-  editMenu->addAction(actMgr->copyAct);
-  editMenu->addAction(actMgr->pasteAct);
-
-  viewMenu = menuBar()->addMenu(tr("&View"));
-  viewMenu->addAction(actMgr->alwaysOnTopAct);
-
-  settingsMenu = menuBar()->addMenu(tr("&Settings"));
-  settingsMenu->addAction(actMgr->settingsAct);
-
-  menuBar()->addSeparator();
-
-  helpMenu = menuBar()->addMenu(tr("&Help"));
-  helpMenu->addAction(actMgr->mumeHelpAct);
-  helpMenu->addAction(actMgr->forumAct);
-  helpMenu->addAction(actMgr->wikiAct);
-  helpMenu->addSeparator();
-  helpMenu->addAction(actMgr->clientHelpAct);
-  helpMenu->addSeparator();
-  helpMenu->addAction(actMgr->aboutAct);
-  helpMenu->addAction(actMgr->aboutQtAct);
-}
-
-void MainWindow::createToolBars() {
-  ActionManager *actMgr = ActionManager::self();
-
-  connectToolBar = addToolBar(tr("Connection"));
-  connectToolBar->setObjectName("ToolBarConnect");
-  connectToolBar->addAction(actMgr->connectAct);
-  connectToolBar->addAction(actMgr->disconnectAct);
-  connectToolBar->addAction(actMgr->reconnectAct);
-
-  editToolBar = addToolBar(tr("Edit"));
-  editToolBar->setObjectName("ToolBarEdit");
-  editToolBar->addAction(actMgr->cutAct);
-  editToolBar->addAction(actMgr->copyAct);
-  editToolBar->addAction(actMgr->pasteAct);
-}
-
-void MainWindow::createStatusBar()
-{
-  statusBar()->showMessage(tr("Ready"));
 }
 
 void MainWindow::readSettings()
@@ -156,6 +138,8 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
+  ConfigManager::instance()->writeApplicationSettings();
+
   /*
   Config().setWindowPosition(pos() );
   Config().setWindowSize(size() );
@@ -186,14 +170,14 @@ bool MainWindow::maybeSave()
 
 void MainWindow::setCurrentProfile(const QString &session)
 {
-  _session = session;
+  _currentProfile = session;
   setWindowModified(false);
 
   QString shownName;
-  if (_session.isEmpty())
-    shownName = "No connection";
+  if (_currentProfile.isEmpty())
+    shownName = "No profile";
   else
-    shownName = _session;
+    shownName = _currentProfile;
 
   setWindowTitle(tr("%1 - mClient").arg(shownName));
 }

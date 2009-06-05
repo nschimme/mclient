@@ -14,7 +14,7 @@ Q_EXPORT_PLUGIN2(simplelineinput, SimpleLineInput)
 
 
 SimpleLineInput::SimpleLineInput(QWidget* parent) 
-        : MClientIOPlugin(parent) {
+        : MClientDisplayPlugin(parent) {
     _shortName = "simplelineinput";
     _longName = "Simple Line Input";
     _description = "A simple line input plugin.";
@@ -28,8 +28,7 @@ SimpleLineInput::SimpleLineInput(QWidget* parent)
     _settingsFile = "config/"+_shortName+".xml";
 
     // Allowable Display Locations
-    SET(_displayLocations, DL_FLOAT);
-    SET(_displayLocations, DL_BOTTOM);
+    SET(_displayLocations, DL_INPUT);
 }
 
 
@@ -91,9 +90,10 @@ const bool SimpleLineInput::stopSession(QString s) {
 
 // Display plugin members
 const bool SimpleLineInput::initDisplay(QString s) {
-    InputWidget* widget = new InputWidget(s, this);
+    InputWidget *widget = new InputWidget(s, this);
     _widgets.insert(s, widget); 
-    widget->show();
+    //widget->show();
+
     return true;
 }
 

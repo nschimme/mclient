@@ -165,7 +165,11 @@ bool CommandManager::parseCommand(QString command,
 		      session);
 	  
 	} else if (command == "quit") {
-	  emit quit();
+	  if (arguments.isEmpty())
+	    emit quit();
+	  else
+	    displayData("#you have to write '#quit' - no more, to quit!\n",
+			session);
 
 	} else if (command == "version") {
 	  displayData("mClient Version ???, \251 Jahara\n",

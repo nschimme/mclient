@@ -20,24 +20,28 @@
 #include "PluginManager.h"
 #include "MClientEvent.h"
 
-ActionManager *ActionManager::_self = 0;
+ActionManager* ActionManager::_pinstance = 0;
 
-ActionManager *ActionManager::self(MainWindow *parent)
-{
-  if (_self == 0) {
-    _self = new ActionManager(parent);
+ActionManager *ActionManager::instance(MainWindow *parent) {
+  if(!_pinstance) {
+    _pinstance = new ActionManager(parent);
     qDebug("Action Manager created.");
   }
-  return _self;
+  return _pinstance;
 }
+
+
+void ActionManager::destroy() {
+  delete this;
+}
+
 
 ActionManager::ActionManager(MainWindow *parent) {
   _mainWindow = parent;
-  createActions();
 }
 
+
 ActionManager::~ActionManager() {
-  _self = 0;
 }
 
 void ActionManager::createActions() {
@@ -113,6 +117,7 @@ void ActionManager::createActions() {
 //           copyAct, SLOT(setEnabled(bool)));
 }
 
+
 void ActionManager::disableActions(bool value)
 {
 //   newAct->setDisabled(value);
@@ -130,10 +135,71 @@ void ActionManager::disableActions(bool value)
   alwaysOnTopAct->setDisabled(value);
 }
 
+
+void ActionManager::createMenus() {
+  QMenuBar *menuBar = _mainWindow->menuBar();
+
+  fileMenu = menuBar->addMenu(tr("&File"));
+  fileMenu->addAction(connectAct);
+  fileMenu->addAction(disconnectAct);
+  fileMenu->addAction(reconnectAct);
+  fileMenu->addSeparator();
+  fileMenu->addAction(exitAct);
+
+  editMenu = menuBar->addMenu(tr("&Edit"));
+  editMenu->addAction(cutAct);
+  editMenu->addAction(copyAct);
+  editMenu->addAction(pasteAct);
+
+  viewMenu = menuBar->addMenu(tr("&View"));
+  viewMenu->addAction(alwaysOnTopAct);
+
+  settingsMenu = menuBar->addMenu(tr("&Settings"));
+  settingsMenu->addAction(settingsAct);
+
+  menuBar->addSeparator();
+
+  helpMenu = menuBar->addMenu(tr("&Help"));
+  helpMenu->addAction(mumeHelpAct);
+  helpMenu->addAction(forumAct);
+  helpMenu->addAction(wikiAct);
+  helpMenu->addSeparator();
+  helpMenu->addAction(clientHelpAct);
+  helpMenu->addSeparator();
+  helpMenu->addAction(aboutAct);
+  helpMenu->addAction(aboutQtAct);
+
+}
+
+
+void ActionManager::createToolBars() {
+  connectToolBar = _mainWindow->addToolBar(tr("Connection"));
+  connectToolBar->setObjectName("ToolBarConnect");
+  connectToolBar->addAction(connectAct);
+  connectToolBar->addAction(disconnectAct);
+  connectToolBar->addAction(reconnectAct);
+  connectToolBar->setVisible(false);
+
+  editToolBar = _mainWindow->addToolBar(tr("Edit"));
+  editToolBar->setObjectName("ToolBarEdit");
+  editToolBar->addAction(cutAct);
+  editToolBar->addAction(copyAct);
+  editToolBar->addAction(pasteAct);
+  editToolBar->setVisible(false);
+}
+
+
+void ActionManager::createStatusBar()
+{
+  _mainWindow->statusBar()->showMessage(tr("Ready"));
+}
+
+
 void ActionManager::alwaysOnTop() {
   _mainWindow->setWindowFlags(_mainWindow->windowFlags() ^ Qt::WindowStaysOnTopHint);
   _mainWindow->show();
 }
+
 
 void ActionManager::about() {
 #ifdef SVN_REVISION
