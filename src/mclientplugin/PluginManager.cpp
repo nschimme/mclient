@@ -6,19 +6,16 @@
 #include "PluginConfigWidget.h"
 #include "PluginEntry.h"
 
+#include "ConfigManager.h"
 #include "MainWindow.h"
 
 #include <QApplication>
 #include <QDateTime>
-#include <QDebug>
 #include <QDir>
 #include <QHash>
 #include <QLibrary>
 #include <QPluginLoader>
-#include <QString>
-#include <QtXml>
 #include <QWidget>
-
 
 PluginManager* PluginManager::_pinstance = 0;
 
@@ -39,58 +36,47 @@ void PluginManager::destroy() {
 }
 
 
-PluginManager::PluginManager(QWidget* display, QObject* io, QObject* filter, 
-        QObject* parent) : QThread(parent) {
-    _displayParent = display;
-    _ioParent = io;
-    _filterParent = filter;
+// PluginManager::PluginManager(QWidget* display, QObject* io, QObject* filter, 
+//         QObject* parent) : QThread(parent) {
+//     _displayParent = display;
+//     _ioParent = io;
+//     _filterParent = filter;
 
-    _pluginDir = "./plugins";
+//     _pluginDir = "./plugins";
 
-    // IS THIS EVER EVEN SEEN>???
-    qDebug() << "PluginManager created with thread:" << this->thread();
-}
+//     qDebug() << "PluginManager created with thread:" << this->thread();
+// }
 
 
 PluginManager::PluginManager(QObject* parent) : QThread(parent) {
-    _pluginDir = "./plugins";
-    _pluginIndex = "plugindb.xml";
-
-    // Create plugin index file if it doesn't exist, or re-index plugins if
-    // the number of entries in the file differs from the number of plugins in
-    // the plugin dir.  This should replace the hardcoded PluginEntries.
+    QHash<QString, QString> *hash = ConfigManager::instance()->
+      applicationSettings();
     
-    // Does the index exist?  If so, load it.  If not, create it.
-    if(!QFile::exists(_pluginIndex)) {
-        qDebug() << "* index doesn't exist!";
-        indexPlugins();
+    QDateTime indexMod = QDateTime::fromString(hash->value("mClient/plugins/indexed"));
+    _pluginDir = hash->value("mClient/plugins/path", "./plugins");
+
+    // Move into the plugins directory
+    QDir pluginsDir = QDir(qApp->applicationDirPath());
+    pluginsDir.cdUp();
+    pluginsDir.cd(_pluginDir);
+
+    // Identify if there is something newer in the directory than the
+    // index's generation date
+    bool reIndex = false;
+    foreach(QString fileName, pluginsDir.entryList(QDir::Files)) {
+      QDateTime pluginMod = 
+	QFileInfo(pluginsDir.absoluteFilePath(fileName)).lastModified();
+      if(indexMod < pluginMod) {
+	reIndex = true;
+	break;
+      }
+    }
+    if(reIndex) {
+      qDebug() << "* index is old and needs to be regenerated ("
+	       << indexMod.toString() << ")";
+      indexPlugins();
     } else {
-        QDir pluginsDir = QDir(qApp->applicationDirPath());
-        pluginsDir.cdUp();
-        pluginsDir.cd(_pluginDir);
-
-        QFileInfo finfo(_pluginIndex);//pluginsDir.absoluteFilePath(_pluginIndex));
-        
-        // Is the index up-to-date 
-        // (i.e. newer than anything in the pluginsDir?)
-        QDateTime indexMod = finfo.lastModified();
-    
-        bool reIndex = false;
-        foreach(QString fileName, pluginsDir.entryList(QDir::Files)) {
-            QDateTime pluginMod = 
-                QFileInfo(pluginsDir.absoluteFilePath(fileName))
-                    .lastModified();
-            if(indexMod < pluginMod) {
-                reIndex = true;
-                break;
-            }
-        }
-        if(reIndex) {
-            qDebug() << "* index is old and needs to be regenerated";
-            indexPlugins();
-        } else {
-            readPluginIndex();
-        }
+      readPluginIndex();
     }
 
     // Load plugins using data in that file, which should now be accurate.
@@ -384,8 +370,10 @@ const bool PluginManager::indexPlugins() {
         for(it; it!=pi->implemented().end(); ++it) {
             e->addAPI(it.key(), it.value());
         }
-        //qDebug() << "indexed" << e->libName();
+
+	// Insert the plugin, and read its settings
         _availablePlugins.insert(e->libName(), e);
+	ConfigManager::instance()->readPluginSettings(e->shortName());
 
         loader->unload();
     }
@@ -395,94 +383,81 @@ const bool PluginManager::indexPlugins() {
 
 
 const bool PluginManager::writePluginIndex() {
-    QIODevice* device = new QFile(_pluginIndex);
-    if(!device->open(QIODevice::WriteOnly)) {
-        qCritical() << "Can't open file for writing:" << _pluginIndex;
-        return false;
-    }
-
-    QXmlStreamWriter* xml = new QXmlStreamWriter(device);
-    xml->setAutoFormatting(true);
-    xml->writeStartDocument();
-    xml->writeStartElement("index");
+    QHash<QString, QString> *hash = ConfigManager::instance()->applicationSettings();
     
-    //QHash<QString, PluginEntry*>::iterator it = _availablePlugins.begin();
-    //for(it; it!=_availablePlugins.end(); ++it) {
-    foreach(PluginEntry* e, _availablePlugins) {
-        // Write it out as xml
-        xml->writeStartElement("plugin");
-
-        xml->writeStartElement("libname");
-        xml->writeCharacters(e->libName());
-        xml->writeEndElement();
-
-        xml->writeStartElement("shortname");
-        xml->writeCharacters(e->shortName());
-        xml->writeEndElement();
-
-        xml->writeStartElement("longname");
-        xml->writeCharacters(e->longName());
-        xml->writeEndElement();
-
-        foreach(QString s, e->apiList()) {
-            //qDebug() << s << e->apiList();
-            xml->writeEmptyElement("api");
-            xml->writeAttribute("name", s);
-            xml->writeAttribute("version", QString::number(e->version(s)));
-        }
-
-        xml->writeEndElement(); // plugin
+    QStringList groups;
+    groups << "mClient" << "plugins";
+    QList<PluginEntry*> plugins = _availablePlugins.values();
+    hash->insert(groups.join("/")+"/size", QString::number(plugins.size()));
+    hash->insert(groups.join("/")+"/path", _pluginDir);
+    hash->insert(groups.join("/")+"/indexed",
+		QDateTime(QDateTime::currentDateTime()).toString());
+    for (int i = 0; i < plugins.size(); ++i) {
+      PluginEntry *e = plugins.at(i);
+      groups << QString::number(i+1); /* plugins/index */
+      
+      hash->insert(groups.join("/")+"/shortname", e->shortName());
+      hash->insert(groups.join("/")+"/libname", e->libName());
+      hash->insert(groups.join("/")+"/longname", e->longName());
+      
+      if (!e->apiList().isEmpty()) {
+	groups << "api";
+	QStringList api = e->apiList();
+	hash->insert(groups.join("/")+"/size", QString::number(api.size()));
+	for(int j = 0; j < api.size(); ++j) {
+	  groups << QString::number(j); /* api/index */
+	  hash->insert(groups.join("/")+"/name", api.at(j));
+	  hash->insert(groups.join("/")+"/version",
+		       QString::number(e->version(api.at(j))));
+	  groups.removeLast(); /* api/index */
+	}
+	groups.removeLast(); /* api */
+      }
+      groups.removeLast(); /* plugins/index */
     }
-
-    xml->writeEndElement(); // index
-    xml->writeEndDocument();
-
-    delete device;
-    delete xml;
-
-    qDebug("* index written");
+    groups.removeLast(); /* plugins */
+    groups.removeLast(); /* mClient */
+    
+    qDebug("* plugin index written");
 }
 
 
 const bool PluginManager::readPluginIndex() {
     // Read in the plugin db xml into PluginEntrys
-    QIODevice* device = new QFile(_pluginIndex);
-    if(!device->open(QIODevice::ReadOnly)) {
-        qCritical() << "Can't open file for reading:" << _pluginIndex;
-        return false;
+    QHash<QString, QString> *hash = ConfigManager::instance()->applicationSettings();
+    
+    QStringList groups;
+    groups << "mClient" << "plugins";
+    QDateTime generated =
+      QDateTime::fromString(hash->value(groups.join("/")+"/generated"));
+
+    int pluginsSize = hash->value(groups.join("/")+"/size", 0).toInt();
+    for (int i = 0; i < pluginsSize; ++i) {
+      PluginEntry* e = new PluginEntry();
+      groups << QString::number(i+1); /* plugins/index */
+      e->libName(hash->value(groups.join("/")+"/libname"));
+      e->longName(hash->value(groups.join("/")+"/longname"));
+      e->shortName(hash->value(groups.join("/")+"/shortname"));
+
+      groups << "api";
+      int apiSize = hash->value(groups.join("/")+"/size", 0).toInt();
+      for (int j = 0; j < apiSize; ++j) {
+	groups << QString::number(j+1); /* api/index */
+	QString name = hash->value(groups.join("/")+"/name");
+	int version = hash->value(groups.join("/")+"/version").toInt();
+	e->addAPI(name, version);
+	groups.removeLast(); /* api/index */
+      }
+      groups.removeLast(); /* api */
+      groups.removeLast(); /* plugins/index */
+
+      // Insert the plugin, and read its settings
+      _availablePlugins.insert(e->libName(), e);
+      ConfigManager::instance()->readPluginSettings(e->shortName());
     }
+    groups.removeLast(); /* plugins */
+    groups.removeLast(); /* mClient */
 
-    QXmlStreamReader* xml = new QXmlStreamReader(device);
-
-    PluginEntry* e = 0;
-    while(!xml->atEnd()) {
-        xml->readNext();
-
-        if(xml->isEndElement()) {
-            if(xml->name() == "plugin") {
-                _availablePlugins.insert(e->libName(), e);
-            }
-        
-        } else if(xml->isStartElement()) {
-            if(xml->name() == "plugin") {
-                e = new PluginEntry();
-            
-            } else if(xml->name() == "libname") {
-                e->libName(xml->readElementText());
-
-            } else if(xml->name() == "shortname") {
-                e->shortName(xml->readElementText());
-
-            } else if(xml->name() == "longname") {
-                e->longName(xml->readElementText());
-
-            } else if(xml->name() == "api") {
-                QXmlStreamAttributes attr = xml->attributes();
-                QString name = attr.value("name").toString();
-                int version = attr.value("version").toString().toInt();
-                e->addAPI(name, version);
-            }
-        }
-    }
+    qDebug() << "* plugin index read";
     return true;
 }

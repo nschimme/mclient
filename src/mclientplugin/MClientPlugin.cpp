@@ -119,7 +119,7 @@ const bool MClientPlugin::loadSettings() {
     return true;
 }
 
-        
+
 const bool MClientPlugin::saveSettings() const {
     return true;
 }

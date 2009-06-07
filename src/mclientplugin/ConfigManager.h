@@ -9,6 +9,7 @@
 
 bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map);
 bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map);
+bool sortXmlElements(const QString &s1, const QString &s2);
 
 class ConfigManager : public QObject {
     Q_OBJECT
@@ -20,20 +21,25 @@ class ConfigManager : public QObject {
 
         // Use QSettings to handle general app-level settings
         const bool readApplicationSettings();
-        const bool writeApplicationSettings() const;
+        const bool writeApplicationSettings();
+	QHash<QString, QString>* applicationSettings() {
+	  return _appSettings;
+	}
 
         // Take care of plugin settings that are stored in xml
-        const bool readPluginSettings();
-        const bool writePluginSettings() const;
+	const bool readPluginSettings(const QString &pluginName);
+	const bool writePluginSettings(const QString &pluginName);
+	QHash<QString, QString>* pluginSettings(const QString &pluginName) {
+	  return _pluginSettings[pluginName];
+	}
 
-        // Return a list of profile names (_profiles.uniqueKeys())
-        const QStringList& profileNames() const;
+        // Return a list of profile names
+        const QStringList profileNames() const {
+	  return _profiles.uniqueKeys();
+	}
 
         // Return a list of plugins for a given profile
         const QStringList profilePlugins(const QString profile) const;
-
-        const QHash<QString, QHash<QString, QString> > 
-            pluginProfileConfig(const QString pl, const QString pr) const;
 
 
     protected:
@@ -48,21 +54,14 @@ class ConfigManager : public QObject {
         // Where should xml files be read from?
         QString _configPath;
 
-        // Maps profile -> list of plugins in it
-        QHash<QString, QStringList> _profiles;
-        
-        // The config structure in memory
-        QHash<QString, // plugin
-            QHash<QString, // profile
-                QHash<QString, // object id (connection, etc.)
-                    QHash<QString, QString> // key->value pairs:
-                >
-            >
-        > _config;
+	// Application's settings
+	QHash<QString, QString> *_appSettings;
 
-        // Maps plugin shortname -> settings file name 
-        QHash<QString, QString> _configFiles;
+	// Hash of each plugin's settings
+	QHash<QString, QHash<QString, QString>* > _pluginSettings;
 
+	// List of plugins for a given profile
+	QMultiHash<QString, QString> _profiles;
 
 };
 

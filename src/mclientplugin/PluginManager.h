@@ -23,8 +23,8 @@ class PluginManager : public QThread {
         static PluginManager* instance();
         void destroy();
 
-        PluginManager(QWidget* display, QObject* io, QObject* filter,
-                QObject* parent=0);
+/*         PluginManager(QWidget* display, QObject* io, QObject* filter, */
+/*                 QObject* parent=0); */
         PluginManager(QObject* parent=0);
         ~PluginManager();
 

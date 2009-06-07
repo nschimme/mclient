@@ -59,6 +59,7 @@ MainWindow::MainWindow() {
 
   /** Create Primary Display Widgets */
   _tabWidget = new QTabWidget;
+  setCentralWidget(_tabWidget);
 
   setCurrentProfile("test");
   qDebug() << "MainWindow created with thread:" << this->thread();
@@ -102,11 +103,12 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
   }
 
   // Add the widgets
-  //_tabWidget->setLayout(_layout);
-  QWidget *widget = new QWidget();
-  widget->setLayout(_layout);
-  _tabWidget->addTab(widget, _currentProfile);
-  setCentralWidget(_tabWidget);
+  _tabWidget->setLayout(_layout);
+
+  // TODO: add tabs?
+//   QWidget *widget = new QWidget();
+//   widget->setLayout(_layout);
+//   _tabWidget->addTab(widget, _currentProfile);
 
   // Connect the signals/slots
   if (displaySet && inputSet) {
@@ -139,7 +141,6 @@ void MainWindow::readSettings()
 void MainWindow::writeSettings()
 {
   ConfigManager::instance()->writeApplicationSettings();
-
   /*
   Config().setWindowPosition(pos() );
   Config().setWindowSize(size() );

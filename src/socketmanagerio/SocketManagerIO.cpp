@@ -83,24 +83,29 @@ void SocketManagerIO::configure() {
 
 
 const bool SocketManagerIO::loadSettings() {
+    _settings = ConfigManager::instance()->pluginSettings(_shortName);
     return true;
 }
 
 
 const bool SocketManagerIO::saveSettings() const {
+    ConfigManager::instance()->writePluginSettings(_shortName);
     return true;
 }
 
 
 const bool SocketManagerIO::startSession(QString s) {
-    _settings = ConfigManager::instance()->pluginProfileConfig(_shortName, s);
-    
-    QString host = _settings["connection"]["host"];
-    int port = _settings["connection"]["port"].toInt();
-    QString proxy_host = _settings["proxy"]["host"];
-    int proxy_port = _settings["proxy"]["port"].toInt();
-    QString proxy_user = _settings["proxy"]["proxy_user"];
-    QString proxy_pass = _settings["proxy"]["proxy_pass"];
+    QString cfg = QString("config/%1/").arg(s);
+
+    // Host settings
+    QString host = _settings->value(cfg+"connection/host", "mume.org");
+    int port = _settings->value(cfg+"connection/port", "4242").toInt();
+
+    // Proxy settings
+    QString proxy_host = _settings->value(cfg+"proxy/host", "proxy.example.com");
+    int proxy_port = _settings->value(cfg+"proxy/port", "8080").toInt();
+    QString proxy_user = _settings->value(cfg+"proxy/proxy_user", "example");
+    QString proxy_pass = _settings->value(cfg+"proxy/proxy_pass", "example");
 
     SocketReader* sr = new SocketReader(s, this);
     if(proxy_port != 0 && !proxy_host.isEmpty()) {
