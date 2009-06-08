@@ -1,0 +1,651 @@
+<ui version="4.0" >
+ <author></author>
+ <comment></comment>
+ <exportmacro></exportmacro>
+ <class>ParserPage</class>
+ <widget class="QWidget" name="ParserPage" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>443</width>
+    <height>550</height>
+   </rect>
+  </property>
+  <property name="sizePolicy" >
+   <sizepolicy>
+    <hsizetype>1</hsizetype>
+    <vsizetype>1</vsizetype>
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize" >
+   <size>
+    <width>0</width>
+    <height>0</height>
+   </size>
+  </property>
+  <property name="windowTitle" >
+   <string>Form1</string>
+  </property>
+  <layout class="QVBoxLayout" >
+   <property name="margin" >
+    <number>9</number>
+   </property>
+   <property name="spacing" >
+    <number>6</number>
+   </property>
+   <item>
+    <widget class="QFrame" name="frame_4" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="2" column="3" colspan="2" >
+       <widget class="QLabel" name="roomDescColorLabel" >
+        <property name="text" >
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3" colspan="2" >
+       <widget class="QLabel" name="roomNameColorLabel" >
+        <property name="text" >
+         <string/>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1" >
+       <widget class="AnsiCombo" name="roomNameAnsiColorBG" />
+      </item>
+      <item row="3" column="1" >
+       <widget class="AnsiCombo" name="roomDescAnsiColorBG" />
+      </item>
+      <item row="5" column="0" colspan="5" >
+       <widget class="QCheckBox" name="suppressXmlTagsCheckBox" >
+        <property name="text" >
+         <string>Suppress XML tags - valid for XML mode only</string>
+        </property>
+       </widget>
+      </item>
+      <item row="4" column="0" colspan="5" >
+       <widget class="QCheckBox" name="IACPromptCheckBox" >
+        <property name="text" >
+         <string>IAC-GA prompt recognition (changes needs reconnect with client!!!)</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="AnsiCombo" name="roomNameAnsiColor" />
+      </item>
+      <item row="3" column="0" >
+       <widget class="AnsiCombo" name="roomDescAnsiColor" />
+      </item>
+      <item row="3" column="4" >
+       <widget class="QLabel" name="labelRoomDesc" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>4</hsizetype>
+          <vsizetype>5</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>75</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="font" >
+         <font>
+          <family>MS Shell Dlg</family>
+          <pointsize>8</pointsize>
+          <weight>75</weight>
+          <italic>false</italic>
+          <bold>true</bold>
+          <underline>false</underline>
+          <strikeout>false</strikeout>
+         </font>
+        </property>
+        <property name="text" >
+         <string>roomdesc</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" colspan="3" >
+       <widget class="QLabel" name="textLabel1_7" >
+        <property name="minimumSize" >
+         <size>
+          <width>280</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>&lt;html>&lt;head>&lt;meta name="qrichtext" content="1" />&lt;/head>&lt;body style=" white-space: pre-wrap; font-family:MS Shell Dlg; font-size:8.25pt; font-weight:400; font-style:normal; text-decoration:none;">&lt;p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; font-size:8pt;">Descriptions color: fg/bg/attr&lt;/p>&lt;/body>&lt;/html></string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2" >
+       <widget class="QCheckBox" name="roomNameAnsiBold" >
+        <property name="maximumSize" >
+         <size>
+          <width>38</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>B</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3" >
+       <widget class="QCheckBox" name="roomNameAnsiUnderline" >
+        <property name="maximumSize" >
+         <size>
+          <width>38</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>U</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="3" >
+       <widget class="QCheckBox" name="roomDescAnsiUnderline" >
+        <property name="maximumSize" >
+         <size>
+          <width>38</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>U</string>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="2" >
+       <widget class="QCheckBox" name="roomDescAnsiBold" >
+        <property name="maximumSize" >
+         <size>
+          <width>38</width>
+          <height>16777215</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>B</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4" >
+       <widget class="QLabel" name="labelRoomColor" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>4</hsizetype>
+          <vsizetype>5</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>75</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="font" >
+         <font>
+          <family>MS Shell Dlg</family>
+          <pointsize>8</pointsize>
+          <weight>75</weight>
+          <italic>false</italic>
+          <bold>true</bold>
+          <underline>false</underline>
+          <strikeout>false</strikeout>
+         </font>
+        </property>
+        <property name="text" >
+         <string>roomname</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" colspan="3" >
+       <widget class="QLabel" name="textLabel1_3" >
+        <property name="minimumSize" >
+         <size>
+          <width>280</width>
+          <height>0</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Room name color: fg/bg/attr</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame_3" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="3" column="0" colspan="3" >
+       <widget class="QComboBox" name="cancelPatternsList" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>7</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="editable" >
+         <bool>false</bool>
+        </property>
+        <property name="duplicatesEnabled" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="2" >
+       <widget class="QPushButton" name="removeCancelPattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Remove pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QPushButton" name="addCancelPattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Add pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="3" >
+       <widget class="QComboBox" name="forcePatternsList" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>7</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="focusPolicy" >
+         <enum>Qt::StrongFocus</enum>
+        </property>
+        <property name="editable" >
+         <bool>false</bool>
+        </property>
+        <property name="duplicatesEnabled" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QPushButton" name="removeForcePattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Remove pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QPushButton" name="addForcePattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Add pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="textLabel1_4" >
+        <property name="text" >
+         <string>Move force patterns:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="textLabel1_5" >
+        <property name="text" >
+         <string>Move cancel patterns:</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame_2" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="1" column="0" colspan="3" >
+       <widget class="QComboBox" name="endDescPatternsList" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>7</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="focusPolicy" >
+         <enum>Qt::StrongFocus</enum>
+        </property>
+        <property name="editable" >
+         <bool>false</bool>
+        </property>
+        <property name="duplicatesEnabled" >
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1" >
+       <widget class="QPushButton" name="addEndDescPattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Add pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QPushButton" name="removeEndDescPattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Remove pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="textLabel1_6" >
+        <property name="frameShadow" >
+         <enum>QFrame::Raised</enum>
+        </property>
+        <property name="text" >
+         <string>No descriptions pattern:</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QFrame" name="frame" >
+     <property name="frameShape" >
+      <enum>QFrame::StyledPanel</enum>
+     </property>
+     <property name="frameShadow" >
+      <enum>QFrame::Sunken</enum>
+     </property>
+     <layout class="QGridLayout" >
+      <property name="margin" >
+       <number>9</number>
+      </property>
+      <property name="spacing" >
+       <number>6</number>
+      </property>
+      <item row="2" column="2" >
+       <widget class="QPushButton" name="testPattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Test pattern</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="1" >
+       <widget class="QPushButton" name="validPattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Validate expression</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0" >
+       <widget class="QLabel" name="textLabel1_4_2_3" >
+        <property name="text" >
+         <string>Search pattern:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QLabel" name="textLabel1_4_2_2_3" >
+        <property name="text" >
+         <string>Tested string:</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" colspan="3" >
+       <widget class="QLineEdit" name="newPattern" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>7</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="3" column="0" colspan="3" >
+       <widget class="QLineEdit" name="testString" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>7</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2" >
+       <widget class="QPushButton" name="resetPatterns" >
+        <property name="sizePolicy" >
+         <sizepolicy>
+          <hsizetype>0</hsizetype>
+          <vsizetype>0</vsizetype>
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="minimumSize" >
+         <size>
+          <width>0</width>
+          <height>25</height>
+         </size>
+        </property>
+        <property name="text" >
+         <string>Reset Patterns</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item>
+    <spacer>
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" >
+      <size>
+       <width>341</width>
+       <height>31</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <layoutdefault spacing="6" margin="11" />
+ <pixmapfunction>qPixmapFromMimeSource</pixmapfunction>
+ <customwidgets>
+  <customwidget>
+   <class>AnsiCombo</class>
+   <extends>QWidget</extends>
+   <header>ansicombo.h</header>
+   <container>1</container>
+   <pixmap></pixmap>
+  </customwidget>
+ </customwidgets>
+ <tabstops>
+  <tabstop>roomNameAnsiColor</tabstop>
+  <tabstop>roomDescAnsiColor</tabstop>
+  <tabstop>IACPromptCheckBox</tabstop>
+  <tabstop>cancelPatternsList</tabstop>
+  <tabstop>removeCancelPattern</tabstop>
+  <tabstop>addCancelPattern</tabstop>
+  <tabstop>forcePatternsList</tabstop>
+  <tabstop>removeForcePattern</tabstop>
+  <tabstop>addForcePattern</tabstop>
+  <tabstop>endDescPatternsList</tabstop>
+  <tabstop>addEndDescPattern</tabstop>
+  <tabstop>removeEndDescPattern</tabstop>
+  <tabstop>testPattern</tabstop>
+  <tabstop>validPattern</tabstop>
+  <tabstop>newPattern</tabstop>
+  <tabstop>testString</tabstop>
+  <tabstop>resetPatterns</tabstop>
+ </tabstops>
+ <resources/>
+ <connections/>
+</ui>
