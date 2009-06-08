@@ -17,6 +17,7 @@ MClientPlugin::MClientPlugin(QObject* parent) : QThread(parent) {
     _description = "If you see this text, the plugin author did not replace the default description.";
     _configurable = false;
     _configVersion = "none";
+    _type = UNKNOWN_PLUGIN;
 }
 
 

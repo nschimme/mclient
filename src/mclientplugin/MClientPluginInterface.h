@@ -5,7 +5,10 @@
 #include <QHash>
 
 class QString;
-enum MClientPluginType { UNKNOWN = 0, FILTER, DISPLAY, IO };
+enum MClientPluginType { UNKNOWN_PLUGIN = 0,
+			 FILTER_PLUGIN,
+			 DISPLAY_PLUGIN,
+			 IO_PLUGIN };
 
 class MClientPluginInterface {
     

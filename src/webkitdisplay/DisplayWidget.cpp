@@ -11,8 +11,6 @@ DisplayWidget::DisplayWidget(QString s, WebKitDisplay* wkd, QWidget* parent)
     _session = s;
     _wkd = wkd;
 
-    setMinimumSize(640, 480);
-
     // Sections Information
     _currentSection = 0;
     _maxSections = 1;

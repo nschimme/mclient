@@ -4,7 +4,7 @@
 
 
 MClientFilterPlugin::MClientFilterPlugin(QObject* parent) : MClientPlugin(parent) {
-  _type = FILTER;
+  _type = FILTER_PLUGIN;
 }
 
 

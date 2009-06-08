@@ -4,7 +4,7 @@
 
 
 MClientIOPlugin::MClientIOPlugin(QObject* parent) : MClientPlugin(parent) {
-  _type = IO;
+  _type = IO_PLUGIN;
 }
 
 

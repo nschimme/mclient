@@ -301,7 +301,7 @@ void PluginManager::initSession(const QString &s) {
         if(pi) {
 	  pi->startSession(s);
 
-	  if (pi->type() == DISPLAY) {
+	  if (pi->type() == DISPLAY_PLUGIN) {
 	    qDebug() << "* Found a DISPLAY plugin! " << pi->shortName();
 
 	    MClientDisplayInterface* pd;
@@ -349,7 +349,7 @@ const bool PluginManager::indexPlugins() {
             new QPluginLoader(pluginsDir.absoluteFilePath(fileName));
 
         if(!loader->load()) {
-	  qCritical() << "* ERROR: Couldn't load!" << fileName;
+	  qCritical() << "* ERROR: Couldn't load!" << fileName << loader->errorString();
             continue;
         }
 
@@ -357,7 +357,7 @@ const bool PluginManager::indexPlugins() {
         MClientPluginInterface* pi = 
             qobject_cast<MClientPluginInterface*>(loader->instance());
         if(!pi) {
-	    qCritical() << "* ERROR: Couldn't cast" << fileName;
+	    qCritical() << "* ERROR: Couldn't cast" << fileName << loader->errorString();
             continue;
         }
         
