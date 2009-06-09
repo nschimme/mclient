@@ -53,6 +53,8 @@ AbstractParser::AbstractParser(MapData* md, QObject *parent)
 void AbstractParser::characterMoved(CommandIdType c, const QString& roomName, const QString& dynamicRoomDesc, const QString& staticRoomDesc, ExitsFlagsType exits, PromptFlagsType prompt)
 {
   emit event(createEvent(c, roomName, dynamicRoomDesc, staticRoomDesc, exits, prompt));
+  qDebug() << "* MMapperPluginParser detected the character moved"
+	   << roomName << staticRoomDesc << dynamicRoomDesc << c;
 }
 
 void AbstractParser::emptyQueue()
@@ -121,20 +123,20 @@ void AbstractParser::parsePrompt(QString& prompt){
 void AbstractParser::parseExits(QString& str)
 {
   m_exitsFlags = EXITS_FLAGS_VALID;
-
-        //const char* data = str.toAscii().data();
+  
+  //const char* data = str.toAscii().data();
   bool doors=FALSE;
   bool road=FALSE;
   int length = str.length();
-
+  
   for (int i=7; i<length; i++){
     switch ((int)(str.at(i).toAscii())){
-      case 40: doors=true;break;    // (
-      case 91: doors=true;break;    // [
-      case 61: road=true;break;             // =
-
-      case 110:  // n
-        if ( (i+2)<length && (str.at(i+2).toAscii()) == 'r') //north
+    case 40: doors=true;break;    // (
+    case 91: doors=true;break;    // [
+    case 61: road=true;break;             // =
+      
+    case 110:  // n
+      if ( (i+2)<length && (str.at(i+2).toAscii()) == 'r') //north
         {
           i+=5;
           if (doors){
@@ -143,98 +145,98 @@ void AbstractParser::parseExits(QString& str)
             doors=false;
           }else
             SET(m_exitsFlags,EXIT_N);
-            if (road){
-              SET(m_exitsFlags,ROAD_N);
-              road=false;
-            }
+	  if (road){
+	    SET(m_exitsFlags,ROAD_N);
+	    road=false;
+	  }
         }
-        else
-          i+=4;  //none
-        break;
-
-        case 115:  // s
-          i+=5;
-          if (doors){
-            SET(m_exitsFlags,DOOR_S);
-            SET(m_exitsFlags,EXIT_S);
-            doors=false;
-          }else
-            SET(m_exitsFlags,EXIT_S);
-            if (road){
-              SET(m_exitsFlags,ROAD_S);
-              road=false;
-            }
-            break;
-
-            case 101:  // e
-              i+=4;
-              if (doors){
-                SET(m_exitsFlags,DOOR_E);
-                SET(m_exitsFlags,EXIT_E);
-                doors=false;
-              }else
-                SET(m_exitsFlags,EXIT_E);
-                if (road){
-                  SET(m_exitsFlags,ROAD_E);
-                  road=false;
-                }
-                break;
-
-                case 119:  // w
-                  i+=4;
-                  if (doors){
-                    SET(m_exitsFlags,DOOR_W);
-                    SET(m_exitsFlags,EXIT_W);
-                    doors=false;
-                  }else
-                    SET(m_exitsFlags,EXIT_W);
-                    if (road){
-                      SET(m_exitsFlags,ROAD_W);
-                      road=false;
-                    }
-                    break;
-
-                    case 117:  // u
-                      i+=2;
-                      if (doors){
-                        SET(m_exitsFlags,DOOR_U);
-                        SET(m_exitsFlags,EXIT_U);
-                        doors=false;
-                      }else
-                        SET(m_exitsFlags,EXIT_U);
-                        if (road){
-                          SET(m_exitsFlags,ROAD_U);
-                          road=false;
-                        }
-                        break;
-
-                        case 100:  // d
-                          i+=4;
-                          if (doors){
-                            SET(m_exitsFlags,DOOR_D);
-                            SET(m_exitsFlags,EXIT_D);
-                            doors=false;
-                          }else
-                            SET(m_exitsFlags,EXIT_D);
-                            if (road){
-                              SET(m_exitsFlags,ROAD_D);
-                              road=false;
-                            }
-                            break;
-                            default:;
+      else
+	i+=4;  //none
+      break;
+      
+    case 115:  // s
+      i+=5;
+      if (doors){
+	SET(m_exitsFlags,DOOR_S);
+	SET(m_exitsFlags,EXIT_S);
+	doors=false;
+      }else
+	SET(m_exitsFlags,EXIT_S);
+      if (road){
+	SET(m_exitsFlags,ROAD_S);
+	road=false;
+      }
+      break;
+      
+    case 101:  // e
+      i+=4;
+      if (doors){
+	SET(m_exitsFlags,DOOR_E);
+	SET(m_exitsFlags,EXIT_E);
+	doors=false;
+      }else
+	SET(m_exitsFlags,EXIT_E);
+      if (road){
+	SET(m_exitsFlags,ROAD_E);
+	road=false;
+      }
+      break;
+      
+    case 119:  // w
+      i+=4;
+      if (doors){
+	SET(m_exitsFlags,DOOR_W);
+	SET(m_exitsFlags,EXIT_W);
+	doors=false;
+      }else
+	SET(m_exitsFlags,EXIT_W);
+      if (road){
+	SET(m_exitsFlags,ROAD_W);
+	road=false;
+      }
+      break;
+      
+    case 117:  // u
+      i+=2;
+      if (doors){
+	SET(m_exitsFlags,DOOR_U);
+	SET(m_exitsFlags,EXIT_U);
+	doors=false;
+      }else
+	SET(m_exitsFlags,EXIT_U);
+      if (road){
+	SET(m_exitsFlags,ROAD_U);
+	road=false;
+      }
+      break;
+      
+    case 100:  // d
+      i+=4;
+      if (doors){
+	SET(m_exitsFlags,DOOR_D);
+	SET(m_exitsFlags,EXIT_D);
+	doors=false;
+      }else
+	SET(m_exitsFlags,EXIT_D);
+      if (road){
+	SET(m_exitsFlags,ROAD_D);
+	road=false;
+      }
+      break;
+    default:;
     }
   }
-
+  
   Coordinate c;
   QByteArray dn = emptyByteArray;
   QByteArray cn = " -";
-
+  
   CommandQueue tmpqueue;
   bool noDoors = true;
-
+  
   if (!queue.isEmpty())
     tmpqueue.enqueue(queue.head());
-
+  
   QList<Coordinate> cl = m_mapData->getPath(tmpqueue);
   if (!cl.isEmpty())
     c = cl.at(cl.size()-1);
@@ -242,50 +244,50 @@ void AbstractParser::parseExits(QString& str)
     c = m_mapData->getPosition();
 
   for (uint i=0;i<6;i++)
-  {
-    dn = m_mapData->getDoorName(c, i).toAscii();
-    if ( dn != emptyByteArray )
     {
-      noDoors = false;
-      switch (i)
-      {
-        case 0:
-          cn += " n:"+dn;
-          break;
-        case 1:
-          cn += " s:"+dn;
-          break;
-        case 2:
-          cn += " e:"+dn;
-          break;
-        case 3:
-          cn += " w:"+dn;
-          break;
-        case 4:
-          cn += " u:"+dn;
-          break;
-        case 5:
-          cn += " d:"+dn;
-          break;
-        default:
-          break;
-      }
+      dn = m_mapData->getDoorName(c, i).toAscii();
+      if ( dn != emptyByteArray )
+	{
+	  noDoors = false;
+	  switch (i)
+	    {
+	    case 0:
+	      cn += " n:"+dn;
+	      break;
+	    case 1:
+	      cn += " s:"+dn;
+	      break;
+	    case 2:
+	      cn += " e:"+dn;
+	      break;
+	    case 3:
+	      cn += " w:"+dn;
+	      break;
+	    case 4:
+	      cn += " u:"+dn;
+	      break;
+	    case 5:
+	      cn += " d:"+dn;
+	      break;
+	    default:
+	      break;
+	    }
+	}
     }
-  }
-
+  
   if (noDoors)
-  {
-    cn = "\r\n";
-  }
+    {
+      cn = "\r\n";
+    }
   else
-  {
-    cn += ".\r\n";
-
-  }
-
+    {
+      cn += ".\r\n";
+      
+    }
+  
   emit sendToUser(str.toAscii()+cn);
-        //emit sendToUser(str.toAscii()+QByteArray("\r\n"));
-        //emit sendToUser(cn);
+  //emit sendToUser(str.toAscii()+QByteArray("\r\n"));
+  //emit sendToUser(cn);
 }
 
 void AbstractParser::emulateExits()

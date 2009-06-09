@@ -94,7 +94,8 @@ MapperManager::MapperManager(QString s, MMapperPlugin *mp) {
   connect(_findRoomsDlg, SIGNAL(center(qint32, qint32)), _mapWindow, SLOT(center(qint32, qint32)));
 
   // HACK for PlayMode
-  onOfflineMode();
+  onPlayMode();
+  //onOfflineMode();
 
   qDebug() << "* MapperManager thread:" << this->thread();
 }

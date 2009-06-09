@@ -60,7 +60,7 @@ MMapperPluginParser::~MMapperPluginParser() {
 void MMapperPluginParser::name(QString text, const QString &session) {
   if (session != _session) return ;
   removeAnsiMarks(text);
-  m_roomName = text.simplified();
+  m_roomName = text.trimmed();
 }
 
 
@@ -70,28 +70,38 @@ void MMapperPluginParser::description(const QString &text,
 
   if (m_descriptionReady) submit();
 
-  m_staticRoomDesc = text.simplified();
+  m_staticRoomDesc = text;
   m_descriptionReady = true;
+  m_readingRoomDesc = true;
 }
 
 
 void MMapperPluginParser::dynamicDescription(const QString &text,
 					     const QString &session) {
   if (session != _session) return ;
-  m_dynamicRoomDesc = text.simplified();
+  m_dynamicRoomDesc = text;
 }
 
 
 void MMapperPluginParser::exits(QString text, const QString &session) {
   if (session != _session) return ;
+
+  m_readingRoomDesc = false; // to identify if we saw exits or not
   parseExits(text);
 }
 
 
 void MMapperPluginParser::prompt(QString text, const QString &session) {
   if (session != _session) return ;
+
+  if (m_readingRoomDesc) {
+    emulateExits();
+    m_readingRoomDesc = false;
+  }
+
   parsePrompt(text);
-  submit();
+
+  if (m_descriptionReady) submit();
 }
 
 
@@ -136,6 +146,7 @@ void MMapperPluginParser::submit() {
   
   // non standard end of description parsed (fog, dark or so ...)
   if (Patterns::matchNoDescriptionPatterns(m_roomName)) {
+    qDebug() << "* MMapperPluginParser detected something wrong";
     m_roomName = nullString;
     m_dynamicRoomDesc = nullString;
     m_staticRoomDesc = nullString;
@@ -156,9 +167,6 @@ void MMapperPluginParser::submit() {
     characterMoved(_move, m_roomName, m_dynamicRoomDesc, m_staticRoomDesc, m_exitsFlags, m_promptFlags);
     _move = CID_LOOK;
   }
-
-  qDebug() << "* MMapperPluginParser detected the character moved"
-	   << m_roomName << m_staticRoomDesc << m_dynamicRoomDesc << _move;
 }
 
 

@@ -42,8 +42,6 @@ class MumeXML : public MClientFilterPlugin {
 
 	QString _singleBuffer;
 	QString _multiBuffer;
-	bool _readingRoomDesc;
-	bool _descriptionReady;
 
 	QByteArray _tempCharacters;
 	QByteArray _tempTag;

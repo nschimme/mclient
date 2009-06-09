@@ -30,7 +30,6 @@ MumeXML::MumeXML(QObject* parent)
     _dataTypes << "TelnetData";
 
     _readingTag = false;
-    _readingRoomDesc = false;
     _xmlMode = XML_NONE;
     _removeXmlTags = true;
 }
@@ -552,26 +551,19 @@ bool MumeXML::characters(QByteArray& ch, const QString& session) {
 
   switch (_xmlMode) {
     case XML_NONE:        //non room info
+      /*
       if (_readingRoomDesc == true) {
 	_readingRoomDesc = false; // we finished read desc mode
-	/*
 	_descriptionReady = true;
 	if (Config()._emulatedExits)
 	  emulateExits();
-	*/
 
-// 	// Empty QVariant for Exit Position Holder. IS THIS
-// 	NECESSARY!? Maybe for emulated exits?
-//
-// 	qv = new QVariant(nullString); 
-// 	sl << "XMLExits";
-// 	foreach(QString s, _runningSessions) {
-// 	  postEvent(qv, sl, s);
-// 	}
-      }
-      /*
-      else
-      {
+ 	// Empty QVariant for Exit Position Holder.
+	qv = new QVariant(nullString); 
+	sl << "XMLExits";
+	postEvent(qv, sl, session);
+
+      } else {
         parseMudCommands(_stringBuffer);	
       }
       */
@@ -597,7 +589,7 @@ bool MumeXML::characters(QByteArray& ch, const QString& session) {
 
       //removeAnsiMarks(_stringBuffer); //Remove room color marks
 
-      _readingRoomDesc = true; //start of read desc mode
+      //_readingRoomDesc = true; //start of read desc mode
       _singleBuffer = ch;
       _multiBuffer.clear();
       /*
@@ -626,11 +618,13 @@ bool MumeXML::characters(QByteArray& ch, const QString& session) {
       //parseExits(_stringBuffer); //parse exits
       _singleBuffer = ch;
 
+      /*
       if (_readingRoomDesc)
       {
         _readingRoomDesc = false;
         //_descriptionReady = true;
       }
+      */
       //emit sendToUser(ch);
       break;
 
