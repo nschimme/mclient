@@ -363,46 +363,46 @@ void AbstractParser::emulateExits()
 }
 
 
-void AbstractParser::parseNewUserInput(IncomingData& data)
-{
-  switch (data.type)
-  {
-    case TDT_DELAY:
-    case TDT_PROMPT:
-    case TDT_MENU_PROMPT:
-    case TDT_LOGIN:
-    case TDT_LOGIN_PASSWORD:
-    case TDT_TELNET:
-    case TDT_SPLIT:
-    case TDT_UNKNOWN:
-      emit sendToMud(data.line);
-      break;
-    case TDT_CRLF:
-      m_stringBuffer = QString::fromAscii(data.line.constData(), data.line.size());
-      m_stringBuffer = m_stringBuffer.simplified();
-      if (parseUserCommands(m_stringBuffer))
-        emit sendToMud(data.line);
-                                //else
-                                        //emit sendToMud(QByteArray("\r\n"));
-      break;
-    case TDT_LFCR:
-      m_stringBuffer = QString::fromAscii(data.line.constData(), data.line.size());
-      m_stringBuffer = m_stringBuffer.simplified();
-      if (parseUserCommands(m_stringBuffer))
-        emit sendToMud(data.line);
-                                //else
-                                        //emit sendToMud(QByteArray("\r\n"));
-      break;
-    case TDT_LF:
-      m_stringBuffer = QString::fromAscii(data.line.constData(), data.line.size());
-      m_stringBuffer = m_stringBuffer.simplified();
-      if ( parseUserCommands(m_stringBuffer))
-        emit sendToMud(data.line);
-                                //else
-                                        //emit sendToMud(QByteArray("\r\n"));
-      break;
-  }
-}
+// void AbstractParser::parseNewUserInput(IncomingData& data)
+// {
+//   switch (data.type)
+//   {
+//     case TDT_DELAY:
+//     case TDT_PROMPT:
+//     case TDT_MENU_PROMPT:
+//     case TDT_LOGIN:
+//     case TDT_LOGIN_PASSWORD:
+//     case TDT_TELNET:
+//     case TDT_SPLIT:
+//     case TDT_UNKNOWN:
+//       emit sendToMud(data.line);
+//       break;
+//     case TDT_CRLF:
+//       m_stringBuffer = QString::fromAscii(data.line.constData(), data.line.size());
+//       m_stringBuffer = m_stringBuffer.simplified();
+//       if (parseUserCommands(m_stringBuffer))
+//         emit sendToMud(data.line);
+//                                 //else
+//                                         //emit sendToMud(QByteArray("\r\n"));
+//       break;
+//     case TDT_LFCR:
+//       m_stringBuffer = QString::fromAscii(data.line.constData(), data.line.size());
+//       m_stringBuffer = m_stringBuffer.simplified();
+//       if (parseUserCommands(m_stringBuffer))
+//         emit sendToMud(data.line);
+//                                 //else
+//                                         //emit sendToMud(QByteArray("\r\n"));
+//       break;
+//     case TDT_LF:
+//       m_stringBuffer = QString::fromAscii(data.line.constData(), data.line.size());
+//       m_stringBuffer = m_stringBuffer.simplified();
+//       if ( parseUserCommands(m_stringBuffer))
+//         emit sendToMud(data.line);
+//                                 //else
+//                                         //emit sendToMud(QByteArray("\r\n"));
+//       break;
+//   }
+// }
 
 
 bool AbstractParser::parseUserCommands(QString& command)

@@ -96,7 +96,16 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
 
     } else {
       // Display the widget if it floats (or is unsupported)
-      widget->show();
+      QDockWidget *dockWidget = new QDockWidget;
+      dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
+      dockWidget->setFeatures(QDockWidget::DockWidgetMovable |
+			      QDockWidget::DockWidgetFloatable |
+			      QDockWidget::DockWidgetClosable);
+      dockWidget->setWidget(widget);
+      dockWidget->setFloating(false);
+      addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+      _dockWidgets.insert("test", dockWidget);
+      //widget->show();
       
     }
 

@@ -61,6 +61,7 @@ class MainWindow:public QMainWindow
     QString _currentProfile;
     QTabWidget *_tabWidget;
     QBoxLayout *_layout;
+    QHash<QString, QDockWidget*> _dockWidgets;
 
     void readSettings();
     void writeSettings();

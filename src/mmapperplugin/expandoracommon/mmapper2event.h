@@ -27,7 +27,7 @@
 #define MMAPPER2EVENT_H
 
 #include <QString>
-#include "parser.h"
+#include "abstractparser.h"
 #include "parseevent.h"
 
 #define EV_NAME 0

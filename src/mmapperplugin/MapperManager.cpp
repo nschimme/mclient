@@ -1,10 +1,13 @@
 #include <QMessageBox>
 #include <QFileDialog>
 
-#include "MainWindow.h"
 #include "MapperManager.h"
 
-#include "configuration.h"
+#include "MMapperPlugin.h"
+#include "MainWindow.h"
+#include "ActionManager.h"
+
+#include "configuration.h" // TODO: remove this
 
 #include "mapwindow.h"
 #include "mapcanvas.h"
@@ -22,14 +25,14 @@
 #include "findroomsdlg.h"
 #include "roomeditattrdlg.h"
 
-MapperManager::MapperManager(QString s, MainWindow *parent) {
-  qRegisterMetaType<IncomingData>("IncomingData");
+MapperManager::MapperManager(QString s, MMapperPlugin *mp) {
   qRegisterMetaType<CommandQueue>("CommandQueue");
   qRegisterMetaType<DirectionType>("DirectionType");
   qRegisterMetaType<DoorActionType>("DoorActionType");
 
   _session = s;
-  _mainWindow = parent;
+  _plugin = mp;
+  _mainWindow = MainWindow::instance();
 
   _roomSelection = NULL;
   _connectionSelection = NULL;
@@ -39,7 +42,7 @@ MapperManager::MapperManager(QString s, MainWindow *parent) {
   _mapData->start();
   qDebug("MapData loaded");
 
-  _prespammedPath = new PrespammedPath(parent);
+  _prespammedPath = new PrespammedPath;
   qDebug("PrespammedPath loaded");
 
   _mapWindow = new MapWindow(_mapData, _prespammedPath);
@@ -60,24 +63,29 @@ MapperManager::MapperManager(QString s, MainWindow *parent) {
   qDebug("FindRooms loaded");
 
   // Log Dialog
-//   connect(this, SIGNAL(log( const QString&, const QString& )), parent, SLOT(log( const QString&, const QString& )));
-//   connect(_pathMachine, SIGNAL(log( const QString&, const QString& )), parent, SLOT(log( const QString&, const QString& )));
-//   connect(_mapData, SIGNAL(log( const QString&, const QString& )), parent, SLOT(log( const QString&, const QString& )));
-//   connect(_mapWindow->getCanvas(), SIGNAL(log( const QString&, const QString& )), parent, SLOT(log( const QString&, const QString& )));
-//   connect(_findRoomsDlg, SIGNAL(log( const QString&, const QString& )), parent, SLOT(log( const QString&, const QString& )));
+  connect(this, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
+  connect(_pathMachine, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
+  connect(_mapData, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
+  connect(_mapWindow->getCanvas(), SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
+  connect(_findRoomsDlg, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
 
+  // Map Window --> MapperManager
   connect(_mapWindow->getCanvas(), SIGNAL(newRoomSelection(const RoomSelection*)), SLOT(newRoomSelection(const RoomSelection*)));
   connect(_mapWindow->getCanvas(), SIGNAL(newConnectionSelection(ConnectionSelection*)), SLOT(newConnectionSelection(ConnectionSelection*)));
-
+  
+  // Path Machine <--> Map Data
   connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, const Coordinate & )), _mapData, SLOT(lookingForRooms(RoomRecipient*, const Coordinate & )));
   connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, ParseEvent* )), _mapData, SLOT(lookingForRooms(RoomRecipient*, ParseEvent* )));
   connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, uint )), _mapData, SLOT(lookingForRooms(RoomRecipient*, uint )));
-  connect(_pathMachine, SIGNAL(playerMoved(const Coordinate & )), _mapWindow->getCanvas(), SLOT(moveMarker(const Coordinate &)));
   connect(_mapData, SIGNAL(clearingMap()), _pathMachine, SLOT(releaseAllPaths()));
+  // Path Machine --> Map Window
+  connect(_pathMachine, SIGNAL(playerMoved(const Coordinate & )), _mapWindow->getCanvas(), SLOT(moveMarker(const Coordinate &)));
 
+  // Map Window --> Path Machine
   connect(_mapWindow->getCanvas(), SIGNAL(setCurrentRoom(uint)), _pathMachine, SLOT(setCurrentRoom(uint)));
   connect(_mapWindow->getCanvas(), SIGNAL(charMovedEvent(ParseEvent*)), _pathMachine, SLOT(event(ParseEvent*)));
 
+  // Map Data --> Map Window
   connect(_mapData, SIGNAL(mapSizeChanged(const Coordinate &, const Coordinate &)), _mapWindow, SLOT(setScrollBars(const Coordinate &, const Coordinate &)));
   connect(_mapWindow->getCanvas(), SIGNAL(roomPositionChanged()), _pathMachine, SLOT(retry()));
   connect(_prespammedPath, SIGNAL(update()), _mapWindow->getCanvas(), SLOT(update()));
@@ -86,7 +94,7 @@ MapperManager::MapperManager(QString s, MainWindow *parent) {
   connect(_findRoomsDlg, SIGNAL(center(qint32, qint32)), _mapWindow, SLOT(center(qint32, qint32)));
 
   // HACK for PlayMode
-  onPlayMode();
+  onOfflineMode();
 
   qDebug() << "* MapperManager thread:" << this->thread();
 }
@@ -103,7 +111,7 @@ void MapperManager::newFile()
   {
     AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , "");
     connect(storage, SIGNAL(onNewData()), getMapWindow()->getCanvas(), SLOT(dataLoaded()));
-    connect(storage, SIGNAL(log(const QString&, const QString&)), _mainWindow, SLOT(log(const QString&, const QString&)));
+    connect(storage, SIGNAL(log(const QString&, const QString&)), _plugin, SLOT(log(const QString&, const QString&)));
     storage->newData();
     delete(storage);
   }
@@ -129,7 +137,7 @@ void MapperManager::merge()
     }
 
     //MERGE
-    progressDlg = new QProgressDialog(_mainWindow);
+    progressDlg = new QProgressDialog(getMapWindow());
     QPushButton *cb = new QPushButton("Abort ...");
     cb->setEnabled(false);
     progressDlg->setCancelButton ( cb );
@@ -146,7 +154,7 @@ void MapperManager::merge()
     AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
     connect(storage, SIGNAL(onDataLoaded()), getMapWindow()->getCanvas(), SLOT(dataLoaded()));
     connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-    connect(storage, SIGNAL(log(const QString&, const QString&)), _mainWindow, SLOT(log(const QString&, const QString&)));
+    connect(storage, SIGNAL(log(const QString&, const QString&)), _plugin, SLOT(log(const QString&, const QString&)));
 
 //     ActionManager *actMgr = ActionManager::self();
 //     actMgr->disableActions(true);
@@ -256,7 +264,7 @@ void MapperManager::loadFile(const QString &fileName)
   }
 
   //LOAD
-  progressDlg = new QProgressDialog(_mainWindow);
+  progressDlg = new QProgressDialog(getMapWindow());
   QPushButton *cb = new QPushButton("Abort ...");
   cb->setEnabled(false);
   progressDlg->setCancelButton ( cb );
@@ -273,7 +281,7 @@ void MapperManager::loadFile(const QString &fileName)
   AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
   connect(storage, SIGNAL(onDataLoaded()), getMapWindow()->getCanvas(), SLOT(dataLoaded()));
   connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-  connect(storage, SIGNAL(log(const QString&, const QString&)), _mainWindow, SLOT(log(const QString&, const QString&)));
+  connect(storage, SIGNAL(log(const QString&, const QString&)), _plugin, SLOT(log(const QString&, const QString&)));
 
 //   ActionManager *actMgr = ActionManager::self();
 //   actMgr->disableActions(true);
@@ -322,7 +330,7 @@ bool MapperManager::saveFile(const QString &fileName)
 
 
   //SAVE
-  progressDlg = new QProgressDialog(_mainWindow);
+  progressDlg = new QProgressDialog(getMapWindow());
   QPushButton *cb = new QPushButton("Abort ...");
   cb->setEnabled(false);
   progressDlg->setCancelButton ( cb );
@@ -335,7 +343,7 @@ bool MapperManager::saveFile(const QString &fileName)
 
   AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
   connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-  connect(storage, SIGNAL(log(const QString&, const QString&)), _mainWindow, SLOT(log(const QString&, const QString&)));
+  connect(storage, SIGNAL(log(const QString&, const QString&)), _plugin, SLOT(log(const QString&, const QString&)));
 
 //   ActionManager *actMgr = ActionManager::self();
 //   actMgr->disableActions(true);

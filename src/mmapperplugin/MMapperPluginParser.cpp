@@ -1,5 +1,6 @@
 #include "MMapperPluginParser.h"
 
+#include "MMapperPlugin.h"
 #include "MapperManager.h"
 
 #include "mapdata.h"
@@ -8,7 +9,8 @@
 
 #include "patterns.h" // fog, etc
 
-MMapperPluginParser::MMapperPluginParser(QString s, MapperManager *mapMgr,
+MMapperPluginParser::MMapperPluginParser(QString s, MMapperPlugin *plugin,
+					 MapperManager *mapMgr,
 					 QObject *parent)
   : AbstractParser(mapMgr->getMapData(), parent) {
   _session = s;
@@ -16,14 +18,36 @@ MMapperPluginParser::MMapperPluginParser(QString s, MapperManager *mapMgr,
   connect(this, SIGNAL(event(ParseEvent* )),
           mapMgr->getPathMachine(),
 	  SLOT(event(ParseEvent* )), Qt::QueuedConnection);
-  
   connect(this, SIGNAL(releaseAllPaths()),
           mapMgr->getPathMachine(),
 	  SLOT(releaseAllPaths()), Qt::QueuedConnection);
-  
   connect(this, SIGNAL(showPath(CommandQueue, bool)),
           mapMgr->getPrespammedPath(),
 	  SLOT(setPath(CommandQueue, bool)), Qt::QueuedConnection);
+
+  connect(plugin, SIGNAL(name(const QString&, const QString&)),
+	  SLOT(name(const QString&, const QString&)));
+  connect(plugin, SIGNAL(description(const QString&, const QString&)),
+	  SLOT(description(const QString&, const QString&)));
+  connect(plugin, SIGNAL(dynamicDescription(const QString&, const QString&)),
+	  SLOT(dynamicDescription(const QString&, const QString&)));
+  connect(plugin, SIGNAL(exits(const QString&, const QString&)),
+	  SLOT(exits(const QString&, const QString&)));
+  connect(plugin, SIGNAL(prompt(const QString&, const QString&)),
+	  SLOT(prompt(const QString&, const QString&)));
+  connect(plugin, SIGNAL(move(const QString&, const QString&)),
+	  SLOT(move(const QString&, const QString&)));
+  
+  connect(plugin, SIGNAL(userInput(QString, const QString&)),
+	  SLOT(userInput(QString, const QString&)));
+  connect(plugin, SIGNAL(mudOutput(const QString&, const QString&)),
+	  SLOT(mudOutput(const QString&, const QString&)));
+
+  connect(this, SIGNAL(sendToUser(const QByteArray&)),
+	  SLOT(sendToUserWrapper(const QByteArray&)));
+
+  connect(this, SIGNAL(sendToUser(const QString&, const QString&)),
+ 	  plugin, SLOT(displayMessage(const QString&, const QString&)));
 
   _move = CID_NONE;
 }
@@ -138,10 +162,11 @@ void MMapperPluginParser::submit() {
 }
 
 
-void MMapperPluginParser::userInput(const QString &text,
+void MMapperPluginParser::userInput(QString text,
 				    const QString &session) {
   if (session != _session) return ;
-  
+  qDebug() << "* MMapperPluginParser got input" << text << thread();
+  parseUserCommands(text);
 }
 
 
@@ -176,4 +201,16 @@ void MMapperPluginParser::mudOutput(const QString &text,
       return;
     }
   }
+}
+
+
+void MMapperPluginParser::sendToUserWrapper(const QByteArray &ba) {
+  QString text(ba);
+  emit sendToUser(text, _session);
+}
+
+
+void MMapperPluginParser::sendToMudWrapper(const QByteArray &ba) {
+  QString text(ba);
+  emit sendToMud(text, _session);
 }

@@ -25,7 +25,7 @@
 
 #include "mapdata.h"
 #include "pathmachine.h"
-#include "parser.h"
+//#include "parser.h"
 
 const char * q2c(QString & s) {
   return s.toLatin1().constData();

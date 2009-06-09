@@ -28,10 +28,10 @@ class WebKitDisplay : public MClientDisplayPlugin {
         QWidget* getWidget(QString s);
 
   protected:
-	static const QByteArray greatherThanChar;
-	static const QByteArray lessThanChar;
-	static const QByteArray greatherThanTemplate;
-	static const QByteArray lessThanTemplate;
+	static const QChar greaterThanChar;
+	static const QChar lessThanChar;
+	static const QString greaterThanTemplate;
+	static const QString lessThanTemplate;
 
     private:
 	bool _foreground, _background, _bold, _underline;
@@ -39,7 +39,7 @@ class WebKitDisplay : public MClientDisplayPlugin {
 
 	QHash<QString, DisplayWidget*> _widgets;
 
-	void parseDisplayData(const QByteArray&, const QString&);
+	void parseDisplayData(QString, const QString&);
 	QString convertANSI(int code);
 
  signals:

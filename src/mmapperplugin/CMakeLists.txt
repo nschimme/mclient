@@ -32,9 +32,12 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/mapstorage
     ${CMAKE_CURRENT_SOURCE_DIR}/pandoragroup
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
-    ${CMAKE_CURRENT_SOURCE_DIR}/proxy
     ${CMAKE_CURRENT_SOURCE_DIR}/pathmachine
     ${CMAKE_CURRENT_SOURCE_DIR}/preferences
+#    ${CMAKE_CURRENT_SOURCE_DIR}/resources
+#    ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons
+#    ${CMAKE_CURRENT_SOURCE_DIR}/resources/pixmaps
+
 )
   
 QT4_WRAP_CPP(mmapperplugin_MOC_SRCS ${mmapperplugin_MOC_HDRS})

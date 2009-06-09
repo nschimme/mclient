@@ -24,7 +24,7 @@
 *************************************************************************/
 
 #include "defs.h"
-#include "parser.h"
+#include "abstractparser.h"
 #include "mmapper2event.h"
 
 using namespace std;

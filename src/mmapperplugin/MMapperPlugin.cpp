@@ -7,13 +7,23 @@
 #include "PluginManager.h"
 #include "CommandManager.h"
 #include "ConfigManager.h"
-#include "MainWindow.h" // passed into MapperManager
 
 #include "mapwindow.h" // for grabbing the QWidget
 
 #include <QApplication>
 
 Q_EXPORT_PLUGIN2(mmapperplugin, MMapperPlugin)
+
+
+enum MMapperPluginEventType { XML_NONE = 0, XML_NAME, XML_DESCRIPTION,
+			      XML_DYNAMIC_DESCRIPTION, XML_EXITS, XML_PROMPT,
+			      XML_MOVE, MMAPPER_INPUT, MMAPPER_LOAD_MAP };
+
+struct EventData {
+  MMapperPluginEventType type;
+  QString data;
+  QString session;
+};
 
 
 MMapperPlugin::MMapperPlugin(QWidget* parent) 
@@ -24,7 +34,7 @@ MMapperPlugin::MMapperPlugin(QWidget* parent)
     _description = "An implementation of MMapper as a plugin for mClient";
     //_dependencies.insert("commandmanager", 10);
     //_implemented.insert("socketmanager",10);
-    _dataTypes << "SendToSocketData"
+    _dataTypes << "MMapperInput"
 	       << "XMLName" << "XMLDescription" << "XMLDynamicDescription"
 	       << "XMLExits" << "XMLPrompt" << "XMLMove" << "XMLNone"
 	       << "MMapperLoadMap";
@@ -37,7 +47,8 @@ MMapperPlugin::MMapperPlugin(QWidget* parent)
     // register commands
     QStringList commands;
     commands << _shortName
-	     << "map" << "MMapperLoadMap";
+	     << "map" << "MMapperLoadMap"
+	     << "input" << "MMapperInput";
     CommandManager::instance()->registerCommand(commands);
 
 }
@@ -48,41 +59,89 @@ MMapperPlugin::~MMapperPlugin() {
     saveSettings();
 }
 
-
 // MClientPlugin members
 void MMapperPlugin::customEvent(QEvent* e) {
     if(!e->type() == 10001) return;
     
     MClientEvent* me = static_cast<MClientEvent*>(e);
 
-    if(me->dataTypes().contains("SendToSocketData")) {
-	emit userInput(me->payload()->toString(), me->session());
-
-    } else if (me->dataTypes().contains("XMLNone")) {
-        emit mudOutput(me->payload()->toString(), me->session());
-
-    } else if (me->dataTypes().contains("XMLName")) {
-	emit name(me->payload()->toString(), me->session());
-
-    } else if (me->dataTypes().contains("XMLDescription")) {
-	emit description(me->payload()->toString(), me->session());
-
-    } else if (me->dataTypes().contains("XMLDynamicDescription")) {
-	emit dynamicDescription(me->payload()->toString(), me->session());
+    foreach(QString s, me->dataTypes()) {
+      if (s.startsWith("X")) {
+	if (s.startsWith("XMLNone")) {
+	  emit mudOutput(me->payload()->toString(), me->session());
+	  
+	} else if (s.startsWith("XMLName")) {
+	  emit name(me->payload()->toString(), me->session());
+	  
+	} else if (s.startsWith("XMLDescription")) {
+	  emit description(me->payload()->toString(), me->session());
+	  
+	} else if (s.startsWith("XMLDynamicDescription")) {
+	  emit dynamicDescription(me->payload()->toString(), me->session());
+	  
+	} else if (s.startsWith("XMLExits")) {
+	  emit exits(me->payload()->toString(), me->session());
       
-    } else if (me->dataTypes().contains("XMLExits")) {
-	emit exits(me->payload()->toString(), me->session());
+	} else if (s.startsWith("XMLPrompt")) {
+	  emit prompt(me->payload()->toString(), me->session());
 
-    } else if (me->dataTypes().contains("XMLPrompt")) {
-	emit prompt(me->payload()->toString(), me->session());
+	} else if (s.startsWith("XMLMove")) {
+	  emit move(me->payload()->toString(), me->session());
+	  
+	}
 
-    } else if (me->dataTypes().contains("XMLMove")) {
-	emit move(me->payload()->toString(), me->session());
-
-    } else if (me->dataTypes().contains("MMapperLoadMap")) {
-      emit loadFile("/home/nschimme/arda.mm2");
-
+      }
+      else if (s.startsWith("M")) {
+	if(s.startsWith("MMapperInput")) {
+	  EventData *foo = new EventData;
+	  foo->data = me->payload()->toString();
+	  foo->session = me->session();
+	  foo->type = MMAPPER_INPUT;
+	  _eventQueue.enqueue(foo);
+	  if(!isRunning()) {
+	    start(LowPriority);
+	  }
+	  //emit userInput(me->payload()->toString(), me->session());
+	  
+	} else if (s.startsWith("MMapperLoadMap")) {
+// 	  EventData *foo = new EventData;
+// 	  foo->data = me->payload()->toString();
+// 	  foo->session = me->session();
+// 	  foo->type = MMAPPER_LOAD_MAP;
+// 	  _eventQueue.enqueue(foo);
+// 	  if(!isRunning()) start(LowPriority);
+	  emit loadFile("/home/nschimme/arda.mm2");
+	  
+	}
+      }
+      
     }
+}
+
+
+void MMapperPlugin::run() {
+  while(_eventQueue.count() > 0) {
+    EventData *foo = _eventQueue.dequeue();
+
+    switch (foo->type) {
+    case MMAPPER_INPUT:
+      //emit userInput(foo->data, foo->session);
+      qDebug() << "* MMapperPluginParser's thread is"
+	       << _parsers[foo->session]->thread();
+      _parsers[foo->session]->moveToThread(thread());
+      _parsers[foo->session]->userInput(foo->data, foo->session);
+      qDebug() << "* MMapperPluginParser's thread is"
+	       << _parsers[foo->session]->thread();
+      break;
+    case MMAPPER_LOAD_MAP:
+      //emit loadFile("/home/nschimme/arda.mm2");
+      _mappers[foo->session]->loadFile("/home/nschimme/arda.mm2");
+      break;
+    };
+
+    delete foo;
+  }
+  qDebug() << "* MMapperPlugin::run() returning. Running in" << thread();
 }
 
 
@@ -103,32 +162,14 @@ const bool MMapperPlugin::saveSettings() const {
 
 
 const bool MMapperPlugin::startSession(QString s) {
-    MapperManager *mm = new MapperManager(s, MainWindow::instance());
-    MMapperPluginParser *mpp = new MMapperPluginParser(s, mm);
-    _mappers.insert(s, mm);
-    _parsers.insert(s, mpp);
-
-    connect(this, SIGNAL(name(const QString&, const QString&)),
-	    mpp, SLOT(name(const QString&, const QString&)));
-    connect(this, SIGNAL(description(const QString&, const QString&)),
-	    mpp, SLOT(description(const QString&, const QString&)));
-    connect(this, SIGNAL(dynamicDescription(const QString&, const QString&)),
-	    mpp, SLOT(dynamicDescription(const QString&, const QString&)));
-    connect(this, SIGNAL(exits(const QString&, const QString&)),
-	    mpp, SLOT(exits(const QString&, const QString&)));
-    connect(this, SIGNAL(prompt(const QString&, const QString&)),
-	    mpp, SLOT(prompt(const QString&, const QString&)));
-    connect(this, SIGNAL(move(const QString&, const QString&)),
-	    mpp, SLOT(move(const QString&, const QString&)));
-
-    connect(this, SIGNAL(userInput(const QString&, const QString&)),
-	    mpp, SLOT(userInput(const QString&, const QString&)));
-    connect(this, SIGNAL(mudOutput(const QString&, const QString&)),
-	    mpp, SLOT(mudOutput(const QString&, const QString&)));
+    MapperManager *mm = new MapperManager(s, this);
+    MMapperPluginParser *mpp = new MMapperPluginParser(s, this, mm);
 
     connect(this, SIGNAL(loadFile(const QString&)),
 	    mm, SLOT(loadFile(const QString&)));
     
+    _mappers.insert(s, mm);
+    _parsers.insert(s, mpp);
     _runningSessions << s;
     return true;
 }
@@ -165,4 +206,8 @@ void MMapperPlugin::displayMessage(const QString& message, const QString& s) {
     QVariant* qv = new QVariant(message);
     QStringList sl("DisplayData");
     postEvent(qv, sl, s);
+}
+
+void MMapperPlugin::log(const QString& message, const QString& s) {
+  qDebug() << "* MMapperPlugin[" << s << "]: " << message;
 }

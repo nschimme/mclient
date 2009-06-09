@@ -35,7 +35,7 @@
 #include "mapfrontend.h"
 #include "roomselection.h"
 #include "customaction.h"
-#include "parser.h"
+#include "abstractparser.h"
 #include <map>
 
 class MapCanvas;

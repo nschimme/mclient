@@ -5,15 +5,17 @@
 
 class AbstractParser;
 class MapperManager;
+class MMapperPlugin;
 
 class MMapperPluginParser : public AbstractParser {
     Q_OBJECT
 
     public:
-    MMapperPluginParser(QString, MapperManager*, QObject *parent=0);
+    MMapperPluginParser(QString, MMapperPlugin *, MapperManager*,
+			QObject *parent=0);
     ~MMapperPluginParser();
 
-    void parseNewMudInput(IncomingData& que) {} // Unused
+    //void parseNewMudInput(IncomingData& que) {} // Unused
 
 public slots:
     void name(QString, const QString &);
@@ -23,14 +25,21 @@ public slots:
     void exits(QString, const QString &);
     void move(QString, const QString &);
     
-    void userInput(const QString&, const QString&);
+    void userInput(QString, const QString&);
     void mudOutput(const QString&, const QString&);
+
+    void sendToUserWrapper(const QByteArray&);
+    void sendToMudWrapper(const QByteArray&);
 
    private:
     QString _session;
     CommandIdType _move;
 
     void submit();
+
+ signals:
+    void sendToUser(const QString&, const QString&);
+    void sendToMud(const QString&, const QString&);
 
 };
 

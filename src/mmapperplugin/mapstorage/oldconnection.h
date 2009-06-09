@@ -29,7 +29,7 @@
 #include "exit.h"
 #include "defs.h"
 #include "olddoor.h"
-#include "parser.h"
+#include "abstractparser.h"
 
 class Room;
 typedef class QString ConnectionNote;

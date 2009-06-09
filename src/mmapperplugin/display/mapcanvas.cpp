@@ -836,7 +836,8 @@ GLubyte halftone[] = {
 
   QSize MapCanvas::sizeHint() const
   {
-    return QSize(BASESIZEX, BASESIZEY);
+    //return QSize(BASESIZEX, BASESIZEY);
+    return QSize(100, 100);
   }
 
 

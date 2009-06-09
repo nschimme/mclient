@@ -28,7 +28,7 @@
 #define ABSTRACTPARSER_H
 
 #include <QtCore>
-#include "telnetfilter.h"
+//#include "telnetfilter.h"
 #include "defs.h"
 #include "room.h"
 
@@ -106,8 +106,8 @@ signals:
   void sendGroupTellEvent(QByteArray);
 
 public slots:
-  virtual void parseNewMudInput(IncomingData&) = 0;;
-  void parseNewUserInput(IncomingData&);
+  //void parseNewMudInput(IncomingData&);
+  //void parseNewUserInput(IncomingData&);
 
   void emptyQueue();
 
@@ -135,7 +135,7 @@ protected:
 
   void parseExits(QString& str);
   void parsePrompt(QString& prompt);
-  virtual bool parseUserCommands(QString& command);
+  bool parseUserCommands(QString& command);
 
   static const QChar escChar;
 

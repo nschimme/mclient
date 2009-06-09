@@ -26,7 +26,7 @@
 #ifndef MMAPPER2EXIT_H
 #define MMAPPER2EXIT_H
 #include "defs.h"
-#include "parser.h"
+//#include "parser.h"
 #include "exit.h"
 
 class Room;

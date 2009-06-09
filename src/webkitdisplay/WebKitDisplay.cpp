@@ -11,10 +11,10 @@
 
 Q_EXPORT_PLUGIN2(webkitdisplay, WebKitDisplay)
 
-const QByteArray WebKitDisplay::greatherThanChar(">");
-const QByteArray WebKitDisplay::lessThanChar("<");
-const QByteArray WebKitDisplay::greatherThanTemplate("&gt;");
-const QByteArray WebKitDisplay::lessThanTemplate("&lt;");
+const QChar WebKitDisplay::greaterThanChar('>');
+const QChar WebKitDisplay::lessThanChar('<');
+const QString WebKitDisplay::greaterThanTemplate("&gt;");
+const QString WebKitDisplay::lessThanTemplate("&lt;");
 
 WebKitDisplay::WebKitDisplay(QWidget* parent) 
         : MClientDisplayPlugin(parent) {
@@ -63,22 +63,21 @@ void WebKitDisplay::customEvent(QEvent* e) {
     me = static_cast<MClientEvent*>(e);
 
     if(me->dataTypes().contains("DisplayData")) {
-        QByteArray ba = me->payload()->toByteArray();
-        QVariant* qv = new QVariant(ba);
-	parseDisplayData(qv->toByteArray(), me->session());
+      parseDisplayData(me->payload()->toString(),
+		       me->session());
     }
 }
 
-void WebKitDisplay::parseDisplayData(const QByteArray &data,
+void WebKitDisplay::parseDisplayData(QString text,
 				     const QString &session) {
-  QString text(data);
 
-  text.replace(greatherThanChar, greatherThanTemplate);
+  text.replace(greaterThanChar, greaterThanTemplate);
   text.replace(lessThanChar, lessThanTemplate);
-  text.replace(QByteArray("\n"), QByteArray("<br>"));
-  text.replace(QByteArray("'"), QByteArray("\\'"));
-  text.replace(QByteArray("`"), QByteArray("\\`"));
-  text.replace(QByteArray("$"), QByteArray("\\$"));
+  text.replace(QString("\r\n"), QString("<br>"));
+  text.replace(QString("\n"), QString("<br>"));
+  text.replace(QChar('\''), QString("\\'"));
+  text.replace(QChar('`'), QString("\\`"));
+  text.replace(QChar('$'), QString("\\$"));
 
   // ANSI Removal
   QRegExp ansiRx("\\0033\\[((?:\\d+;)*\\d+)m");

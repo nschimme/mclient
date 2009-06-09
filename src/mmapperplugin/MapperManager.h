@@ -34,13 +34,14 @@ class ConnectionSelection;
 class RoomPropertySetter;
 class FindRoomsDlg;
 
+class MMapperPlugin;
 class MainWindow;
 
 class MapperManager: public QObject {
   Q_OBJECT
 
   public:
-    MapperManager(QString s, MainWindow *parent = 0);
+    MapperManager(QString s, MMapperPlugin *mp);
     ~MapperManager ();
 
     MapWindow *getMapWindow() { return _mapWindow; }
@@ -110,6 +111,7 @@ class MapperManager: public QObject {
     FindRoomsDlg *_findRoomsDlg;
 
     MainWindow *_mainWindow;
+    MMapperPlugin *_plugin;
 };
 
 #endif /* _MAPPERMANAGER_H_ */

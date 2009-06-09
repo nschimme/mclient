@@ -3,11 +3,14 @@
 
 #include "MClientDisplayPlugin.h"
 
+#include <QQueue>
 #include <QHash>
 
 class MMapperPluginParser;
 class MapperManager;
 class QEvent;
+
+struct EventData;
 
 class MMapperPlugin : public MClientDisplayPlugin {
     Q_OBJECT
@@ -23,6 +26,7 @@ class MMapperPlugin : public MClientDisplayPlugin {
         const bool saveSettings() const;
         const bool startSession(QString s);
         const bool stopSession(QString s);
+	void run();
 
         // Display members
         const bool initDisplay(QString s);
@@ -30,8 +34,10 @@ class MMapperPlugin : public MClientDisplayPlugin {
 
 public slots:
 	void displayMessage(const QString&, const QString&);
+        void log(const QString&, const QString&);
 
     private:
+	QQueue<EventData*> _eventQueue;
 	QHash<QString, QString> *_settings;
         QHash<QString, MapperManager*> _mappers;
 	QHash<QString, MMapperPluginParser*> _parsers;
@@ -44,7 +50,7 @@ public slots:
 	void exits(QString, const QString &);
 	void move(QString, const QString &);
 
-	void userInput(const QString&, const QString&);
+	void userInput(QString, const QString&);
 	void mudOutput(const QString&, const QString&);
 
 	// TODO: add session support

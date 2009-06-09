@@ -27,7 +27,7 @@
 #define PRESPAMMEDPATH_H_
 
 #include <QtCore>
-#include "parser.h"
+#include "abstractparser.h"
 
 class MapData;
 class MapCanvas;
