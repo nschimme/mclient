@@ -18,7 +18,6 @@
  ***************************************************************************/
 
 #include "Telnet.h"
-#include "MCCP.h"
 
 #include "MClientEvent.h"
 #include "PluginManager.h"
@@ -36,8 +35,6 @@ using std::copy;
 using std::string;
 
 Q_EXPORT_PLUGIN2(telnet, Telnet)
-
-//#define HAVE_MCCP "true"
 
 struct cTelnetPrivate {
   /** socket */

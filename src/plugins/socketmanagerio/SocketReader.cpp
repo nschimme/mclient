@@ -28,7 +28,7 @@ SocketReader::SocketReader(QString s, SocketManagerIO *sm, QObject *parent)
 
 
 void SocketReader::connectToHost() {
-  //_socket->moveToThread(this);
+  _socket->moveToThread(this);
 
   _sm->displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port),
 		      _session);

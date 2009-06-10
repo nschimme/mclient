@@ -1,55 +1,40 @@
-add_definitions(${QT_DEFINITIONS})
-add_definitions(-DQT_NO_DEBUG)
-add_definitions(-DQT_SHARED)
+# mClient
 
-# Core Source Files
-foreach(dir ${CMAKE_CURRENT_SOURCE_DIR})
-    file(GLOB files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.cpp")
-    set(mclient_SRCS ${mclient_SRCS} ${files})
-endforeach()
+# Source files
+set(mclient_SRCS main.cpp)
 
-# Core Header Files
-foreach(dir ${CMAKE_CURRENT_SOURCE_DIR})
-    file(GLOB files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.h")
-    set(mclient_MOC_HDRS ${mclient_MOC_HDRS} ${files})
-endforeach()
-
-# Resource Files
-foreach(dir mainwindow mclientplugin)
-    file(GLOB files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.qrc")
-    set(mclient_RCS ${mclient_RCS} ${files})
-endforeach()
-
-# UI Files
-foreach(dir mainwindow mclientplugin)
-    file(GLOB files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.ui")
-    set(mclient_UIS ${mclient_UIS} ${files})
-endforeach()
+# Static Library Resource Files
+file(GLOB_RECURSE mclient_RCS
+     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+     "resources/*.qrc"
+)
 
 # Add Windows Resource File
 if (MINGW)
-    add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o
-                       COMMAND windres.exe -I ${CMAKE_CURRENT_SOURCE_DIR}
-                                           -i ${CMAKE_CURRENT_SOURCE_DIR}/client.rc
-                                           -o ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
-    set(mmapper_WINRC ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
+    add_custom_command(
+        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o
+        COMMAND windres.exe -I ${CMAKE_CURRENT_SOURCE_DIR}
+        -i ${CMAKE_CURRENT_SOURCE_DIR}/resources/win32/mclient.rc
+        -o ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o
+    )
+    set(mclient_WINRC ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
 else (MINGW)
-    set(mmapper_WINRC mclient.rc)
+    set(mclient_WINRC resources/win32/mclient.rc)
 endif (MINGW)
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    mainwindow
     mclientplugin
+    mainwindow
     commandmanager
 )
   
-QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
-QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
+#QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
+#QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
 QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
-add_executable(mclient
+add_executable(mclient WIN32
     ${mclient_SRCS}
     ${mclient_MOC_SRCS}
     ${mclient_UIS_H}
@@ -65,45 +50,63 @@ target_link_libraries(mclient
     commandmanager
 )
 
-# Installation Location
-install(TARGETS mclient
-        RUNTIME DESTINATION bin
-        COMPONENT applications)
-
 # mClient's Core Engine
 add_subdirectory(mclientplugin)
 add_subdirectory(mainwindow)
 add_subdirectory(commandmanager)
 
-# Various Dynamic Plugins
-add_subdirectory(socketmanagerio)
-add_subdirectory(simplelineinput)
-add_subdirectory(telnet)
-add_subdirectory(mumexml)
-add_subdirectory(webkitdisplay)
-add_subdirectory(qtscriptplugin)
-add_subdirectory(aliasplugin)
-add_subdirectory(actionplugin)
-add_subdirectory(mmapperplugin)
+# Various Plugins
+add_subdirectory(plugins)
+
+# Installation Location
+install(TARGETS mclient
+        RUNTIME DESTINATION bin
+        COMPONENT applications)
 
 # Installer
 set(CPACK_RESOURCE_FILE_LICENSE )
-set(CPACK_PACKAGE_ICON "mainwindow/resources/m.png")
-set(CPACK_PACKAGE_NAME "mClient")
+set(CPACK_PACKAGE_NAME "${PROJECT_NAME}")
 set(CPACK_PACKAGE_VENDOR "Nils Schimmelmann")
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "mClient Installer")
-set(CPACK_PACKAGE_VERSION "1.0.0")
+set(CPACK_PACKAGE_CONTACT "nschimme@gmail.com")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "A mud client especially written for the mud MUME")
+if (SVN_BUILD)
+    set(CPACK_PACKAGE_VERSION "svn-build-${SVN_BUILD}")
+else (SVN_BUILD)
+    set(CPACK_PACKAGE_VERSION "${MCLIENT_VERSION}")
+endif (SVN_BUILD)
 set(CPACK_PACKAGE_VERSION_MAJOR "1")
 set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
-set(CPACK_PACKAGE_INSTALL_DIRECTORY "mClient Installer")
+set(CPACK_PACKAGE_INSTALL_DIRECTORY "mClient")
+
+# Components:
+set(CPACK_STRIP_FILES TRUE)
+# Applications Component
+set(CPACK_COMPONENTS_ALL applications plugins libraries)
+set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "mClient")
+set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "A mud client especially written for the mud MUME")
+set(CPACK_COMPONENT_APPLICATIONS_REQUIRED TRUE)
+
+# Plugins Component
+set(CPACK_COMPONENT_PLUGINS_DISPLAY_NAME "Plugins")
+set(CPACK_COMPONENT_PLUGINS_DESCRIPTION "Plugins for mClient to function")
+set(CPACK_COMPONENT_PLUGINS_REQUIRED TRUE)
+
+# Libraries Component
+set(CPACK_COMPONENT_LIBRARIES_DISPLAY_NAME "Runtime Libraries")
+set(CPACK_COMPONENT_LIBRARIES_DESCRIPTION "Qt/MingW libraries for running mClient")
+
+
+# Source Package
+set(CPACK_SOURCE_IGNORE_FILES
+    "~$"
+    "/\\\\.svn/"
+    "/build/"
+)
+set(CPACK_SOURCE_PACKAGE_FILE_NAME
+    "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-source"
+)
+set(CPACK_PACKAGE_FILE_NAME
+    "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-${CMAKE_SYSTEM_NAME}-${CMAKE_SYSTEM_PROCESSOR}"
+)
 include(CPack)
-cpack_add_component(applications
-  DISPLAY_NAME "mClient"
-  DESCRIPTION "A mud client especially written for the mud MUME"
-  REQUIRED
-)
-cpack_add_component(plugins
-  DISPLAY_NAME "Plugins"
-  DESCRIPTION "Plugins for mClient to function"
-)

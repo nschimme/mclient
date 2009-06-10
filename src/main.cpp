@@ -22,6 +22,7 @@ int main(int argc, char** argv) {
 
     // Create Singletons
     ConfigManager *cnfmgr = ConfigManager::instance();
+    qDebug() << "dumdedumdum";
     PluginManager *plgmgr = PluginManager::instance();
     CommandManager *cmdmgr = CommandManager::instance();
     MainWindow *mw = MainWindow::instance();

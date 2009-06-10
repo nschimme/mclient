@@ -10,6 +10,9 @@ set(QT_USE_QTSCRIPT TRUE)
 set(QT_USE_QTOPENGL TRUE)
 include(${QT_USE_FILE})
 
+# mClient's version number
+add_definitions(-DMCLIENT_VERSION="Alpha")
+
 # Get SVN revision number
 find_package(Subversion)
 if (Subversion_FOUND)
@@ -20,10 +23,15 @@ if (Subversion_FOUND)
     endif (EXISTS ${PROJECT_SOURCE_DIR}/.svn)
 endif (Subversion_FOUND)
 
-# 64bit Support
-if("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+# Linux 64bit Support
+if (UNIX AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC"  )
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC"  )
-endif("${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
+    add_definitions(-fPIC)
+endif (UNIX AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
+# Remove following line for debug support
+# add_definitions(-DQT_NO_DEBUG)
+
+# Add the rest of the sources
 add_subdirectory(src)

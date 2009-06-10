@@ -120,7 +120,7 @@ const bool SocketManagerIO::startSession(QString s) {
 		 << "to SocketReader in session" << s;
     }
     //qDebug() << "* SockerReaderIO threads (sr, io):" << sr->thread() << this->thread();
-    //sr->moveToThread(this->thread());
+    sr->moveToThread(this->thread());
     //qDebug() << "* SockerReaderIO threads (sr, io):" << sr->thread() << this->thread();
     sr->host(host);
     sr->port(port);

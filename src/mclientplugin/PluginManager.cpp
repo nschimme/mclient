@@ -49,6 +49,7 @@ void PluginManager::destroy() {
 
 
 PluginManager::PluginManager(QObject* parent) : QThread(parent) {
+    qDebug() << "* PluginManager is reading settings...";
     QHash<QString, QString> *hash = ConfigManager::instance()->
       applicationSettings();
     

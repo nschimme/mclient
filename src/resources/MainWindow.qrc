@@ -1,0 +1,13 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource>
+	<file>mainwindow/m.png</file>
+	<file>mainwindow/preferences.png</file>
+	<file>mainwindow/copy.png</file>
+	<file>mainwindow/cut.png</file>
+	<file>mainwindow/paste.png</file>
+	<file>mainwindow/new.png</file>
+	<file>mainwindow/open.png</file>
+	<file>mainwindow/save.png</file>
+	<file>mainwindow/intro.png</file>
+</qresource>
+</RCC>

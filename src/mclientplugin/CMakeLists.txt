@@ -1,36 +1,36 @@
-INCLUDE_DIRECTORIES(${mclientplugin_SOURCE_DIR}/ui ${CMAKE_CURRENT_SRC_DIR})
+# mclientplugin
 
-ADD_DEFINITIONS(${QT_DEFINITIONS})
-#ADD_DEFINITIONS(-DQT_PLUGIN)
-ADD_DEFINITIONS(-DQT_NO_DEBUG)
-ADD_DEFINITIONS(-DQT_SHARED)
-add_definitions(-fPIC)
+# Source Files
+file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
+set(mclientplugin_SRCS ${files})
 
-set(mclientplugin_SRCS
-    PluginEntry.cpp
-    PluginManager.cpp
-    MClientEvent.cpp
-    MClientEventData.cpp
-    MClientPlugin.cpp
-    MClientFilterPlugin.cpp
-    MClientIOPlugin.cpp
-    MClientDisplayPlugin.cpp
-    PluginConfigWidget.cpp
-    ConfigManager.cpp)
+# Header Files
+file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h")
+set(mclientplugin_MOC_HDRS ${files})
 
-SET(mclientplugin_MOC_HDRS
-    PluginManager.h
-    MClientPlugin.h
-    MClientFilterPlugin.h
-    MClientIOPlugin.h
-    MClientDisplayPlugin.h
-    PluginConfigWidget.h
-    ConfigManager.h
-    MClientDefinitions.h)
+# UI Files
+file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.ui")
+set(mclientplugin_UIS ${files})
 
+include_directories(
+    ${CMAKE_CURRENT_BINARY_DIR}
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+  
 QT4_WRAP_CPP(mclientplugin_MOC_SRCS ${mclientplugin_MOC_HDRS})
+QT4_WRAP_UI(mclientplugin_UIS_H ${mclientplugin_UIS})
 
-add_library(mclientplugin
+add_library(mclientplugin STATIC
     ${mclientplugin_SRCS}
-    ${mclientplugin_MOC_SRCS})
-target_link_libraries(mclientplugin ${QT_LIBRARIES})
+    ${mclientplugin_MOC_SRCS}
+    ${mclientplugin_RCC_SRCS}
+    ${mclientplugin_UIS_H}
+)
+
+target_link_libraries(
+    mclientplugin
+    commandmanager
+    mainwindow
+    ${QT_LIBRARIES}
+)
+
