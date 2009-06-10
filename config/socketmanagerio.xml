@@ -1,7 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<config plugin="socketmanagerio" version="2.0">
-    <profile name="test">
-        <connection host="mume.org" port="4242"/>
-        <proxy host="proxy.example.com" port="8080"/>
-    </profile>
-</config>

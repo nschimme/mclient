@@ -1,3 +1,6 @@
+#add_definitions(-DQT_NO_DEBUG)
+#add_definitions(-DQT_SHARED)
+
 # mClient
 
 # Source files
@@ -34,7 +37,7 @@ include_directories(
 #QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
 QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
-add_executable(mclient WIN32
+add_executable(mclient #WIN32
     ${mclient_SRCS}
     ${mclient_MOC_SRCS}
     ${mclient_UIS_H}
@@ -60,8 +63,38 @@ add_subdirectory(plugins)
 
 # Installation Location
 install(TARGETS mclient
-        RUNTIME DESTINATION bin
+        RUNTIME DESTINATION .
         COMPONENT applications)
+
+# Windows Install Settings
+if (WIN32)
+    # Install Library Files
+    # Note: this is not necessary if Qt is compiled statically
+    message(STATUS "Qt libraries are at ${QT_LIBRARY_DIR}")
+    install(FILES
+        "${QT_LIBRARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtGui${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtNetwork${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtXml${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtOpenGL${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtWebKit${QT_VERSION_MAJOR}.dll"
+        DESTINATION .
+	COMPONENT libraries
+    )
+    if (MINGW)
+	string(REGEX REPLACE "[\\|/][^\\/]+exe$" ""
+	       MINGW_LIBRARY_DIR
+	       ${CMAKE_CXX_COMPILER}
+        )
+        message(STATUS "MingW library is at ${MINGW_LIBRARY_DIR}")
+
+        install(FILES 
+            "${MINGW_LIBRARY_DIR}/mingwm10.dll"
+	    DESTINATION .
+	    COMPONENT libraries
+	)
+    endif (MINGW)
+endif (WIN32)
 
 # Installer
 set(CPACK_RESOURCE_FILE_LICENSE )

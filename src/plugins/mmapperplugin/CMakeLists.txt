@@ -50,8 +50,8 @@ add_library(mmapperplugin SHARED ${mmapperplugin_SRCS}
 target_link_libraries(mmapperplugin mclientplugin ${QT_LIBRARIES})
 
 INSTALL(TARGETS mmapperplugin
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION "${PLUGINS_DIR}"
+  LIBRARY DESTINATION "${PLUGINS_DIR}"
+  ARCHIVE DESTINATION "${PLUGINS_DIR}/static"
   COMPONENT plugins
 )

@@ -30,8 +30,5 @@ if (UNIX AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
     add_definitions(-fPIC)
 endif (UNIX AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 
-# Remove following line for debug support
-# add_definitions(-DQT_NO_DEBUG)
-
 # Add the rest of the sources
 add_subdirectory(src)

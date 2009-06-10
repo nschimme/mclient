@@ -1,5 +1,5 @@
 mkdir build
 cd build
-cmake ../ -DCMAKE_INSTALL_PREFIX=. -G "MinGW Makefiles"
+cmake ../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=. -G "MinGW Makefiles"
 mingw32-make && mingw32-make install
 cd ..

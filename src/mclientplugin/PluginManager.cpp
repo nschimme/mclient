@@ -54,11 +54,10 @@ PluginManager::PluginManager(QObject* parent) : QThread(parent) {
       applicationSettings();
     
     QDateTime indexMod = QDateTime::fromString(hash->value("mClient/plugins/indexed"));
-    _pluginDir = hash->value("mClient/plugins/path", "./plugins");
+    _pluginDir = hash->value("mClient/plugins/path", "plugins");
 
     // Move into the plugins directory
     QDir pluginsDir = QDir(qApp->applicationDirPath());
-    pluginsDir.cdUp();
     pluginsDir.cd(_pluginDir);
 
     // Identify if there is something newer in the directory than the
@@ -336,7 +335,6 @@ void PluginManager::stopSession(const QString &s) {
 
 const bool PluginManager::indexPlugins() {
     QDir pluginsDir = QDir(qApp->applicationDirPath());
-    pluginsDir.cdUp();
     pluginsDir.cd(_pluginDir);
 
     //qDebug() << "Files: " << pluginsDir.entryList(QDir::Files);

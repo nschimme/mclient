@@ -167,7 +167,6 @@ ConfigManager::~ConfigManager() {
 
 const bool ConfigManager::readApplicationSettings() {
   QDir configDir = QDir(qApp->applicationDirPath());
-  configDir.cdUp();
   if (!configDir.exists("config")) {
     if (!configDir.mkdir("config")) {
       qCritical() << "* Unable to create configuration directory";

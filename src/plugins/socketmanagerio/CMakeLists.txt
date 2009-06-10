@@ -30,14 +30,15 @@ add_library(socketmanagerio SHARED
 
 target_link_libraries(
     socketmanagerio
+    debug
     mclientplugin
     commandmanager
     ${QT_LIBRARIES}
 )
 
 INSTALL(TARGETS socketmanagerio
-  RUNTIME DESTINATION bin
-  LIBRARY DESTINATION lib
-  ARCHIVE DESTINATION lib
+  RUNTIME DESTINATION "${PLUGINS_DIR}"
+  LIBRARY DESTINATION "${PLUGINS_DIR}"
+  ARCHIVE DESTINATION "${PLUGINS_DIR}/static"
   COMPONENT plugins
 )

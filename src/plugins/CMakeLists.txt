@@ -1,6 +1,7 @@
 add_definitions(-DQT_PLUGIN)
 
 # mClient Plugins
+set(PLUGINS_DIR "plugins")
 
 add_subdirectory(socketmanagerio)
 add_subdirectory(simplelineinput)
