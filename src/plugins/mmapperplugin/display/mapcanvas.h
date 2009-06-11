@@ -54,7 +54,7 @@ class MapCanvas : public QGLWidget//, public RoomRecipient
   Q_OBJECT
 
   public:
-    MapCanvas( MapData *mapData, PrespammedPath* prespammedPath, const QGLFormat & fmt, QWidget * parent = 0 );
+    MapCanvas(const QGLFormat & fmt, QWidget * parent = 0 );
     ~MapCanvas();
 
     QSize minimumSizeHint() const;
@@ -74,6 +74,8 @@ class MapCanvas : public QGLWidget//, public RoomRecipient
 
 
   public slots:
+    void init(MapData *mapData, PrespammedPath* pp);      
+
     void forceMapperToRoom();
     void onInfoMarksEditDlgClose();
 

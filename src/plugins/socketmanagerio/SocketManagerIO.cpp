@@ -1,5 +1,4 @@
 #include "SocketManagerIO.h"
-
 #include "SocketManagerIOConfig.h"
 #include "SocketReader.h"
 
@@ -83,7 +82,7 @@ void SocketManagerIO::configure() {
 
 
 const bool SocketManagerIO::loadSettings() {
-    _settings = ConfigManager::instance()->pluginSettings(_shortName);
+    _settings = *ConfigManager::instance()->pluginSettings(_shortName);
     return true;
 }
 
@@ -98,14 +97,14 @@ const bool SocketManagerIO::startSession(QString s) {
     QString cfg = QString("config/%1/").arg(s);
 
     // Host settings
-    QString host = _settings->value(cfg+"connection/host", "mume.org");
-    int port = _settings->value(cfg+"connection/port", "4242").toInt();
+    QString host = _settings.value(cfg+"connection/host", "mume.org");
+    int port = _settings.value(cfg+"connection/port", "4242").toInt();
 
     // Proxy settings
-    QString proxy_host = _settings->value(cfg+"proxy/host", "proxy.example.com");
-    int proxy_port = _settings->value(cfg+"proxy/port", "8080").toInt();
-    QString proxy_user = _settings->value(cfg+"proxy/proxy_user", "example");
-    QString proxy_pass = _settings->value(cfg+"proxy/proxy_pass", "example");
+    QString proxy_host = _settings.value(cfg+"proxy/host", "proxy.example.com");
+    int proxy_port = _settings.value(cfg+"proxy/port", "0").toInt();
+    QString proxy_user = _settings.value(cfg+"proxy/proxy_user", "");
+    QString proxy_pass = _settings.value(cfg+"proxy/proxy_pass", "");
 
     SocketReader* sr = new SocketReader(s, this);
     if(proxy_port != 0 && !proxy_host.isEmpty()) {
@@ -120,7 +119,7 @@ const bool SocketManagerIO::startSession(QString s) {
 		 << "to SocketReader in session" << s;
     }
     //qDebug() << "* SockerReaderIO threads (sr, io):" << sr->thread() << this->thread();
-    sr->moveToThread(this->thread());
+    //sr->moveToThread(this->thread());
     //qDebug() << "* SockerReaderIO threads (sr, io):" << sr->thread() << this->thread();
     sr->host(host);
     sr->port(port);
@@ -145,10 +144,16 @@ const bool SocketManagerIO::stopSession(QString s) {
 
 // IO members
 void SocketManagerIO::connectDevice(QString s) {
-    // Attempts to connect every socket associated with the session s
-    if (_openSockets.values(s).isEmpty()) {
+
+    if (!_openSockets.values(s).isEmpty()) {
+      displayMessage("#connection is already open. "
+		     "Use '#zap' to disconnect it.\n", s);
+
+    } else {
+      // Connect a particular session's sockets.
       foreach(SocketReader* sr, _socketReaders.values(s))
         sr->connectToHost();
+
     }
 }
 
@@ -183,8 +188,6 @@ void SocketManagerIO::sendData(const QByteArray& ba, const QString& session) {
 
 
 void SocketManagerIO::socketReadData(const QByteArray& data, const QString& s) {
-    qDebug() << "received data from" << s;
-
     QVariant* qv = new QVariant(data);
     QStringList tags("SocketData");
     postEvent(qv, tags, s);

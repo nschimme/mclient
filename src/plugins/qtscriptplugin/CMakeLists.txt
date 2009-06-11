@@ -31,13 +31,11 @@ add_library(qtscriptplugin SHARED
 target_link_libraries(
     qtscriptplugin
     mclientplugin
-    commandmanager
     ${QT_LIBRARIES}
 )
 
 INSTALL(TARGETS qtscriptplugin
   RUNTIME DESTINATION "${PLUGINS_DIR}"
   LIBRARY DESTINATION "${PLUGINS_DIR}"
-  ARCHIVE DESTINATION "${PLUGINS_DIR}/static"
   COMPONENT plugins
 )

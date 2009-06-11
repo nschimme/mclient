@@ -11,7 +11,8 @@ set(QT_USE_QTOPENGL TRUE)
 include(${QT_USE_FILE})
 
 # mClient's version number
-add_definitions(-DMCLIENT_VERSION="Alpha")
+set(MCLIENT_VERSION "Alpha")
+add_definitions(-DMCLIENT_VERSION="${MCLIENT_VERSION}")
 
 # Get SVN revision number
 find_package(Subversion)
@@ -20,6 +21,7 @@ if (Subversion_FOUND)
         Subversion_WC_INFO(${PROJECT_SOURCE_DIR} PROJECT)
         message(STATUS "Current SVN revision is ${PROJECT_WC_REVISION}")
         add_definitions(-DSVN_REVISION=${PROJECT_WC_REVISION})
+	set(SVN_BUILD ${PROJECT_WC_REVISION})
     endif (EXISTS ${PROJECT_SOURCE_DIR}/.svn)
 endif (Subversion_FOUND)
 

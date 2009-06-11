@@ -53,8 +53,6 @@ AbstractParser::AbstractParser(MapData* md, QObject *parent)
 void AbstractParser::characterMoved(CommandIdType c, const QString& roomName, const QString& dynamicRoomDesc, const QString& staticRoomDesc, ExitsFlagsType exits, PromptFlagsType prompt)
 {
   emit event(createEvent(c, roomName, dynamicRoomDesc, staticRoomDesc, exits, prompt));
-  qDebug() << "* MMapperPluginParser detected the character moved"
-	   << roomName << staticRoomDesc << dynamicRoomDesc << c;
 }
 
 void AbstractParser::emptyQueue()

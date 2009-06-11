@@ -19,7 +19,8 @@
 
 #include <QProgressDialog>
 
-#include <QObject>
+#include <QPointer>
+#include <QThread>
 
 class Configuration;
 
@@ -36,8 +37,9 @@ class FindRoomsDlg;
 
 class MMapperPlugin;
 class MainWindow;
+class MMapperPluginParser;
 
-class MapperManager: public QObject {
+class MapperManager: public QThread {
   Q_OBJECT
 
   public:
@@ -93,6 +95,10 @@ class MapperManager: public QObject {
 
   signals:
     void log(const QString&, const QString&);
+    void initMapCanvas(MapData*, PrespammedPath*);
+
+ protected:
+    void run();
 
   private:
     QString _session;
@@ -101,13 +107,14 @@ class MapperManager: public QObject {
     Mmapper2PathMachine *_pathMachine;
     MapData *_mapData;
     RoomPropertySetter *_propertySetter;
-    CommandEvaluator *_commandEvaluator;
+    //CommandEvaluator *_commandEvaluator;
     PrespammedPath *_prespammedPath;
+    MMapperPluginParser *_parser;
 
     const RoomSelection *_roomSelection;
     ConnectionSelection *_connectionSelection;
 
-    QProgressDialog *progressDlg;
+    QPointer<QProgressDialog> progressDlg;
     FindRoomsDlg *_findRoomsDlg;
 
     MainWindow *_mainWindow;

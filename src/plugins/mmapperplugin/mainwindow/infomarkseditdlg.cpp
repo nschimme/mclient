@@ -31,7 +31,7 @@
 #include "defs.h"
 #include "math.h"
 
-InfoMarksEditDlg::InfoMarksEditDlg(MapData* mapData, QWidget *parent)
+InfoMarksEditDlg::InfoMarksEditDlg(QWidget *parent)
         : QDialog(parent)
 {
     setupUi(this);
@@ -42,8 +42,6 @@ InfoMarksEditDlg::InfoMarksEditDlg(MapData* mapData, QWidget *parent)
 	m_selX2 = 0;
 	m_selY2 = 0;
 	m_selLayer = 0;	
-	
-	m_mapData = mapData;	
 }
 
 void InfoMarksEditDlg::setPoints(double x1, double y1, double x2, double y2, int layer)

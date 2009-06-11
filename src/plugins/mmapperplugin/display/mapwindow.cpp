@@ -26,12 +26,12 @@
 #include "mapwindow.h"
 #include "mapcanvas.h"
 
-MapWindow::MapWindow(MapData *mapData, PrespammedPath* pp, QWidget * parent)
+MapWindow::MapWindow(QWidget * parent)
     : QWidget(parent)
 {
-	m_verticalScrollStep = 0;
-	m_horizontalScrollStep = 0;
-	scrollTimer = NULL;
+  m_verticalScrollStep = 0;
+  m_horizontalScrollStep = 0;
+  scrollTimer = NULL;
 
   m_gridLayout = new QGridLayout(this);
   m_gridLayout->setSpacing(0);
@@ -56,18 +56,18 @@ MapWindow::MapWindow(MapData *mapData, PrespammedPath* pp, QWidget * parent)
   fmt.setDirectRendering( TRUE );
   fmt.setRgba( TRUE );
   fmt.setDepth( TRUE );
-  m_canvas = new MapCanvas(mapData, pp, fmt, NULL);
+  m_canvas = new MapCanvas(fmt, NULL);
 
   m_gridLayout->addWidget(m_canvas, 0, 0, 1, 1);
 
   connect(m_horizontalScrollBar, SIGNAL(valueChanged(int)), m_canvas, SLOT(setHorizontalScroll(int)));
   connect(m_verticalScrollBar, SIGNAL(valueChanged(int)), m_canvas, SLOT(setVerticalScroll(int)));
-
+  
   connect(m_canvas, SIGNAL(onEnsureVisible( qint32, qint32 )), this, SLOT(ensureVisible( qint32, qint32 )));
   connect(m_canvas, SIGNAL(onCenter( qint32, qint32 )), this, SLOT(center( qint32, qint32 )));
-
+  
   connect(m_canvas, SIGNAL(setScrollBars(const Coordinate &, const Coordinate &)), this, SLOT(setScrollBars(const Coordinate &, const Coordinate &)));
-
+  
   connect ( m_canvas, SIGNAL(continuousScroll(qint8, qint8)),  this, SLOT(continuousScroll(qint8, qint8)) );
   connect ( m_canvas, SIGNAL(mapMove(int, int)),  this, SLOT(mapMove(int, int)) );
   connect( this, SIGNAL(setScroll(int, int)), m_canvas, SLOT(setScroll(int, int)));

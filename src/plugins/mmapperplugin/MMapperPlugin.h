@@ -6,11 +6,8 @@
 #include <QQueue>
 #include <QHash>
 
-class MMapperPluginParser;
 class MapperManager;
 class QEvent;
-
-struct EventData;
 
 class MMapperPlugin : public MClientDisplayPlugin {
     Q_OBJECT
@@ -26,7 +23,6 @@ class MMapperPlugin : public MClientDisplayPlugin {
         const bool saveSettings() const;
         const bool startSession(QString s);
         const bool stopSession(QString s);
-	void run();
 
         // Display members
         const bool initDisplay(QString s);
@@ -37,10 +33,8 @@ public slots:
         void log(const QString&, const QString&);
 
     private:
-	QQueue<EventData*> _eventQueue;
 	QHash<QString, QString> *_settings;
         QHash<QString, MapperManager*> _mappers;
-	QHash<QString, MMapperPluginParser*> _parsers;
 
  signals:
 	void name(QString, const QString &);

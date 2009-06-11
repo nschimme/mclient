@@ -1,123 +1,100 @@
 #include "SocketReader.h"
 #include "SocketManagerIO.h"
 
+#include <QMetaType>
 #include <QDebug>
-#include <QString>
 #include <QTcpSocket>
 
 SocketReader::SocketReader(QString s, SocketManagerIO *sm, QObject *parent) 
     : QThread(parent) { 
+  qRegisterMetaType<QAbstractSocket::SocketError>
+    ("QAbstractSocket::SocketError");
    
     _session = s;
     _sm = sm;
 
-    _socket = new QTcpSocket(this);
     _proxy.setType(QNetworkProxy::NoProxy);
-    _socket->setProxy(_proxy);
-
-    qDebug() << "* SocketManagerIO thread:" << _sm->thread();
-    qDebug() << "* SocketReader thread:" << this->thread();
-    qDebug() << "* Socket thread:" << _socket->thread();
-
-    connect(_socket, SIGNAL(connected()), SLOT(on_connect())); 
-    connect(_socket, SIGNAL(disconnected()), SLOT(on_disconnect())); 
-    connect(_socket, SIGNAL(readyRead()), SLOT(on_readyRead())); 
-    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
-	    SLOT(on_error())); 
 }
 
 
 void SocketReader::connectToHost() {
-  _socket->moveToThread(this);
-
   _sm->displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port),
 		      _session);
   
-  _socket->connectToHost(_host, _port);
+  if(!isRunning()) start(LowPriority);
 }
 
 
 SocketReader::~SocketReader() {
-    terminate();
+    exit();
     wait();
     delete _socket;
 }
 
 
-void SocketReader::on_connect() {
+void SocketReader::sendToSocket(const QByteArray* ba) {
+    if(_socket->state() != QAbstractSocket::ConnectedState) return;
+    _socket->write(ba->data());
+    //qDebug() << dataLength << "bytes written";
+    delete ba;
+}
+
+
+void SocketReader::closeSocket() {
+    _socket->close();
+    exit();
+    wait();
+    delete _socket;
+}
+
+
+void SocketReader::run() {
+    _socket = new QTcpSocket;
+    _socket->setProxy(_proxy);
+    
+    connect(_socket, SIGNAL(connected()), SLOT(onConnect())); 
+    connect(_socket, SIGNAL(disconnected()), SLOT(onDisconnect())); 
+    connect(_socket, SIGNAL(readyRead()), SLOT(onReadyRead())); 
+    connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
+	    SLOT(onError())); 
+
+    qDebug() << "* SocketManagerIO thread:" << _sm->thread();
+    qDebug() << "* SocketReader thread:" << this->thread();
+    qDebug() << "* Socket thread:" << _socket->thread();
+   
+    _socket->connectToHost(_host, _port);
+
+    _socket->waitForConnected(5000);
+    exec();
+}
+
+
+void SocketReader::onReadyRead() {
+    QByteArray ba = _socket->readAll(); 
+    //qDebug() << _socket->thread() << _session << "reading data:" << ba;
+    _sm->socketReadData(ba, _session);
+}
+
+
+void SocketReader::onConnect() {
     _sm->displayMessage(QString("connected!\n"), _session);
     _sm->socketOpened(this);
 }
 
 
-void SocketReader::on_readyRead() {
-    if(!isRunning()) start(LowPriority);
-}
-
-
-void SocketReader::on_disconnect() {
+void SocketReader::onDisconnect() {
     _sm->displayMessage(QString("#connection on \"%1\" closed.\n").arg(_session), _session);
     _sm->socketClosed(this);
 }
 
 
-void SocketReader::on_error() {
+void SocketReader::onError() {
     qWarning() << "Error involving" 
        << _host << _port << _socket->errorString();
     _sm->displayMessage(_socket->errorString().append(".\n"), _session);
-}
-
-
-const int& SocketReader::port() const {
-    return _port;
-}
-
-
-void SocketReader::closeSocket() const {
-    _socket->close();
-}
-
-
-void SocketReader::run() {
-    setTerminationEnabled(false);
-    
-    qDebug() << "SocketReader" << _session << "reading data!";
-    // Just read everything there is to be read into a QByteArray.
-    QByteArray ba = _socket->readAll(); 
-    _sm->socketReadData(ba, _session);
-    
-    setTerminationEnabled(true);
-}
-
-
-void SocketReader::sendToSocket(const QByteArray* ba) {
-    if(_socket->state() != QAbstractSocket::ConnectedState) return;
-    //qDebug() << "Got user input:" << ba->data() << "\t" << ba->length();
-    //str << str.size();
-    //int len = _socket->write(ba.toLatin1().data(), str.size());
-    //int len = _socket->write(*ba);
-
-    const char *dd = ba->data();
-    int dataLength = ba->length();
-
-    _socket->write(ba->data());
-
-//     int written = 0;
-//     do {
-//       int w = _socket->write(dd + written, dataLength - written);
-//       // TODO: need some error diagnostics
-//       if (w == -1)  // buffer full - try again
-// 	continue;
-//       written += w;
-//     } while (written < dataLength);
-
-    qDebug() << dataLength << "bytes written";
-    delete ba;
-}
-
-
-const QString& SocketReader::session() const {
-    return _session;
+    exit();
+    wait();
+    delete _socket;
 }
 
 
@@ -133,5 +110,16 @@ void SocketReader::port(const int port) {
 
 void SocketReader::proxy(const QNetworkProxy* proxy) {
     _proxy = *proxy;
-    _socket->setProxy(_proxy);
+    if (_socket) _socket->setProxy(_proxy);
+
+}
+
+
+const int& SocketReader::port() const {
+    return _port;
+}
+
+
+const QString& SocketReader::session() const {
+    return _session;
 }

@@ -28,6 +28,7 @@
 
 #include <QtGui>
 #include <QtOpenGL>
+#include <QPointer>
 #include "coordinate.h"
 
 class QKeyEvent;
@@ -36,55 +37,54 @@ class MapCanvas;
 class MapData;
 class PrespammedPath;
 
-class MapWindow : public QWidget
-{
+class MapWindow : public QWidget {
     Q_OBJECT
-
-public:
-    MapWindow(MapData *mapData, PrespammedPath* pp, QWidget * parent = 0);
+    
+      public:
+    MapWindow(QWidget * parent = 0);
     ~MapWindow();
-
-	void resizeEvent (QResizeEvent * event);
-
+    
+    void resizeEvent (QResizeEvent * event);    
     MapCanvas* getCanvas(){return m_canvas;};
 
-signals:
-
-	void setScroll(int, int);
-
+    
 public slots:
     void setScrollBars(const Coordinate &, const Coordinate &);
-
+    
     void ensureVisible( qint32 x, qint32 y );
     void center( qint32 x, qint32 y );
-
-	void mapMove(int, int);
-	void continuousScroll(qint8, qint8);
-
-	void verticalScroll(qint8);
-	void horizontalScroll(qint8);
-
-	void scrollTimerTimeout();
-
-protected:
- //   void resizeEvent ( QResizeEvent * event );
- //   void paintEvent ( QPaintEvent * event );
-
-	QTimer *scrollTimer;
-	qint8 m_verticalScrollStep;
-	qint8 m_horizontalScrollStep;
-
-    QGridLayout *m_gridLayout;
-    QScrollBar *m_horizontalScrollBar;
-    QScrollBar *m_verticalScrollBar;
-    MapCanvas *m_canvas;
-
+    
+    void mapMove(int, int);
+    void continuousScroll(qint8, qint8);
+    
+    void verticalScroll(qint8);
+    void horizontalScroll(qint8);
+    
+    void scrollTimerTimeout();
+    
+ protected:
+    //   void resizeEvent ( QResizeEvent * event );
+    //   void paintEvent ( QPaintEvent * event );
+    
+    QTimer *scrollTimer;
+    qint8 m_verticalScrollStep;
+    qint8 m_horizontalScrollStep;
+    
+    QPointer<QGridLayout> m_gridLayout;
+    QPointer<QScrollBar> m_horizontalScrollBar;
+    QPointer<QScrollBar> m_verticalScrollBar;
+    MapCanvas* m_canvas;
+    
     Coordinate m_scrollBarMinimumVisible;
     Coordinate m_scrollBarMaximumVisible;
-
-private:
+    
+ private:
     QPoint mousePressPos;
     QPoint scrollBarValuesOnMousePress;
+    
+ signals:
+    void setScroll(int, int);
+    
 };
 
 

@@ -66,13 +66,15 @@ public slots:
 	
 	 
 public:
-    InfoMarksEditDlg(MapData* mapData, QWidget *parent = 0);
+    InfoMarksEditDlg(QWidget *parent = 0);
     ~InfoMarksEditDlg();
+
+    void setMapData(MapData *md) { m_mapData = md; }
     
     void setPoints(double x1, double y1, double x2, double y2, int layer);
     
     void readSettings();
-	void writeSettings();
+    void writeSettings();
 	
 protected:
 	void closeEvent(QCloseEvent*);

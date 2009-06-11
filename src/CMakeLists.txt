@@ -1,5 +1,5 @@
 #add_definitions(-DQT_NO_DEBUG)
-#add_definitions(-DQT_SHARED)
+add_definitions(-DQT_SHARED)
 
 # mClient
 
@@ -135,6 +135,7 @@ set(CPACK_SOURCE_IGNORE_FILES
     "~$"
     "/\\\\.svn/"
     "/build/"
+    "/winbuild/"
 )
 set(CPACK_SOURCE_PACKAGE_FILE_NAME
     "${PROJECT_NAME}-${CPACK_PACKAGE_VERSION}-source"

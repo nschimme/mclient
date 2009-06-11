@@ -78,7 +78,7 @@ void CommandManager::registerCommand(const QStringList& sl) {
     } else {
       qDebug() << "Registering command " << command << " " << dataType;
       _mapping.insert(command, dataType);
-      _registry.insert(source, command);
+      _registry.insertMulti(source, command);
     }
   }
 }

@@ -86,52 +86,45 @@ GLubyte halftone[] = {
     0x88, 0x88, 0x88, 0x88, 0x22, 0x22, 0x22, 0x22};
 
 
-    MapCanvas::MapCanvas( MapData *mapData, PrespammedPath* prespammedPath, const QGLFormat & fmt, QWidget * parent )
+MapCanvas::MapCanvas(const QGLFormat & fmt, QWidget * parent )
   : QGLWidget(fmt, parent)
-  {
-    m_scrollX = 0;
-    m_scrollY = 0;
-
-    m_currentLayer = 0;
-
-        //no area selected at start time
-    m_selectedArea = false;
-
-    m_infoMarkSelection = false;
-
-    m_canvasMouseMode = CMM_MOVE;
-
-    m_roomSelection = NULL;
-    m_connectionSelection = NULL;
-
-    m_mouseRightPressed = false;
-    m_mouseLeftPressed = false;
-    m_altPressed = false;
-    m_ctrlPressed = false;
-
-
-    m_roomShadowPixmap = new QPixmap(30,30);
-    m_roomShadowPixmap->fill(QColor(0,0,0,175));
-
-    m_scaleFactor = 1.0f;  //scale rooms
-
-    m_glFont = new QFont(QFont(),this);
-    m_glFont->setStyleHint(QFont::System, QFont::OpenGLCompatible);
-
-    m_glFont->setStretch(QFont::Unstretched);
-
-    m_glFontMetrics = new QFontMetrics(*m_glFont);
-
-    m_firstDraw = true;
-
-    m_data = mapData;
-    m_prespammedPath = prespammedPath;
-
-    m_infoMarksEditDlg = new InfoMarksEditDlg(mapData, this);
-    connect(m_infoMarksEditDlg, SIGNAL(mapChanged()), this, SLOT(update()));
-    connect(m_infoMarksEditDlg, SIGNAL(closeEventReceived()), this, SLOT(onInfoMarksEditDlgClose()));
-
-    for (int i=0; i<16; i++)
+{
+  m_scrollX = 0;
+  m_scrollY = 0;
+  
+  m_currentLayer = 0;
+  
+  //no area selected at start time
+  m_selectedArea = false;
+  
+  m_infoMarkSelection = false;
+  
+  m_canvasMouseMode = CMM_MOVE;
+  
+  m_roomSelection = NULL;
+  m_connectionSelection = NULL;
+  
+  m_mouseRightPressed = false;
+  m_mouseLeftPressed = false;
+  m_altPressed = false;
+  m_ctrlPressed = false;
+  
+  
+  m_roomShadowPixmap = new QPixmap(30,30);
+  m_roomShadowPixmap->fill(QColor(0,0,0,175));
+  
+  m_scaleFactor = 1.0f;  //scale rooms
+  
+  m_glFont = new QFont(QFont());
+  m_glFont->setStyleHint(QFont::System, QFont::OpenGLCompatible);
+  
+  m_glFont->setStretch(QFont::Unstretched);
+  
+  m_glFontMetrics = new QFontMetrics(*m_glFont);
+  
+  m_firstDraw = true;
+  
+  for (int i=0; i<16; i++)
     {
       m_terrainPixmaps[i] = new QPixmap(QString(":/pixmaps/terrain%1.png").arg(i));
       m_roadPixmaps[i] = new QPixmap(QString(":/pixmaps/road%1.png").arg(i));
@@ -139,32 +132,45 @@ GLubyte halftone[] = {
       m_mobPixmaps[i] = new QPixmap(QString(":/pixmaps/mob%1.png").arg(i));
       m_trailPixmaps[i] = new QPixmap(QString(":/pixmaps/trail%1.png").arg(i));
     }
-    m_updatePixmap[0] = new QPixmap(QString(":/pixmaps/update0.png"));
-  }
+  m_updatePixmap[0] = new QPixmap(QString(":/pixmaps/update0.png"));
+
+  m_infoMarksEditDlg = new InfoMarksEditDlg(this);
+  connect(m_infoMarksEditDlg, SIGNAL(mapChanged()), this, SLOT(update()));
+  connect(m_infoMarksEditDlg, SIGNAL(closeEventReceived()), this, SLOT(onInfoMarksEditDlgClose()));  
+}
+
+void MapCanvas::init(MapData *mapData, PrespammedPath* prespammedPath) {
+  m_data = mapData;
+  m_prespammedPath = prespammedPath;
+
+  m_infoMarksEditDlg->setMapData(mapData);
+
+  update();
+}
 
 
-  void MapCanvas::onInfoMarksEditDlgClose()
-  {
-    m_infoMarkSelection = false;
-    updateGL();
-  }
+void MapCanvas::onInfoMarksEditDlgClose()
+{
+  m_infoMarkSelection = false;
+  updateGL();
+}
 
-  MapCanvas::~MapCanvas()
-  {
-    for (int i=0; i<16; i++)
+MapCanvas::~MapCanvas()
+{
+  for (int i=0; i<16; i++)
     {
       if (m_terrainPixmaps[i]) delete m_terrainPixmaps[i];
       if (m_roadPixmaps[i]) delete m_roadPixmaps[i];
       if (m_loadPixmaps[i]) delete m_loadPixmaps[i];
       if (m_mobPixmaps[i]) delete m_mobPixmaps[i];
     }
-    if (m_updatePixmap[0]) delete m_updatePixmap[0];
-
-    if (m_roomSelection) m_data->unselect(m_roomSelection);
-    if (m_connectionSelection) delete m_connectionSelection;
-    if ( m_glFont ) delete m_glFont;
-    if ( m_glFontMetrics ) delete m_glFontMetrics;
-  }
+  if (m_updatePixmap[0]) delete m_updatePixmap[0];
+  
+  if (m_roomSelection) m_data->unselect(m_roomSelection);
+  if (m_connectionSelection) delete m_connectionSelection;
+  if ( m_glFont ) delete m_glFont;
+  if ( m_glFontMetrics ) delete m_glFontMetrics;
+}
 /*
   void MapCanvas::closeEvent(QCloseEvent *event){
   if ( m_infoMarksEditDlg )

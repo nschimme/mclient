@@ -4,6 +4,7 @@
 #include <QThread>
 
 #include <QHash>
+#include <QMultiHash>
 #include <QPointer>
 
 class PluginConfigWidget;
@@ -25,8 +26,6 @@ class PluginManager : public QThread {
 
 /*         PluginManager(QWidget* display, QObject* io, QObject* filter, */
 /*                 QObject* parent=0); */
-        PluginManager(QObject* parent=0);
-        ~PluginManager();
 
         void loadAllPlugins();
         const bool loadPlugin(const QString& libName);
@@ -43,6 +42,11 @@ class PluginManager : public QThread {
         void stopSession(const QString &s);
     
     protected:
+        PluginManager(QObject* parent=0);
+        ~PluginManager();
+
+        static PluginManager* _pinstance;
+
         // short name -> other info
         QHash<QString, PluginEntry*> _availablePlugins; 
         
@@ -61,9 +65,9 @@ class PluginManager : public QThread {
 	QMultiHash<QString, QPluginLoader*> _pluginTypes;
 
         // Here are the parents
-        QWidget* _displayParent;
-        QObject* _ioParent;
-        QObject* _filterParent;
+/*         QWidget* _displayParent; */
+/*         QObject* _ioParent; */
+/*         QObject* _filterParent; */
 
         // In what directory are plugins located?  ConfigManager knows.
         QString _pluginDir;
@@ -74,8 +78,6 @@ class PluginManager : public QThread {
         QPointer<PluginConfigWidget> _configWidget;
 
     private:
-        static PluginManager* _pinstance;
-
         const bool indexPlugins();
         const bool writePluginIndex();
         const bool readPluginIndex();

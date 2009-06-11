@@ -1,23 +1,28 @@
-add_definitions(${QT_DEFINITIONS})
-add_definitions(-DQT_PLUGIN)
-add_definitions(-DQT_NO_DEBUG)
-add_definitions(-DQT_SHARED)
+# mmapperplugin
 
 # Source Files
-file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.cpp")
-set(mmapperplugin_SRCS ${mmapperplugin_SRCS} ${files})
+file(GLOB_RECURSE mmapperplugin_SRCS
+     RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+     "*.cpp"
+)
 
 # Header Files
-file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.h")
-set(mmapperplugin_MOC_HDRS ${mmapperplugin_MOC_HDRS} ${files})
+file(GLOB_RECURSE mmapperplugin_MOC_HDRS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "*.h"
+)
 
 # Resource Files
-file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.qrc")
-set(mmapperplugin_RCS ${mmapperplugin_RCS} ${files})
+file(GLOB_RECURSE mmapperplugin_RCS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "*.qrc"
+)
 
 # UI Files
-file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "*.ui")
-set(mmapperplugin_UIS ${mmapperplugin_UIS} ${files})
+file(GLOB_RECURSE mmapperplugin_UIS
+    RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+    "*.ui"
+)
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -34,10 +39,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
     ${CMAKE_CURRENT_SOURCE_DIR}/pathmachine
     ${CMAKE_CURRENT_SOURCE_DIR}/preferences
-#    ${CMAKE_CURRENT_SOURCE_DIR}/resources
-#    ${CMAKE_CURRENT_SOURCE_DIR}/resources/icons
-#    ${CMAKE_CURRENT_SOURCE_DIR}/resources/pixmaps
-
 )
   
 QT4_WRAP_CPP(mmapperplugin_MOC_SRCS ${mmapperplugin_MOC_HDRS})
@@ -52,6 +53,5 @@ target_link_libraries(mmapperplugin mclientplugin ${QT_LIBRARIES})
 INSTALL(TARGETS mmapperplugin
   RUNTIME DESTINATION "${PLUGINS_DIR}"
   LIBRARY DESTINATION "${PLUGINS_DIR}"
-  ARCHIVE DESTINATION "${PLUGINS_DIR}/static"
   COMPONENT plugins
 )

@@ -1,6 +1,5 @@
 #include "MMapperPlugin.h"
 
-#include "MMapperPluginParser.h"
 #include "MapperManager.h"
 
 #include "MClientEvent.h"
@@ -13,17 +12,6 @@
 #include <QApplication>
 
 Q_EXPORT_PLUGIN2(mmapperplugin, MMapperPlugin)
-
-
-enum MMapperPluginEventType { XML_NONE = 0, XML_NAME, XML_DESCRIPTION,
-			      XML_DYNAMIC_DESCRIPTION, XML_EXITS, XML_PROMPT,
-			      XML_MOVE, MMAPPER_INPUT, MMAPPER_LOAD_MAP };
-
-struct EventData {
-  MMapperPluginEventType type;
-  QString data;
-  QString session;
-};
 
 
 MMapperPlugin::MMapperPlugin(QWidget* parent) 
@@ -93,55 +81,15 @@ void MMapperPlugin::customEvent(QEvent* e) {
       }
       else if (s.startsWith("M")) {
 	if(s.startsWith("MMapperInput")) {
-	  EventData *foo = new EventData;
-	  foo->data = me->payload()->toString();
-	  foo->session = me->session();
-	  foo->type = MMAPPER_INPUT;
-	  _eventQueue.enqueue(foo);
-	  if(!isRunning()) {
-	    start(LowPriority);
-	  }
-	  //emit userInput(me->payload()->toString(), me->session());
+	  emit userInput(me->payload()->toString(), me->session());
 	  
 	} else if (s.startsWith("MMapperLoadMap")) {
-// 	  EventData *foo = new EventData;
-// 	  foo->data = me->payload()->toString();
-// 	  foo->session = me->session();
-// 	  foo->type = MMAPPER_LOAD_MAP;
-// 	  _eventQueue.enqueue(foo);
-// 	  if(!isRunning()) start(LowPriority);
 	  emit loadFile("/home/nschimme/arda.mm2");
 	  
 	}
       }
       
     }
-}
-
-
-void MMapperPlugin::run() {
-  while(_eventQueue.count() > 0) {
-    EventData *foo = _eventQueue.dequeue();
-
-    switch (foo->type) {
-    case MMAPPER_INPUT:
-      //emit userInput(foo->data, foo->session);
-      qDebug() << "* MMapperPluginParser's thread is"
-	       << _parsers[foo->session]->thread();
-      _parsers[foo->session]->moveToThread(thread());
-      _parsers[foo->session]->userInput(foo->data, foo->session);
-      qDebug() << "* MMapperPluginParser's thread is"
-	       << _parsers[foo->session]->thread();
-      break;
-    case MMAPPER_LOAD_MAP:
-      //emit loadFile("/home/nschimme/arda.mm2");
-      _mappers[foo->session]->loadFile("/home/nschimme/arda.mm2");
-      break;
-    };
-
-    delete foo;
-  }
-  qDebug() << "* MMapperPlugin::run() returning. Running in" << thread();
 }
 
 
@@ -163,13 +111,12 @@ const bool MMapperPlugin::saveSettings() const {
 
 const bool MMapperPlugin::startSession(QString s) {
     MapperManager *mm = new MapperManager(s, this);
-    MMapperPluginParser *mpp = new MMapperPluginParser(s, this, mm);
+    mm->start(LowPriority);
 
     connect(this, SIGNAL(loadFile(const QString&)),
 	    mm, SLOT(loadFile(const QString&)));
     
     _mappers.insert(s, mm);
-    _parsers.insert(s, mpp);
     _runningSessions << s;
     return true;
 }
@@ -182,11 +129,6 @@ const bool MMapperPlugin::stopSession(QString s) {
         qDebug() << "* removed MapperManager for session" << s;
     }
     _mappers.remove(s);
-    foreach(MMapperPluginParser *mpp, _parsers.values(s)) {
-        delete mpp;
-        qDebug() << "* removed MMapperPluginParser for session" << s;
-    }
-    _parsers.remove(s);
     int removed = _runningSessions.removeAll(s);
     return removed!=0?true:false;
 }

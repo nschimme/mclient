@@ -19,9 +19,6 @@ class CommandManager : public QThread {
         static CommandManager* instance();
         void destroy();
 
-        CommandManager(QObject* parent=0);
-        ~CommandManager();
-
         void configure();
         const bool loadSettings();
         const bool saveSettings() const;
@@ -32,9 +29,13 @@ class CommandManager : public QThread {
 	bool unregisterCommand(const QString &source);
 	void registerCommand(const QStringList &sl);
 
-    private:
+ protected:
+        CommandManager(QObject* parent=0);
+        ~CommandManager();
+
         static CommandManager* _pinstance;
 
+   private:
         QChar _symbol, _delim;
 	QMap<Command, DataType> _mapping;
 	QMultiHash<Source, Command> _registry;

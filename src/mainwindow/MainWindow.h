@@ -39,6 +39,14 @@ class MainWindow:public QMainWindow
   void receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList);
   const QString& session() const { return _currentProfile; }
 
+public slots:
+    void start();
+
+private slots:
+    void changeConfiguration();
+
+    void setCurrentProfile(const QString &profile);
+
   protected:
     // It's a singleton, so these go here
     MainWindow();
@@ -47,15 +55,6 @@ class MainWindow:public QMainWindow
     static MainWindow* _pinstance;
     
     void closeEvent(QCloseEvent *event);
-
-
-  public slots:
-    void start();
-
-  private slots:
-    void changeConfiguration();
-
-    void setCurrentProfile(const QString &profile);
 
   private:
     QString _currentProfile;

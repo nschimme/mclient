@@ -6,6 +6,7 @@
 #include "MMapperPlugin.h"
 #include "MainWindow.h"
 #include "ActionManager.h"
+#include "MMapperPluginParser.h"
 
 #include "configuration.h" // TODO: remove this
 
@@ -29,24 +30,39 @@ MapperManager::MapperManager(QString s, MMapperPlugin *mp) {
   qRegisterMetaType<CommandQueue>("CommandQueue");
   qRegisterMetaType<DirectionType>("DirectionType");
   qRegisterMetaType<DoorActionType>("DoorActionType");
+  qRegisterMetaType<Coordinate>("Coordinate");
 
   _session = s;
   _plugin = mp;
   _mainWindow = MainWindow::instance();
 
+  _mapWindow = new MapWindow(_mainWindow);
+  qDebug() << "MapWindow loaded" << _mapWindow->thread();
+
+  _findRoomsDlg = 0;
   _roomSelection = NULL;
   _connectionSelection = NULL;
 
+  qDebug() << "* MapperManager thread:" << this->thread();
+}
+
+MapperManager::~MapperManager() {
+  exit();
+  wait();
+}
+
+
+void MapperManager::run() {
   _mapData = new MapData();
   _mapData->setObjectName("MapData");
   _mapData->start();
   qDebug("MapData loaded");
 
-  _prespammedPath = new PrespammedPath;
+  _prespammedPath = new PrespammedPath();
   qDebug("PrespammedPath loaded");
 
-  _mapWindow = new MapWindow(_mapData, _prespammedPath);
-  qDebug("MapWindow/DockWidget loaded");
+//   _mapWindow = new MapWindow(_mapData, _prespammedPath);
+//   qDebug("MapWindow/DockWidget loaded");
 
   _pathMachine = new Mmapper2PathMachine();
   _pathMachine->setObjectName("Mmapper2PathMachine");
@@ -58,50 +74,45 @@ MapperManager::MapperManager(QString s, MMapperPlugin *mp) {
   _propertySetter->start();
   qDebug("RoomPropertySetter loaded");
 
-  _findRoomsDlg = new FindRoomsDlg(_mapData);
-  _findRoomsDlg->setObjectName("FindRoomsDlg");
-  qDebug("FindRooms loaded");
-
-  // Log Dialog
   connect(this, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
   connect(_pathMachine, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
   connect(_mapData, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
   connect(_mapWindow->getCanvas(), SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
-  connect(_findRoomsDlg, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
 
-  // Map Window --> MapperManager
   connect(_mapWindow->getCanvas(), SIGNAL(newRoomSelection(const RoomSelection*)), SLOT(newRoomSelection(const RoomSelection*)));
   connect(_mapWindow->getCanvas(), SIGNAL(newConnectionSelection(ConnectionSelection*)), SLOT(newConnectionSelection(ConnectionSelection*)));
-  
-  // Path Machine <--> Map Data
+
   connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, const Coordinate & )), _mapData, SLOT(lookingForRooms(RoomRecipient*, const Coordinate & )));
   connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, ParseEvent* )), _mapData, SLOT(lookingForRooms(RoomRecipient*, ParseEvent* )));
   connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, uint )), _mapData, SLOT(lookingForRooms(RoomRecipient*, uint )));
-  connect(_mapData, SIGNAL(clearingMap()), _pathMachine, SLOT(releaseAllPaths()));
-  // Path Machine --> Map Window
   connect(_pathMachine, SIGNAL(playerMoved(const Coordinate & )), _mapWindow->getCanvas(), SLOT(moveMarker(const Coordinate &)));
+  connect(_mapData, SIGNAL(clearingMap()), _pathMachine, SLOT(releaseAllPaths()));
 
-  // Map Window --> Path Machine
   connect(_mapWindow->getCanvas(), SIGNAL(setCurrentRoom(uint)), _pathMachine, SLOT(setCurrentRoom(uint)));
   connect(_mapWindow->getCanvas(), SIGNAL(charMovedEvent(ParseEvent*)), _pathMachine, SLOT(event(ParseEvent*)));
 
-  // Map Data --> Map Window
   connect(_mapData, SIGNAL(mapSizeChanged(const Coordinate &, const Coordinate &)), _mapWindow, SLOT(setScrollBars(const Coordinate &, const Coordinate &)));
   connect(_mapWindow->getCanvas(), SIGNAL(roomPositionChanged()), _pathMachine, SLOT(retry()));
   connect(_prespammedPath, SIGNAL(update()), _mapWindow->getCanvas(), SLOT(update()));
   connect(_mapData, SIGNAL(onDataLoaded()), _mapWindow->getCanvas(), SLOT(dataLoaded()) );
 
-  connect(_findRoomsDlg, SIGNAL(center(qint32, qint32)), _mapWindow, SLOT(center(qint32, qint32)));
+  // Start Loading
+  connect(this, SIGNAL(initMapCanvas(MapData*, PrespammedPath*)),
+	  getMapWindow()->getCanvas(), SLOT(init(MapData*, PrespammedPath*)),
+	  Qt::DirectConnection);
+
+  emit initMapCanvas(_mapData, _prespammedPath);
+
+  // Create Parser
+  _parser = new MMapperPluginParser(_session, _plugin, this);
 
   // HACK for PlayMode
-  onPlayMode();
-  //onOfflineMode();
+  //onPlayMode();
+  onOfflineMode();
 
-  qDebug() << "* MapperManager thread:" << this->thread();
+  exec();
 }
 
-MapperManager::~MapperManager() {
-}
 
 void MapperManager::newFile()
 {
@@ -577,5 +588,17 @@ void MapperManager::onOfflineMode()
 
 void MapperManager::onFindRoom()
 {
+  if (!_findRoomsDlg) {
+    _findRoomsDlg = new FindRoomsDlg(_mapData);
+    _findRoomsDlg->setObjectName("FindRoomsDlg");
+
+    connect(_findRoomsDlg, SIGNAL(log( const QString&, const QString& )),
+	    _plugin, SLOT(log( const QString&, const QString& )));
+    connect(_findRoomsDlg, SIGNAL(center(qint32, qint32)),
+	    _mapWindow, SLOT(center(qint32, qint32)));
+
+    qDebug("FindRooms loaded");
+
+  }
   _findRoomsDlg->show();
 }

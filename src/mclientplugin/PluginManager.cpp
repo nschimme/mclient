@@ -224,7 +224,7 @@ const bool PluginManager::loadPlugin(const QString& libName) {
 	      QString s;
 	      foreach(s, iPlugin->dataTypes()) {
 		qDebug() << "* adding type" << s << "for" << iPlugin->shortName() << loader->instance();
-		_pluginTypes.insert(s, loader);
+		_pluginTypes.insertMulti(s, loader);
 	      }
             }
 
