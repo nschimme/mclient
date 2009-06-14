@@ -27,11 +27,11 @@ class AliasPlugin : public MClientPlugin {
         const bool stopSession(QString s);
 
     private:
-	QHash<Session, AliasHolder*> _sessions;
+	AliasHolder *h;
 
-	bool handleCommand(const QString&, const Session&);
-	void parseInput(const QString&, const Session&);
-        void displayData(const QString&, const QString&);
+	bool handleCommand(const QString&);
+	void parseInput(const QString&);
+        void displayData(const QString&);
 };
 
 #endif /* ALIASPLUGIN_H */

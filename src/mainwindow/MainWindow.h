@@ -26,6 +26,7 @@
 
 class QAction;
 class QMenu;
+class PluginManager;
 
 class MainWindow:public QMainWindow
 {
@@ -33,14 +34,16 @@ class MainWindow:public QMainWindow
 
   public:
   // Singleton methods
-  static MainWindow* instance();
-  void destroy();
+  static MainWindow* instance(PluginManager *pm=0);
+    ~MainWindow();
 
-  void receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList);
   const QString& session() const { return _currentProfile; }
+
+  PluginManager* getPluginManager() { return _pluginManager; }
 
 public slots:
     void start();
+    void receiveWidgets(const QList< QPair<int, QWidget*> >&);
 
 private slots:
     void changeConfiguration();
@@ -49,8 +52,7 @@ private slots:
 
   protected:
     // It's a singleton, so these go here
-    MainWindow();
-    ~MainWindow();
+    MainWindow(PluginManager *pm);
     
     static MainWindow* _pinstance;
     
@@ -61,10 +63,16 @@ private slots:
     QTabWidget *_tabWidget;
     QBoxLayout *_layout;
     QHash<QString, QDockWidget*> _dockWidgets;
+    PluginManager *_pluginManager;
 
     void readSettings();
     void writeSettings();
     bool maybeSave();
+
+   signals:
+    void startSession(const QString &s);
+    void stopSession(const QString &s);
+
 };
 
 #endif

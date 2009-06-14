@@ -12,12 +12,14 @@ typedef QString Source;
 typedef QString DataType;
 typedef QString Command;
 
+class PluginManager;
+
 class CommandManager : public QThread {
     Q_OBJECT
     
     public:
-        static CommandManager* instance();
-        void destroy();
+        static CommandManager* instance(PluginManager *pm=0);
+        ~CommandManager();
 
         void configure();
         const bool loadSettings();
@@ -30,8 +32,7 @@ class CommandManager : public QThread {
 	void registerCommand(const QStringList &sl);
 
  protected:
-        CommandManager(QObject* parent=0);
-        ~CommandManager();
+        CommandManager(PluginManager*, QObject* parent=0);
 
         static CommandManager* _pinstance;
 
@@ -39,6 +40,7 @@ class CommandManager : public QThread {
         QChar _symbol, _delim;
 	QMap<Command, DataType> _mapping;
 	QMultiHash<Source, Command> _registry;
+	PluginManager *_pluginManager;
 
         bool parseCommand(QString, const QString&, const QString&);
         void displayData(const QString&, const QString&);

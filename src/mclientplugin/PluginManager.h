@@ -1,14 +1,13 @@
 #ifndef PLUGINMANAGER_H
 #define PLUGINMANAGER_H
 
-#include <QThread>
-
 #include <QHash>
 #include <QMultiHash>
 #include <QPointer>
 
 class PluginConfigWidget;
 class PluginEntry;
+class PluginSession;
 
 class QApplication;
 class QEvent;
@@ -16,58 +15,56 @@ class QPluginLoader;
 class QString;
 class QWidget;
 
+class CommandManager;
+class ConfigManager;
+class MainWindow;
 
-class PluginManager : public QThread {
+class PluginManager : public QObject {
     Q_OBJECT
 
     public:
         static PluginManager* instance();
-        void destroy();
-
-/*         PluginManager(QWidget* display, QObject* io, QObject* filter, */
-/*                 QObject* parent=0); */
-
-        void loadAllPlugins();
-        const bool loadPlugin(const QString& libName);
-        const QPluginLoader* pluginWithAPI(const QString& api) const;
-        void customEvent(QEvent* e);
-
-        void run();
-
-        // for testing
-        void configure();
-
-        //const bool doneLoading() const;
-        void initSession(const QString &s);
-        void stopSession(const QString &s);
-    
-    protected:
-        PluginManager(QObject* parent=0);
         ~PluginManager();
 
+	MainWindow* getMainWindow() { return _mainWindow; }
+	CommandManager* getCommand() { return _commandManager; }
+	ConfigManager* getConfig() { return _configManager; }
+	PluginSession* getPluginSession(const QString &s) {
+	  return _pluginSessions[s];
+	}
+	
+	// For PluginSession
+	QHash<QString, PluginEntry*> getAvailablePlugins() {
+	  return _availablePlugins;
+	}
+	QString getPluginDir() { return _pluginDir; }
+
+        void customEvent(QEvent* e);
+        void configure();
+
+public slots:
+        void initSession(const QString &s);
+        void stopSession(const QString &s);
+        void startSession(PluginSession *ps);
+
+    protected:
+        PluginManager(QObject *parent=0);
         static PluginManager* _pinstance;
 
+    private:
+        const bool indexPlugins();
+        const bool writePluginIndex();
+        const bool readPluginIndex();
+
+	MainWindow *_mainWindow;
+	CommandManager *_commandManager;
+	ConfigManager *_configManager;
+
+	// Sessions
+	QHash<QString, PluginSession*> _pluginSessions;
+        
         // short name -> other info
         QHash<QString, PluginEntry*> _availablePlugins; 
-        
-        // A hash of the plugin object pointers, short name -> pointer
-        // NOTE: this way of indexing plugins gives each one a unique slot
-        QHash<QString, QPluginLoader*> _loadedPlugins;
-        
-        // A hash of the plugin object pointers, api -> pointer
-        // NOTE: some plugins may be repeated here.
-        QHash<QString, QPluginLoader*> _pluginAPIs;
-        
-        // A hash of the plugin object pointers, data type -> pointer
-        // NOTE: this is used to keep track of what data types each plugin
-        // wants for easy event handling.  This one also may have multiple
-        // entries for a given plugin.
-	QMultiHash<QString, QPluginLoader*> _pluginTypes;
-
-        // Here are the parents
-/*         QWidget* _displayParent; */
-/*         QObject* _ioParent; */
-/*         QObject* _filterParent; */
 
         // In what directory are plugins located?  ConfigManager knows.
         QString _pluginDir;
@@ -77,16 +74,8 @@ class PluginManager : public QThread {
 
         QPointer<PluginConfigWidget> _configWidget;
 
-    private:
-        const bool indexPlugins();
-        const bool writePluginIndex();
-        const bool readPluginIndex();
-        
-        // for testing
-        bool _doneLoading;
-
-    signals:
-        void doneLoading();
+ signals:
+	void doneLoading();
 
 };
 

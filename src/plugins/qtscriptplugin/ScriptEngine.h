@@ -18,8 +18,9 @@ class ScriptEngine : public QScriptEngine {
         ScriptEngine(QString s, QtScriptPlugin *gsp, QObject *parent=0);
         ~ScriptEngine();
 
-	const QString& session() const { return _session; }
 	void postEvent(QVariant *payload, const QStringList& tags);
+	void parseInput(const QString &);
+	void displayData(const QString&);
 
 protected slots:
         bool evaluateExpression(const QString&, const QString&);
@@ -30,7 +31,10 @@ protected slots:
         QString _session;
 	QtScriptPlugin *_qsp;
 
-	void displayData(const QString&);
+ signals:
+	void parseInput(const QString&, const QString&);
+	void postEvent(QVariant*, const QStringList&, const QString&);
+
 };
 
 

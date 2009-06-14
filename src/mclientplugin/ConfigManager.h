@@ -17,7 +17,7 @@ class ConfigManager : public QObject {
     public:
         // Singleton methods
         static ConfigManager* instance();
-        void destroy();
+        ~ConfigManager();
 
         // Use QSettings to handle general app-level settings
         const bool readApplicationSettings();
@@ -35,17 +35,18 @@ class ConfigManager : public QObject {
 
         // Return a list of profile names
         const QStringList profileNames() const {
-	  return _profiles.uniqueKeys();
+	  return _profilePlugins.uniqueKeys();
 	}
 
         // Return a list of plugins for a given profile
-        const QStringList profilePlugins(const QString profile) const;
+        const QStringList profilePlugins(const QString &s) const {
+	  return _profilePlugins.value(s);
+	}
 
 
     protected:
         // It's a singleton, so these go here
         ConfigManager(QObject* parent=0);
-        ~ConfigManager();
 
         static ConfigManager* _pinstance;
 
@@ -61,7 +62,7 @@ class ConfigManager : public QObject {
 	QHash<QString, QHash<QString, QString>* > _pluginSettings;
 
 	// List of plugins for a given profile
-	QMultiHash<QString, QString> _profiles;
+	QHash<QString, QStringList> _profilePlugins;
 
 };
 

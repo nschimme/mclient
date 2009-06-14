@@ -5,10 +5,11 @@
 #include "SimpleLineInput.h"
 #include "InputWidget.h"
 
-#include "MClientEvent.h"
-#include "MClientEventData.h"
 #include "PluginManager.h"
+#include "PluginSession.h"
+#include "MainWindow.h"
 #include "CommandManager.h"
+#include "MClientEvent.h"
 
 Q_EXPORT_PLUGIN2(simplelineinput, SimpleLineInput)
 
@@ -20,7 +21,8 @@ SimpleLineInput::SimpleLineInput(QWidget* parent)
     _description = "A simple line input plugin.";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _dataTypes << "ChangeUserInput";
+    _receivesDataTypes << "ChangeUserInput";
+    //    _deliversDataTypes << "?";
     _configurable = false;
     _configVersion = "2.0";
 
@@ -33,7 +35,6 @@ SimpleLineInput::SimpleLineInput(QWidget* parent)
 
 
 SimpleLineInput::~SimpleLineInput() {
-    stopAllSessions();
     saveSettings();
 }
 
@@ -52,8 +53,8 @@ void SimpleLineInput::customEvent(QEvent* e) {
     }
 }
 
-void SimpleLineInput::sendUserInput(const QString &session, const QString &input) {
-  CommandManager::instance()->parseInput(input, session);
+void SimpleLineInput::sendUserInput(const QString &input) {
+  _pluginSession->getManager()->getCommand()->parseInput(input, _session);
 }
 
 void SimpleLineInput::configure() {
@@ -72,31 +73,25 @@ const bool SimpleLineInput::saveSettings() const {
 
 const bool SimpleLineInput::startSession(QString s) {
     initDisplay(s);
-    _runningSessions << s;
     return true;
 }
 
 
 const bool SimpleLineInput::stopSession(QString s) {
-  foreach(InputWidget *iw, _widgets.values(s)) {
-    if (iw->close())
-      qDebug() << "* removed SimpleLineInput InputWidget for session" << s;
-  }
-  _widgets.remove(s);
-  int removed = _runningSessions.removeAll(s);
-  return removed!=0?true:false;
+  if (_widget->close())
+    qDebug() << "* removed SimpleLineInput InputWidget for session" << s;
+  return true;
 }
 
 
 // Display plugin members
 const bool SimpleLineInput::initDisplay(QString s) {
-    InputWidget *widget = new InputWidget(s, this);
-    _widgets.insert(s, widget); 
-    //widget->show();
-
-    return true;
+  MainWindow *mw = _pluginSession->getManager()->getMainWindow();
+  _widget = new InputWidget(s, this, mw);
+  
+  return true;
 }
 
 QWidget* SimpleLineInput::getWidget(QString s) {
-    return _widgets[s];
+    return _widget;
 }

@@ -1,7 +1,5 @@
-#include "MainWindow.h"
-#include "ConfigManager.h"
 #include "PluginManager.h"
-#include "CommandManager.h"
+#include "MainWindow.h"
 
 #include <QApplication>
 
@@ -15,23 +13,17 @@ int main(int argc, char** argv) {
     // Create Splash
     QSplashScreen *splash =
       new QSplashScreen(QPixmap(":/mainwindow/intro.png"));
+    splash->setAttribute(Qt::WA_DeleteOnClose);
     splash->show();
     splash->showMessage("Loading plugins...",
 			Qt::AlignBottom | Qt::AlignHCenter,
 			Qt::white);
 
     // Create Singletons
-    ConfigManager *cnfmgr = ConfigManager::instance();
-    PluginManager *plgmgr = PluginManager::instance();
-    CommandManager *cmdmgr = CommandManager::instance();
-    MainWindow *mw = MainWindow::instance();
-    
-    // Start mClient by loading plugins
-    plgmgr->start(QThread::TimeCriticalPriority);
+    PluginManager *pluginManager = PluginManager::instance();
 
     // MainWindow controls the splash
-    splash->finish(mw);
-    delete splash;
+    splash->finish(pluginManager->getMainWindow());
 
     return app.exec();
 }

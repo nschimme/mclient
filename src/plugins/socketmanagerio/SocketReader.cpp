@@ -5,11 +5,12 @@
 #include <QDebug>
 #include <QTcpSocket>
 
-SocketReader::SocketReader(QString s, SocketManagerIO *sm, QObject *parent) 
+SocketReader::SocketReader(const QString &s, SocketManagerIO *sm,
+			   QObject *parent) 
     : QThread(parent) { 
   qRegisterMetaType<QAbstractSocket::SocketError>
     ("QAbstractSocket::SocketError");
-   
+
     _session = s;
     _sm = sm;
 
@@ -18,8 +19,7 @@ SocketReader::SocketReader(QString s, SocketManagerIO *sm, QObject *parent)
 
 
 void SocketReader::connectToHost() {
-  _sm->displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port),
-		      _session);
+  _sm->displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port));
   
   if(!isRunning()) start(LowPriority);
 }
@@ -56,7 +56,7 @@ void SocketReader::run() {
     connect(_socket, SIGNAL(disconnected()), SLOT(onDisconnect())); 
     connect(_socket, SIGNAL(readyRead()), SLOT(onReadyRead())); 
     connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
-	    SLOT(onError())); 
+	    this, SLOT(onError(QAbstractSocket::SocketError))); 
 
     qDebug() << "* SocketManagerIO thread:" << _sm->thread();
     qDebug() << "* SocketReader thread:" << this->thread();
@@ -71,27 +71,38 @@ void SocketReader::run() {
 
 void SocketReader::onReadyRead() {
     QByteArray ba = _socket->readAll(); 
-    //qDebug() << _socket->thread() << _session << "reading data:" << ba;
-    _sm->socketReadData(ba, _session);
+    _sm->socketReadData(ba);
 }
 
 
 void SocketReader::onConnect() {
-    _sm->displayMessage(QString("connected!\n"), _session);
-    _sm->socketOpened(this);
+    _sm->displayMessage(QString("connected!\n"));
+    _sm->socketOpened();
 }
 
 
 void SocketReader::onDisconnect() {
-    _sm->displayMessage(QString("#connection on \"%1\" closed.\n").arg(_session), _session);
-    _sm->socketClosed(this);
+    _sm->displayMessage(QString("#connection on \"%1\" closed.\n")
+			.arg(_session));
+    _sm->socketClosed();
 }
 
 
-void SocketReader::onError() {
+void SocketReader::onError(QAbstractSocket::SocketError error) {
     qWarning() << "Error involving" 
-       << _host << _port << _socket->errorString();
-    _sm->displayMessage(_socket->errorString().append(".\n"), _session);
+	       << _host << _port << _socket->errorString();
+
+    QString errorMessage = _socket->errorString().append(".\n");
+    errorMessage.replace(0, 1, errorMessage.at(0).toLower());
+    switch (error) {
+    case QAbstractSocket::ConnectionRefusedError:
+    case QAbstractSocket::HostNotFoundError:
+      break;
+    default:
+      errorMessage.prepend("#");
+      break;
+    };
+    _sm->displayMessage(errorMessage);
     exit();
     wait();
     delete _socket;

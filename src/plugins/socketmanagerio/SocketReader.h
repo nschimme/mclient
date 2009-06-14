@@ -15,7 +15,7 @@ class SocketReader : public QThread {
     Q_OBJECT
 
     public:        
-        SocketReader(QString s, SocketManagerIO* sm, QObject* parent=0);
+        SocketReader(const QString&, SocketManagerIO*, QObject* parent=0);
         ~SocketReader();
 
         void connectToHost();
@@ -49,12 +49,7 @@ private slots:
         void onConnect();
         void onDisconnect();
         void onReadyRead();
-        void onError();
+        void onError(QAbstractSocket::SocketError error);
 };
-
-
-//By Runner
-#define ntohll(x) (((int64_t)(ntohl((int)((x << 32) >> 32))) << 32) | (unsigned int)ntohl(((int)(x >> 32))))
-#define htonll(x) ntohll(x)
 
 #endif /* SOCKETREADER_H */

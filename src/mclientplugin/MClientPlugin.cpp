@@ -1,8 +1,10 @@
 #include "MClientPlugin.h"
 
-#include "MClientEvent.h"
-#include "MClientEventData.h"
 #include "PluginManager.h"
+#include "PluginSession.h"
+#include "MClientEvent.h"
+#include "MClientEngineEvent.h"
+#include "MClientEventData.h"
 
 #include <QApplication>
 #include <QEvent>
@@ -10,31 +12,17 @@
 #include <QStringList>
 #include <QVariant>
 
-
 MClientPlugin::MClientPlugin(QObject* parent) : QThread(parent) {
     _shortName = "mclientplugin";
     _longName = "The Original MClientPlugin";
     _description = "If you see this text, the plugin author did not replace the default description.";
     _configurable = false;
     _configVersion = "none";
-    _type = UNKNOWN_PLUGIN;
 }
 
 
 MClientPlugin::~MClientPlugin() {
 }
-
-
-const MClientPluginType& MClientPlugin::type() const {
-    return _type;
-}
-
-
-/*
-const QString& MClientPlugin::libName() const {
-    return _libName;
-}
-*/
 
 
 const QString& MClientPlugin::shortName() const {
@@ -67,8 +55,13 @@ const QHash<QString, int> MClientPlugin::dependencies() const {
 }
 
 
-const QStringList& MClientPlugin::dataTypes() const {
-    return _dataTypes;
+const QStringList& MClientPlugin::receivesDataTypes() const {
+    return _receivesDataTypes;
+}
+
+
+const QStringList& MClientPlugin::deliversDataTypes() const {
+    return _deliversDataTypes;
 }
 
 
@@ -83,50 +76,25 @@ void MClientPlugin::run() {
 
 
 // Post an event
-void MClientPlugin::postEvent(QVariant* payload, QStringList tags, 
-        QString session) {
-    PluginManager* pm = PluginManager::instance();
-    MClientEvent* me = new MClientEvent(new MClientEventData(payload), tags,
-					session);
-
-    QApplication::postEvent(pm, me);
-    // Why post it if you can access the object directly!?
-    //pm->customEvent(me);
+void MClientPlugin::postSession(QVariant* payload, QStringList tags) {
+  MClientEvent* me = new MClientEvent(new MClientEventData(payload), tags,
+				      _session);
+  
+  QApplication::postEvent(_pluginSession, me);
 }
 
 
-void MClientPlugin::stopAllSessions() {
-    foreach(QString s, _runningSessions) {
-        stopSession(s);
-    }
-}
-
-/*
-void MClientPlugin::configure() {
-    // Suppose we have a method like this that we want to make pure virtual in
-    // the future, so that all plugins are required to implement it.
-    //
-    // One way to smooth the transition is to implement it here, but put a
-    // qWarning or a Logger message to the effect of:
-    //
-    // MClientPlugin::configure() will become pure virtual in the future.
-    // Plugin developers should implement it before that happens to avoid
-    // breakage!
-
+void MClientPlugin::postManager(QVariant* payload, QStringList tags, 
+			      QString session) {
+  MClientEvent* me = new MClientEvent(new MClientEventData(payload), tags,
+				      session);
+  
+  QApplication::postEvent(_pluginSession->getManager(), me);
 }
 
 
-const bool MClientPlugin::loadSettings() {
-    return true;
+// Receive the PluginSession reference upon load
+void MClientPlugin::setPluginSession(PluginSession *ps) {
+  _pluginSession = ps;
+  _session = ps->session();
 }
-
-
-const bool MClientPlugin::saveSettings() const {
-    return true;
-}
-
-
-void MClientPlugin::customEvent(QEvent* e) {
-
-}
-*/

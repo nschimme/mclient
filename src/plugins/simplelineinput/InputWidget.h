@@ -20,7 +20,7 @@ protected slots:
 	SimpleLineInput* _sli;
 
  signals:
-	void sendUserInput(const QString&, const QString&);
+	void sendUserInput(const QString&);
 };
 
 

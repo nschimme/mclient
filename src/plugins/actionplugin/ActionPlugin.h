@@ -29,11 +29,11 @@ class ActionPlugin : public MClientPlugin {
         const bool stopSession(QString s);
 
     private:
-	QHash<Session, ActionHolder*> _sessions;
+	ActionHolder *h;
 
-	bool handleCommand(const QString&, const Session&);
-	bool parseAction(const QString&, QStringList, const Session&);
-        void displayData(const QString&, const QString&);
+	bool handleCommand(const QString&);
+	bool parseAction(const QString&, QStringList);
+        void displayData(const QString&);
 };
 
 #endif /* ACTIONPLUGIN_H */

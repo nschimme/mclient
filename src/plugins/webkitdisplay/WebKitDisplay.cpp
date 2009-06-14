@@ -1,6 +1,9 @@
 #include "WebKitDisplay.h"
 #include "DisplayWidget.h"
 
+#include "PluginManager.h"
+#include "PluginSession.h"
+#include "MainWindow.h"
 #include "MClientEvent.h"
 
 #include <QApplication>
@@ -23,7 +26,8 @@ WebKitDisplay::WebKitDisplay(QWidget* parent)
     _description = "A display plugin using WebKit.";
 //   _dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _dataTypes << "DisplayData";
+    _receivesDataTypes << "DisplayData";
+    //_deliversDataTypes << "?";
     _configurable = false;
     _configVersion = "2.0";
 
@@ -50,7 +54,6 @@ WebKitDisplay::WebKitDisplay(QWidget* parent)
 
 
 WebKitDisplay::~WebKitDisplay() {
-    stopAllSessions();
     saveSettings();
 }
 
@@ -63,13 +66,11 @@ void WebKitDisplay::customEvent(QEvent* e) {
     me = static_cast<MClientEvent*>(e);
 
     if(me->dataTypes().contains("DisplayData")) {
-      parseDisplayData(me->payload()->toString(),
-		       me->session());
+      parseDisplayData(me->payload()->toString());
     }
 }
 
-void WebKitDisplay::parseDisplayData(QString text,
-				     const QString &session) {
+void WebKitDisplay::parseDisplayData(QString text) {
 
   text.replace(greaterThanChar, greaterThanTemplate);
   text.replace(lessThanChar, lessThanTemplate);
@@ -112,7 +113,7 @@ void WebKitDisplay::parseDisplayData(QString text,
     }
   }
   
-  emit dataReceived(output, session);
+  emit dataReceived(output);
 }
 
 QString WebKitDisplay::convertANSI(int code) {
@@ -257,31 +258,25 @@ const bool WebKitDisplay::saveSettings() const {
 
 const bool WebKitDisplay::startSession(QString s) {
     initDisplay(s);
-    _runningSessions << s;
     return true;
 }
 
 
 const bool WebKitDisplay::stopSession(QString s) {
-  foreach(DisplayWidget *dw, _widgets.values(s)) {
-    if (dw->close())
-      qDebug() << "* removed WebKit DisplayWidget for session" << s;
-  }
-  _widgets.remove(s);
-  int removed = _runningSessions.removeAll(s);
-  return removed!=0?true:false;
+  if (_widget->close())
+    qDebug() << "* removed WebKit DisplayWidget for session" << s;
+  return true;
 }
 
 
 // Display plugin members
 const bool WebKitDisplay::initDisplay(QString s) {
-    DisplayWidget *dw = new DisplayWidget(s, this);
-    _widgets.insert(s, dw); 
-    //dw->show();
-
-    return true;
+  MainWindow *mw = _pluginSession->getManager()->getMainWindow();
+  _widget = new DisplayWidget(s, this, mw);
+  
+  return true;
 }
 
 QWidget* WebKitDisplay::getWidget(QString s) {
-    return _widgets[s];
+    return _widget;
 }

@@ -1,9 +1,6 @@
 #include "ScriptEngine.h"
 
 #include "QtScriptPlugin.h"
-#include "MClientEvent.h"
-#include "PluginManager.h"
-#include "CommandManager.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -12,10 +9,8 @@
 QScriptValue print(QScriptContext *context, QScriptEngine *engine) {
   QScriptValue a = context->argument(0);
 
-  QVariant* payload = new QVariant(a.toString());
-  QStringList tags("DisplayData");
   ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
-  e->postEvent(payload, tags);
+  e->displayData(a.toString());
 
   return a;
 }
@@ -24,8 +19,7 @@ QScriptValue exe(QScriptContext *context, QScriptEngine *engine) {
   QScriptValue a = context->argument(0);
   
   ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
-  CommandManager::instance()->parseInput(a.toString(),
-					 e->session());
+  e->parseInput(a.toString());
 
   return a;
 }
@@ -53,32 +47,39 @@ QScriptValue emulate(QScriptContext *context, QScriptEngine *engine) {
 }
 
 ScriptEngine::ScriptEngine(QString s, QtScriptPlugin* qsp, QObject* parent) 
-    : QScriptEngine(parent) {
-    _session = s;
-    _qsp = qsp;
-
-    // Connect Signals/Slots
-    connect(_qsp, SIGNAL(evaluate(const QString&, const QString&)),
-	    this, SLOT(evaluateExpression(const QString&, const QString&)));
-    connect(_qsp, SIGNAL(variable(const QString&, const QString&)),
-	    this, SLOT(variableCommand(const QString&, const QString&)));
-    connect(this, SIGNAL(signalHandlerException(const QScriptValue&)),
-	    this, SLOT(handleException(const QScriptValue&)));
-
-    // Add C++ functions to QtScript
-    QFlags<QScriptValue::PropertyFlag> functionFlags(QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration);
-    QScriptValue printFunction = newFunction(print);
-    globalObject().setProperty("print", printFunction, functionFlags);
-    QScriptValue exeFunction = newFunction(exe);
-    globalObject().setProperty("exe", exeFunction, functionFlags);
-    QScriptValue sendFunction = newFunction(send);
-    globalObject().setProperty("send", sendFunction, functionFlags);
-    QScriptValue emulateFunction = newFunction(emulate);
-    globalObject().setProperty("emulate", emulateFunction, functionFlags);
-
-    // Debugging Information
-    qDebug() << "* QtScriptPlugin thread:" << _qsp->thread();
-    qDebug() << "* ScriptEngine thread:" << this->thread();
+  : QScriptEngine(parent) {
+  _session = s;
+  _qsp = qsp;
+  
+  // Connect Signals/Slots
+  connect(_qsp, SIGNAL(evaluate(const QString&, const QString&)),
+	  this, SLOT(evaluateExpression(const QString&, const QString&)));
+  connect(_qsp, SIGNAL(variable(const QString&, const QString&)),
+	  this, SLOT(variableCommand(const QString&, const QString&)));
+  connect(this, SIGNAL(signalHandlerException(const QScriptValue&)),
+	  this, SLOT(handleException(const QScriptValue&)));
+  connect(this, SIGNAL(parseInput(const QString&, const QString&)),
+	  _qsp, SLOT(parseInput(const QString&, const QString&)));
+  connect(this, SIGNAL(postEvent(QVariant*, const QStringList&,
+				 const QString&)),
+	  _qsp, SLOT(postEvent(QVariant*, const QStringList&,
+			       const QString&)));
+  
+  
+  // Add C++ functions to QtScript
+  QFlags<QScriptValue::PropertyFlag> functionFlags(QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration);
+  QScriptValue printFunction = newFunction(print);
+  globalObject().setProperty("print", printFunction, functionFlags);
+  QScriptValue exeFunction = newFunction(exe);
+  globalObject().setProperty("exe", exeFunction, functionFlags);
+  QScriptValue sendFunction = newFunction(send);
+  globalObject().setProperty("send", sendFunction, functionFlags);
+  QScriptValue emulateFunction = newFunction(emulate);
+  globalObject().setProperty("emulate", emulateFunction, functionFlags);
+  
+  // Debugging Information
+  qDebug() << "* QtScriptPlugin thread:" << _qsp->thread();
+  qDebug() << "* ScriptEngine thread:" << this->thread();
 }
 
 
@@ -202,15 +203,15 @@ void ScriptEngine::handleException(const QScriptValue &value) {
 }
 
 void ScriptEngine::postEvent(QVariant *payload, const QStringList& tags) {
-    MClientEvent *me = new MClientEvent(new MClientEventData(payload),
-					tags,
-					_session);
-    QApplication::postEvent(PluginManager::instance(), me);
-    //PluginManager::instance()->customEvent(me);
+  emit postEvent(payload, tags, _session);
+}
+
+void ScriptEngine::parseInput(const QString &text) {
+  emit parseInput(text, _session);
 }
 
 void ScriptEngine::displayData(const QString& text) {
   QVariant *payload = new QVariant(text);
   QStringList tags("DisplayData");  
-  postEvent(payload, tags);
+  emit postEvent(payload, tags, _session);
 }

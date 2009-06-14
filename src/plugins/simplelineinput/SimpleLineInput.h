@@ -4,6 +4,7 @@
 #include "MClientDisplayPlugin.h"
 
 #include <QHash>
+#include <QPointer>
 
 class InputWidget;
 class QEvent;
@@ -28,11 +29,11 @@ class SimpleLineInput : public MClientDisplayPlugin {
         QWidget* getWidget(QString s);
 
 public slots:
-        void sendUserInput(const QString&, const QString&);
+        void sendUserInput(const QString&);
 
     private:
 	QString _settingsFile;
-	QHash<QString, InputWidget*> _widgets;
+	QPointer<InputWidget> _widget;
 };
 
 

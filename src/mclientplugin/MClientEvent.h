@@ -14,7 +14,6 @@ class QVariant;
 class QSharedData;
 class QString;
 
-
 class MClientEvent : public QEvent {
     
     public:

@@ -4,7 +4,6 @@
 
 
 MClientDisplayPlugin::MClientDisplayPlugin(QWidget* parent) : MClientPlugin(parent) {
-  _type = DISPLAY_PLUGIN;
   _displayLocations = 0;
 }
 

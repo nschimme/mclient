@@ -2,6 +2,7 @@
 #include <QVariant>
 #include <QtScript>
 
+#include "PluginManager.h"
 #include "CommandManager.h"
 #include "QtScriptPlugin.h"
 #include "ScriptEngine.h"
@@ -19,13 +20,6 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
     _dataTypes << "QtScriptEvaluate" << "QtScriptVariable";
     _configurable = false;
     _configVersion = "2.0";
-
-    // register commands
-    QStringList commands;
-    commands << _shortName
-	     << "script" << "QtScriptEvaluate"
-	     << "var" << "QtScriptVariable";
-    CommandManager::instance()->registerCommand(commands);
 }
 
 
@@ -54,6 +48,13 @@ void QtScriptPlugin::configure() {
 
 
 const bool QtScriptPlugin::loadSettings() {
+    // register commands
+    QStringList commands;
+    commands << _shortName
+	     << "script" << "QtScriptEvaluate"
+	     << "var" << "QtScriptVariable";
+    CommandManager::instance()->registerCommand(commands);
+
   return true;
 }
 
@@ -78,4 +79,8 @@ const bool QtScriptPlugin::stopSession(QString s) {
   _engines.remove(s);
   int removed = _runningSessions.removeAll(s);
   return removed!=0?true:false;
+}
+
+void QtScriptPlugin::parseInput(const QString &input, const QString &session) {
+  _pluginManager->getCommandManager()->parseInput(input, session);
 }

@@ -110,7 +110,9 @@ Telnet::Telnet(QObject* parent)
     // TODO
     _dependencies.insert("socketmanager", 10);
     _implemented.insert("telnet",1);
-    _dataTypes << "SocketData" << "SocketConnected" << "SocketDisconnected";
+    _receivesDataTypes << "SocketData" << "SocketConnected"
+		       << "SocketDisconnected";
+    _deliversDataTypes << "TelnetData";
 
     /** KMuddy Telnet */
     d = new cTelnetPrivate;
@@ -146,7 +148,8 @@ Telnet::~Telnet() {
 
 void Telnet::customEvent(QEvent* e) {
     if(e->type() != 10001) {
-        qDebug() << "Somehow received the wrong kind of event...";
+        qDebug() << "Telnet somehow received the wrong kind of event...";
+
     } else {
         MClientEvent* me = static_cast<MClientEvent*>(e);
 
@@ -207,14 +210,12 @@ const bool Telnet::saveSettings() const {
 
 
 const bool Telnet::startSession(QString s) {
-    _runningSessions <<  s;
     return true;
 }
 
 
 const bool Telnet::stopSession(QString s) {
-    int removed = _runningSessions.removeAll(s);
-    return removed!=0?true:false;
+    return true;
 }
 
 void Telnet::setupEncoding ()
@@ -298,7 +299,7 @@ bool Telnet::doSendData (const string &data)
 //   QStringList sl("SendToSocketData");  
 //   // FIXME: HACK! :(
 //   foreach(QString s, _runningSessions) {
-//       postEvent(qv, sl, s);
+//       postSession(qv, sl, s);
 //   }
 
 // HACK: This is BROKEN in the protocol, disabled.
@@ -782,9 +783,7 @@ printf ("\n");
 	QStringList sl;
 	sl << "TelnetData";
     //FIXME: HACK! :(
-    foreach(QString s, _runningSessions) {
-        postEvent(qv, sl, s);
-    }
+        postSession(qv, sl);
 	qDebug() << "posted FilteredData!";
 	
 //         invokeEvent ("data-received", sess(), unicodeData);
@@ -823,9 +822,7 @@ printf ("\n");
       QStringList sl;
       sl << "TelnetData";
       //FIXME: HACK! :(
-      foreach(QString s, _runningSessions) {
-          postEvent(qv, sl, s);
-      }
+      postSession(qv, sl);
       qDebug() << "posted FilteredData!";
 //    invokeEvent ("data-received", sess(), unicodeData);
     }

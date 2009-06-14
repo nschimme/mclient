@@ -5,6 +5,8 @@
 
 #include "MClientEvent.h"
 #include "CommandManager.h"
+#include "PluginManager.h"
+#include "PluginSession.h"
 
 Q_EXPORT_PLUGIN2(aliasplugin, AliasPlugin)
 
@@ -49,20 +51,14 @@ AliasPlugin::AliasPlugin(QObject *parent)
     _description = "Handles aliases";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _dataTypes << "AliasInput" << "AliasCommand";
+    _receivesDataTypes << "AliasInput" << "AliasCommand";
+    _deliversDataTypes << "DisplayData" << "SendToSocketData";
     _configurable = false;
     _configVersion = "2.0";
-
-    // register commands
-    QStringList commands;
-    commands << _shortName
-	     << "alias" << "AliasCommand";
-    CommandManager::instance()->registerCommand(commands);
 }
 
 
 AliasPlugin::~AliasPlugin() {
-    stopAllSessions();
     saveSettings();
 }
 
@@ -74,21 +70,17 @@ void AliasPlugin::customEvent(QEvent* e) {
 
     if(me->dataTypes().contains("AliasInput")) {
       QString alias = me->payload()->toString();
-      parseInput(alias, me->session());
+      parseInput(alias);
 
     } else if (me->dataTypes().contains("AliasCommand")) {
       QString arguments = me->payload()->toString();
-      handleCommand(arguments, me->session());
+      handleCommand(arguments);
 
     }
 }
 
 
-bool AliasPlugin::handleCommand(const QString &arguments,
-				const Session &session) {
-  // Grab the session's aliases
-  AliasHolder *h = _sessions[session];
-
+bool AliasPlugin::handleCommand(const QString &arguments) {
   if (arguments.isEmpty()) {
     // Display all aliases
     
@@ -108,7 +100,7 @@ bool AliasPlugin::handleCommand(const QString &arguments,
       }
     }
     // Display the string
-    displayData(output, session);
+    displayData(output);
     
     return true;
   }
@@ -132,13 +124,11 @@ bool AliasPlugin::handleCommand(const QString &arguments,
     if (h->aliases.contains(name)) {
       // Display alias
       displayData(QString("#alias %1=%2\n").arg(name,
-						h->aliases[name]->command()),
-		  session);
+						h->aliases[name]->command()));
 
     } else {
       // Error, no alias exists
-      displayData("#unknown alias, cannot show: \""+name+"\"\n",
-		  session);
+      displayData("#unknown alias, cannot show: \""+name+"\"\n");
       return false;
     }
 
@@ -147,13 +137,11 @@ bool AliasPlugin::handleCommand(const QString &arguments,
     if (h->aliases.contains(name)) {
       // Delete alias
       h->aliases.remove(name);
-      displayData("#deleting alias: "+cmd.at(0)+"\n",
-		  session);
+      displayData("#deleting alias: "+cmd.at(0)+"\n");
 
     } else {
       // Error, no alias exists
-      displayData("#unknown alias, cannot delete: \""+name+"\"\n",
-		  session);
+      displayData("#unknown alias, cannot delete: \""+name+"\"\n");
       return false;
 
     }
@@ -164,8 +152,7 @@ bool AliasPlugin::handleCommand(const QString &arguments,
     h->aliases.insert(name, alias);
     if (group.isEmpty())
       group = "*";
-    displayData("#new alias in group '"+group+"': "+name+"="+command+"\n",
-		session);
+    displayData("#new alias in group '"+group+"': "+name+"="+command+"\n");
 
   }
 
@@ -173,10 +160,7 @@ bool AliasPlugin::handleCommand(const QString &arguments,
 }
 
 
-void AliasPlugin::parseInput(const QString &input,
-			     const Session &session) {
-  AliasHolder *h = _sessions[session];
-
+void AliasPlugin::parseInput(const QString &input) {
   Command command(input);
   QStringList arguments;
   QRegExp whitespace("\\s+");
@@ -192,14 +176,14 @@ void AliasPlugin::parseInput(const QString &input,
   if (h->aliases.contains(command)) {
     // The current command is an alias
     qDebug() << "found alias" << command << h->aliases[command]->command();
-    CommandManager::instance()->parseInput(h->aliases[command]->command(),
-					   session);
+    _pluginSession->getManager()->getCommand()->
+      parseInput(h->aliases[command]->command(), _session);
 
   } else {
     // Not an alias, send it to the socket
     QVariant* qv = new QVariant(input + "\n");
     QStringList sl("SendToSocketData");
-    postEvent(qv, sl, session);
+    postSession(qv, sl);
   }
 
 }
@@ -210,6 +194,12 @@ void AliasPlugin::configure() {
 
 
 const bool AliasPlugin::loadSettings() {
+    // register commands
+    QStringList commands;
+    commands << _shortName
+	     << "alias" << "AliasCommand";
+    _pluginSession->getManager()->getCommand()->registerCommand(commands);
+
   return true;
 }
 
@@ -220,21 +210,17 @@ const bool AliasPlugin::saveSettings() const {
 
 
 const bool AliasPlugin::startSession(QString s) {
-  AliasHolder *aliases = new AliasHolder;
-  _sessions.insert(s, aliases);
-  _runningSessions << s;
+  h = new AliasHolder;
   return true;
 }
 
 const bool AliasPlugin::stopSession(QString s) {
-  _sessions.remove(s); // TODO: improve, delete individual aliases
-  int removed = _runningSessions.removeAll(s);
-  return removed!=0?true:false;
+  delete h;
+  return true;
 }
 
-void AliasPlugin::displayData(const QString &output,
-			      const QString &session) {
+void AliasPlugin::displayData(const QString &output) {
   QVariant* qv = new QVariant(output);
   QStringList sl("DisplayData");
-  postEvent(qv, sl, session);  
+  postSession(qv, sl);  
 }

@@ -28,7 +28,10 @@ endif (Subversion_FOUND)
 # Linux 64bit Support
 if (UNIX AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
     set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -fPIC"  )
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC"  )
+    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fPIC")
+    SET(CMAKE_CXX_FLAGS_DEBUG 
+      "${CMAKE_CXX_FLAGS_DEBUG} -g -Wall -g3 -ggdb -gdwarf-2 -Wunused-variable -Wno-long-long -Wno-unknown-pragmas -Wno-system-headers -Wextra -Werror -ansi"
+      CACHE STRING "Debug builds CMAKE CXX flags " FORCE )
     add_definitions(-fPIC)
 endif (UNIX AND "${CMAKE_SYSTEM_PROCESSOR}" STREQUAL "x86_64")
 

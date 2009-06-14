@@ -17,11 +17,6 @@ ConfigManager* ConfigManager::instance() {
 }
 
 
-void ConfigManager::destroy() {
-    delete this;
-}
-
-
 bool sortXmlElements(const QString &s1, const QString &s2) {
   QStringList t1 = s1.split("/");
   QStringList t2 = s2.split("/");
@@ -162,6 +157,9 @@ ConfigManager::ConfigManager(QObject* parent) : QObject(parent) {
 
 
 ConfigManager::~ConfigManager() {
+  this->deleteLater();
+  _pinstance = 0;
+  qDebug() << "* ConfigManager destroyed";
 }
 
 
@@ -223,11 +221,17 @@ const bool ConfigManager::readPluginSettings(const QString &pluginName) {
   _pluginSettings.insert(pluginName, hash);
 
   // Identify the profiles within this plugin
-  if (conf.contains("config/profile/name")) {
-    QString profile = conf.value("config/profile/name").toString();
+  conf.beginGroup("config");
+  int size = conf.beginReadArray("profile");
+  for (int i = 0; i <= size; ++i) {
+    conf.setArrayIndex(i);
+    QString profile = conf.value("name", "test").toString();
+    _profilePlugins[profile] << pluginName;
     qDebug() << "* found profile" << profile << "for" << pluginName;
-    _profiles.insert(profile, pluginName);
+
   }
+  conf.endArray(); /* profile */
+  conf.endGroup(); /* config  */
 
   qDebug() << "* read config file" << file;
   return true;

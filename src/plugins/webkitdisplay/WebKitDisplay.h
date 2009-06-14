@@ -4,6 +4,7 @@
 #include "MClientDisplayPlugin.h"
 
 #include <QHash>
+#include <QPointer>
 
 class DisplayWidget;
 class QEvent;
@@ -37,13 +38,13 @@ class WebKitDisplay : public MClientDisplayPlugin {
 	bool _foreground, _background, _bold, _underline;
 	bool _blink, _inverse, _strikethrough;
 
-	QHash<QString, DisplayWidget*> _widgets;
+	QPointer<DisplayWidget> _widget;
 
-	void parseDisplayData(QString, const QString&);
+	void parseDisplayData(QString);
 	QString convertANSI(int code);
 
  signals:
-	void dataReceived(const QString&, const QString&);
+	void dataReceived(const QString&);
 };
 
 

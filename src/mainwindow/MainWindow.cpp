@@ -30,25 +30,18 @@
 
 MainWindow* MainWindow::_pinstance = 0;
 
-MainWindow* MainWindow::instance() {
+MainWindow* MainWindow::instance(PluginManager *pm) {
     if(!_pinstance) {
-        _pinstance = new MainWindow();
+        _pinstance = new MainWindow(pm);
     }
-
     return _pinstance;
 }
 
-void MainWindow::destroy() {
-    delete this;
-}
 
-MainWindow::MainWindow() {
+MainWindow::MainWindow(PluginManager *pm) {
+  _pluginManager = pm;
   setWindowIcon(QIcon(":/mainwindow/m.png"));
   readSettings();
-
-  /** Connect Other Necessary Objects */
-  connect(PluginManager::instance(), SIGNAL(doneLoading()), SLOT(start()));
-  connect(CommandManager::instance(), SIGNAL(quit()), SLOT(close()));
 
   /** Create Other Child Widgets */
   ActionManager *actMgr = ActionManager::instance(this); // Initialize ActionManager
@@ -65,8 +58,18 @@ MainWindow::MainWindow() {
   qDebug() << "MainWindow created with thread:" << this->thread();
 }
 
+
+MainWindow::~MainWindow() {
+  getPluginManager()->getCommand()->~CommandManager();
+  getPluginManager()->getConfig()->~ConfigManager();
+  getPluginManager()->~PluginManager();
+  _pinstance = 0;
+  qDebug() << "* MainWindow destroyed";
+}
+
+
 void MainWindow::start() {
-  PluginManager::instance()->initSession(_currentProfile);
+  emit startSession(_currentProfile);
 }
 
 void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList) {
@@ -132,9 +135,9 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
 void MainWindow::closeEvent(QCloseEvent *event)
 {
   qDebug() << "MainWindow received closeEvent";
-  PluginManager::instance()->stopSession(_currentProfile);
-  writeSettings();
   if (maybeSave()) {
+    emit stopSession(_currentProfile);
+    writeSettings();
     event->accept();
   } else {
     event->ignore();
@@ -144,12 +147,12 @@ void MainWindow::closeEvent(QCloseEvent *event)
 void MainWindow::readSettings()
 {
   resize(QSize(640, 480));
-  move(QPoint(200, 200));
+  //move(QPoint(200, 200));
 }
 
 void MainWindow::writeSettings()
 {
-  ConfigManager::instance()->writeApplicationSettings();
+  _pluginManager->getConfig()->writeApplicationSettings();
   /*
   Config().setWindowPosition(pos() );
   Config().setWindowSize(size() );
@@ -192,14 +195,8 @@ void MainWindow::setCurrentProfile(const QString &session)
   setWindowTitle(tr("%1 - mClient").arg(shownName));
 }
 
-MainWindow::~MainWindow() {
-  PluginManager::instance()->destroy();
-  ConfigManager::instance()->destroy();
-  CommandManager::instance()->destroy();
-  qDebug("MainWindow Destroyed");
-}
 
 void MainWindow::changeConfiguration() {
-  PluginManager::instance()->configure();
+  getPluginManager()->configure();
 }
 

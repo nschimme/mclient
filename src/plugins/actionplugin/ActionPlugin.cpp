@@ -5,6 +5,8 @@
 
 #include "MClientEvent.h"
 #include "CommandManager.h"
+#include "PluginManager.h"
+#include "PluginSession.h"
 
 Q_EXPORT_PLUGIN2(actionplugin, ActionPlugin)
 
@@ -66,20 +68,14 @@ ActionPlugin::ActionPlugin(QObject *parent)
     _description = "Handles Actions";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _dataTypes << "ActionCommand" << "XMLAll";
+    _receivesDataTypes << "ActionCommand" << "XMLAll";
+    _deliversDataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";
-
-    // register commands
-    QStringList commands;
-    commands << _shortName
-	     << "action" << "ActionCommand";
-    CommandManager::instance()->registerCommand(commands);
 }
 
 
 ActionPlugin::~ActionPlugin() {
-    stopAllSessions();
     saveSettings();
 }
 
@@ -91,21 +87,17 @@ void ActionPlugin::customEvent(QEvent* e) {
 
     if(me->dataTypes().contains("XMLAll")) {
       QString action = me->payload()->toString();
-      parseAction(action, me->dataTypes(), me->session());
+      parseAction(action, me->dataTypes());
 
     } else if (me->dataTypes().contains("ActionCommand")) {
       QString arguments = me->payload()->toString();
-      handleCommand(arguments, me->session());
+      handleCommand(arguments);
 
     }
 }
 
 
-bool ActionPlugin::handleCommand(const QString &arguments,
-				const Session &session) {
-  // Grab the session's Actions
-  ActionHolder *h = _sessions[session];
-
+bool ActionPlugin::handleCommand(const QString &arguments) {
   if (arguments.isEmpty()) {
     // Display all Actions
 
@@ -136,7 +128,7 @@ bool ActionPlugin::handleCommand(const QString &arguments,
       output.prepend(QString("#the following action%1 defined:\n").arg(output.size()==1?" is":"s are"));
     
     // Display the string
-    displayData(output.join(""), session);
+    displayData(output.join(""));
     
     return true;
   }
@@ -180,8 +172,7 @@ bool ActionPlugin::handleCommand(const QString &arguments,
       qDebug() << "adding for tag" << tag;
       actions->insert(tag, action);
       qDebug() << "inserted action! hash is now size of" << actions->size();
-      displayData("#new action \""+label+"\": "+label+"="+command+"\n",
-		  session);
+      displayData("#new action \""+label+"\": "+label+"="+command+"\n");
     }
 
     if (newHash) h->actions.insert(0, actions);
@@ -192,10 +183,7 @@ bool ActionPlugin::handleCommand(const QString &arguments,
 }
 
 
-bool ActionPlugin::parseAction(const QString &text, QStringList tags,
-			       const Session &session) {
-  ActionHolder *h = _sessions[session];
-
+bool ActionPlugin::parseAction(const QString &text, QStringList tags) {
   qDebug() << "* ActionPlugin got an event: " << text << tags << ".";
 
   if (tags.size() > 1) tags.removeAll("XMLAll");
@@ -223,8 +211,8 @@ bool ActionPlugin::parseAction(const QString &text, QStringList tags,
 	
 	// TODO: replace command stuff with capturedTexts().
 	QString command = j.value()->command();
-	CommandManager::instance()->parseInput(command,
-					       session);
+	_pluginSession->getManager()->getCommand()->parseInput(command,
+							       _session);
 
 	return true;
 
@@ -237,7 +225,7 @@ bool ActionPlugin::parseAction(const QString &text, QStringList tags,
     ++i;
   }
   // No action found, display the text
-  displayData(text, session);
+  displayData(text);
   return false;
 }
 
@@ -247,6 +235,12 @@ void ActionPlugin::configure() {
 
 
 const bool ActionPlugin::loadSettings() {
+    // register commands
+    QStringList commands;
+    commands << _shortName
+	     << "action" << "ActionCommand";
+    _pluginSession->getManager()->getCommand()->registerCommand(commands);
+
   return true;
 }
 
@@ -257,21 +251,17 @@ const bool ActionPlugin::saveSettings() const {
 
 
 const bool ActionPlugin::startSession(QString s) {
-  ActionHolder *actions = new ActionHolder;
-  _sessions.insert(s, actions);
-  _runningSessions << s;
+  h = new ActionHolder;
   return true;
 }
 
 const bool ActionPlugin::stopSession(QString s) {
-  _sessions.remove(s); // TODO: improve, delete individual actions
-  int removed = _runningSessions.removeAll(s);
-  return removed!=0?true:false;
+  delete h;
+  return true;
 }
 
-void ActionPlugin::displayData(const QString &output,
-			      const QString &session) {
+void ActionPlugin::displayData(const QString &output) {
   QVariant* qv = new QVariant(output);
   QStringList sl("DisplayData");
-  postEvent(qv, sl, session);  
+  postSession(qv, sl);  
 }

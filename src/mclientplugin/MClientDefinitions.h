@@ -47,7 +47,6 @@ typedef quint8 MClientDisplayLocations;
 #define DL_RIGHT      bit4 // Dock Right
 #define DL_BOTTOM     bit5 // Dock Bottom
 #define DL_TOP        bit6 // Dock Top
-#define DL_FLOAT      bit7 // Floating
-
+#define DL_FLOAT      bit7 // Floating	     
 
 #endif /* MCLIENTDEFINITIONS_H */

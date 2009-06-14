@@ -5,8 +5,24 @@ add_definitions(-DQT_SHARED)
 
 # Source files
 set(mclient_SRCS main.cpp)
+# foreach(dir commandmanager mainwindow)
+#   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.cpp")
+#   set(mclient_SRCS ${mclient_SRCS} ${files})
+# endforeach()
 
-# Static Library Resource Files
+# # Header Files
+# foreach(dir commandmanager mainwindow)
+#   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.h")
+#   set(mclient_MOC_HDRS ${files})
+# endforeach()
+
+# # UI Files
+# foreach(dir commandmanager mainwindow)
+#   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.ui")
+#   set(mclient_UIS ${files})
+# endforeach()
+
+# Library Resource Files
 file(GLOB_RECURSE mclient_RCS
      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
      "resources/*.qrc"
@@ -33,8 +49,8 @@ include_directories(
     commandmanager
 )
   
-#QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
-#QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
+QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
+QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
 QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
 add_executable(mclient #WIN32
@@ -81,6 +97,18 @@ if (WIN32)
         DESTINATION .
 	COMPONENT libraries
     )
+    # Debug Libraries
+    install(FILES
+        "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtGuid${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtNetworkd${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtXmld${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtOpenGLd${QT_VERSION_MAJOR}.dll"
+        "${QT_LIBRARY_DIR}/QtWebKitd${QT_VERSION_MAJOR}.dll"
+        DESTINATION .
+	COMPONENT libraries
+    )
+    # MingW Library
     if (MINGW)
 	string(REGEX REPLACE "[\\|/][^\\/]+exe$" ""
 	       MINGW_LIBRARY_DIR

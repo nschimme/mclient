@@ -4,6 +4,8 @@
 #include "MClientFilterPlugin.h"
 
 #include <QQueue>
+#include <QMutex>
+#include <QWaitCondition>
 
 class QByteArray;
 class MClientEvent;
@@ -36,9 +38,9 @@ class MumeXML : public MClientFilterPlugin {
 	static const QByteArray lessThanTemplate;
 
     private:
-	void parse(const QByteArray&, const QString&);
-	bool element(const QByteArray&, const QString&);
-	bool characters(QByteArray&, const QString&);
+	void parse(const QByteArray&);
+	bool element(const QByteArray&);
+	bool characters(QByteArray&);
 
 	QString _singleBuffer;
 	QString _multiBuffer;
@@ -50,7 +52,10 @@ class MumeXML : public MClientFilterPlugin {
 
 	bool _removeXmlTags;
 
-	QQueue< QPair<QByteArray, QString> > _eventQueue;
+	bool _quit;
+	QMutex _mutex;
+	QWaitCondition _cond;
+	QQueue< QByteArray > _eventQueue;
 };
 
 

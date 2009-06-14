@@ -202,16 +202,24 @@ void ActionManager::alwaysOnTop() {
 
 
 void ActionManager::about() {
+  QString version = 
 #ifdef SVN_REVISION
-QString version = tr("<b>Subversion Revision ") + QString::number(SVN_REVISION) + tr("</b><br><br>");
+    tr("<b>Subversion Revision ") + QString::number(SVN_REVISION)
 #else
- QString version = tr("<b>mClient Release ") + QString(MCLIENT_VERSION)+ tr("</b><br><br>");
+#ifdef MCLIENT_VERSION
+    tr("<b>mClient Release ") + QString(MCLIENT_VERSION)
+#else
+    tr("<b>Unknown Release")
 #endif
+#endif
+    + tr("</b><br><br>");
   QMessageBox::about(_mainWindow, tr("About mClient"),
-                     tr("<FONT SIZE=\"+1\"><B>mClient ") + version + tr("</B></FONT><P>"
-                         "Copyright \251 2008 Jahara<P>"
-                         "Visit the <A HREF=\"http://code.google.com/p/mclient-mume/\">mClient website</A> "
-                         "for more information."));
+                     tr("<FONT SIZE=\"+1\"><B>mClient ") +
+		     version +
+		     tr("</B></FONT><P>"
+			"Copyright \251 2008 by Jahara<P>"
+			"Visit the <A HREF=\"http://code.google.com/p/mclient-mume/\">mClient website</A> "
+			"for more information."));
 }
 
 void ActionManager::clientHelp() {
@@ -240,7 +248,5 @@ void ActionManager::postEvent(QVariant *payload, const QStringList& tags) {
     MClientEvent *me = new MClientEvent(new MClientEventData(payload),
 					tags,
 					_mainWindow->session());
-    QApplication::postEvent(PluginManager::instance(),
-			    me);
-    //PluginManager::instance()->customEvent(me);
+    QApplication::postEvent(_mainWindow->getPluginManager(), me);
 }

@@ -4,21 +4,11 @@
 #include <QtPlugin>
 #include <QHash>
 
-class QString;
-enum MClientPluginType { UNKNOWN_PLUGIN = 0,
-			 FILTER_PLUGIN,
-			 DISPLAY_PLUGIN,
-			 IO_PLUGIN };
+class PluginSession;
 
 class MClientPluginInterface {
     
     public:
-        // The type of plugin
-        virtual const MClientPluginType& type() const=0;
-
-        // The library filename relative to plugins dir
-//        virtual const QString& libName() const=0;
-
         // The short name of the plugin used in hashes and maps
         virtual const QString& shortName() const=0;
 
@@ -40,7 +30,10 @@ class MClientPluginInterface {
         virtual const QHash<QString, int> dependencies() const=0;
         
         // Returns a QStringList of data types it cares about
-        virtual const QStringList& dataTypes() const=0;
+        virtual const QStringList& receivesDataTypes() const=0;
+
+        // Returns a QStringList of data types it delivers
+        virtual const QStringList& deliversDataTypes() const=0;
 
         // Consider putting this here and leaving it virtual.
         virtual void customEvent(QEvent* e)=0;
@@ -63,9 +56,8 @@ class MClientPluginInterface {
         // Destroy objects local to one session
         virtual const bool stopSession(QString s)=0;
 
-        // Post an event to the PluginManager
-        virtual void postEvent(QVariant* payload, QStringList types,
-                QString session)=0;
+	// Receive the PluginSession reference upon load
+	virtual void setPluginSession(PluginSession *ps)=0;
 
 };
 

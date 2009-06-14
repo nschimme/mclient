@@ -2,14 +2,13 @@
 #define MCLIENTPLUGIN_H
 
 #include "MClientPluginInterface.h"
+
 #include <QThread>
-
 #include <QtPlugin>
-
 #include <QHash>
 #include <QStringList>
 
-class QString;
+class PluginSession;
 
 class MClientPlugin : public QThread, public MClientPluginInterface {
     Q_OBJECT
@@ -18,12 +17,6 @@ class MClientPlugin : public QThread, public MClientPluginInterface {
     public:
         MClientPlugin(QObject* parent=0);
         ~MClientPlugin();
-
-        // The type of plugin
-        virtual const MClientPluginType& type() const;
-
-        // The library filename relative to plugins dir
-//        const QString& libName() const;
 
         // The short name of the plugin used in hashes and maps
         const QString& shortName() const;
@@ -46,7 +39,10 @@ class MClientPlugin : public QThread, public MClientPluginInterface {
         const QHash<QString, int> dependencies() const;
 
         // Returns a QStringList of data types it cares about
-        const QStringList& dataTypes() const;
+        const QStringList& receivesDataTypes() const;
+
+        // Returns a QStringList of data types it delivers
+        const QStringList& deliversDataTypes() const;
         
         // Consider putting this here and leaving it virtual.
         virtual void customEvent(QEvent* e)=0;
@@ -72,29 +68,30 @@ class MClientPlugin : public QThread, public MClientPluginInterface {
         // Needed for Qt 4.3, but not for 4.4
         virtual void run();
 
+	// Receive the PluginSession reference upon load
+	void setPluginSession(PluginSession *ps);
+
+public slots:
+        // Post an event to the PluginSession
+	void postSession(QVariant* payload, QStringList types);
+
         // Post an event to the PluginManager
-        virtual void postEvent(QVariant* payload, QStringList types, 
-                QString session);
+	void postManager(QVariant* payload, QStringList types, 
+			 QString session);
 
     protected:
-//        QString _libName;
-        QString _shortName;
-        QString _longName;
-        QString _description;
-        QString _version;
-	MClientPluginType _type;
+        QString _shortName, _longName, _description, _version;
+	QString _session;
 
         bool _configurable;
         QString _configVersion;
 
-        QHash<QString, int> _implemented;
-        QHash<QString, int> _dependencies;
+        QHash<QString, int> _implemented, _dependencies;
 
-        QStringList _dataTypes;
+        QStringList _receivesDataTypes, _deliversDataTypes;
 
-        // Sessions
-        QStringList _runningSessions;
-        void stopAllSessions();
+	// References
+	PluginSession *_pluginSession;
 };
 
 

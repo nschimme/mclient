@@ -56,7 +56,7 @@ MapWindow::MapWindow(QWidget * parent)
   fmt.setDirectRendering( TRUE );
   fmt.setRgba( TRUE );
   fmt.setDepth( TRUE );
-  m_canvas = new MapCanvas(fmt, NULL);
+  m_canvas = new MapCanvas(fmt, parent);
 
   m_gridLayout->addWidget(m_canvas, 0, 0, 1, 1);
 

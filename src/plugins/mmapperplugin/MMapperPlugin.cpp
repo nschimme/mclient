@@ -31,20 +31,12 @@ MMapperPlugin::MMapperPlugin(QWidget* parent)
 
     // Allowable Display Locations
     SET(_displayLocations, DL_FLOAT);
-
-    // register commands
-    QStringList commands;
-    commands << _shortName
-	     << "map" << "MMapperLoadMap"
-	     << "input" << "MMapperInput";
-    CommandManager::instance()->registerCommand(commands);
-
 }
 
 
 MMapperPlugin::~MMapperPlugin() {
     stopAllSessions();
-    saveSettings();
+    //saveSettings();
 }
 
 // MClientPlugin members
@@ -98,13 +90,21 @@ void MMapperPlugin::configure() {
 
 
 const bool MMapperPlugin::loadSettings() {
-    _settings = ConfigManager::instance()->pluginSettings(_shortName);
+    _settings = _pluginManager->getConfigManager()->pluginSettings(_shortName);
+
+    // register commands
+    QStringList commands;
+    commands << _shortName
+	     << "map" << "MMapperLoadMap"
+	     << "input" << "MMapperInput";
+    _pluginManager->getCommandManager()->registerCommand(commands);
+
     return true;
 }
 
 
 const bool MMapperPlugin::saveSettings() const {
-    ConfigManager::instance()->writePluginSettings(_shortName);
+    _pluginManager->getConfigManager()->writePluginSettings(_shortName);
     return true;
 }
 

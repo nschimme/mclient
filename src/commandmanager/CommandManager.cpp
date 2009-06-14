@@ -2,28 +2,26 @@
 
 #include "MClientEvent.h"
 #include "PluginManager.h"
+#include "PluginSession.h"
 
 #include <QDebug>
 #include <QStringList>
 #include <QVariant>
 #include <QApplication>
 
+
 CommandManager* CommandManager::_pinstance = 0;
 
-CommandManager* CommandManager::instance() {
+CommandManager* CommandManager::instance(PluginManager *pm) {
     if(!_pinstance) {
-        _pinstance = new CommandManager();
-    }
-    
+        _pinstance = new CommandManager(pm);
+    }    
     return _pinstance;
 }
 
 
-void CommandManager::destroy() {
-    delete this;
-}
-
-CommandManager::CommandManager(QObject* parent) : QThread(parent) {
+CommandManager::CommandManager(PluginManager *pm, QObject* parent)
+  : QThread(parent), _pluginManager(pm) {
   _symbol = QChar('#'); // Command prefix symbol
   _delim = QChar(';');  // Command delimeter
 
@@ -35,10 +33,15 @@ CommandManager::CommandManager(QObject* parent) : QThread(parent) {
   _mapping.insert("emulate", QString());
   _mapping.insert("delim", QString());
   _mapping.insert("beep", QString());
+
+  qDebug() << "CommandManager created with thread:" << this->thread();
 }
 
 
 CommandManager::~CommandManager() {
+  this->deleteLater();
+  _pinstance = 0;
+  qDebug() << "* CommandManager destroyed";
 }
 
 void CommandManager::run() {
@@ -117,7 +120,7 @@ void CommandManager::parseInput(const QString &input,
 	command = input.mid(1);
       }
     
-      qDebug() << "* CommandManager got an event: " << command << arguments << ".";
+      //qDebug() << "* CommandManager got an event: " << command << arguments << ".";
       
       parseCommand(command, arguments, session);
     }
@@ -172,8 +175,28 @@ bool CommandManager::parseCommand(QString command,
 			session);
 
 	} else if (command == "version") {
-	  displayData("mClient Version ???, \251 Jahara\n",
-		      session);
+	  QString output = QString("mClient %1, \251 2009 by Jahara\n"
+				   "%2\n")
+	    .arg( // %1
+#ifdef SVN_REVISION
+		 "SVN Build " + QString::number(SVN_REVISION)
+#else
+#ifdef MCLIENT_VERSION
+		 MCLIENT_VERSION
+#else
+		 "unknown version"
+#endif
+#endif
+		 )
+	    .arg(// %2
+
+#if __STDC__
+		 "Compiled " __TIME__ " " __DATE__
+#else
+		 "Unknown compile time"
+#endif
+		 );
+	  displayData(output, session);
 	  
 	} else if (command == "help") {
 	  QString output = "#commands available:\n";
@@ -236,7 +259,6 @@ void CommandManager::postEvent(QVariant *payload, const QStringList& tags,
     MClientEvent *me = new MClientEvent(new MClientEventData(payload),
 					tags,
 					session);
-    QApplication::postEvent(PluginManager::instance(),
-			    me);
-    //PluginManager::instance()->customEvent(me);
+    QObject* ps = _pluginManager->getPluginSession(session);
+    QApplication::postEvent(ps, me);
 }

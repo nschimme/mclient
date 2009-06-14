@@ -33,19 +33,21 @@ class SocketManagerIO : public MClientIOPlugin {
         const bool stopSession(QString s);
 
         // IO members
-        void connectDevice(QString s);
-        void disconnectDevice(QString s);
-        void sendData(const QByteArray&, const QString&);
-        void socketReadData(const QByteArray&, const QString&);
+        void connectDevice();
+        void disconnectDevice();
+        void sendData(const QByteArray&);
+        void socketReadData(const QByteArray&);
 
-	void displayMessage(const QString&, const QString&);
-	void socketOpened(SocketReader*);
-	void socketClosed(SocketReader*);
+	void displayMessage(const QString&);
+	void socketOpened();
+	void socketClosed();
 
 
     private:
-	QHash<QString, QString> _settings;
-        QHash<QString, SocketReader*> _socketReaders, _openSockets;
+	bool _openSocket;
+        QPointer<SocketReader> _socketReader;
+
+	QHash<QString, QString> *_settings;
         QPointer<SocketManagerIOConfig> _configWidget;
 };
 
