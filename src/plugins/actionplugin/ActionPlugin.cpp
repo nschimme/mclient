@@ -4,6 +4,8 @@
 #include "ActionPlugin.h"
 
 #include "MClientEvent.h"
+#include "MClientEngineEvent.h"
+
 #include "CommandManager.h"
 #include "PluginManager.h"
 #include "PluginSession.h"
@@ -80,10 +82,15 @@ ActionPlugin::~ActionPlugin() {
 }
 
 void ActionPlugin::customEvent(QEvent* e) {
-    if(!e->type() == 10001) return;
+  if (e->type() == 10000) {
+    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
+    qDebug() << "* ActionPlugin got engineEvent" << ee->dataType()
+	     << ee->payload()->toHash().uniqueKeys();
+
+  }
+  else if (e->type() == 10001) {
     
-    MClientEvent* me;
-    me = static_cast<MClientEvent*>(e);
+    MClientEvent* me = static_cast<MClientEvent*>(e);
 
     if(me->dataTypes().contains("XMLAll")) {
       QString action = me->payload()->toString();
@@ -94,6 +101,9 @@ void ActionPlugin::customEvent(QEvent* e) {
       handleCommand(arguments);
 
     }
+  }
+  else 
+    qDebug() << "* ActionPlugin got a customEvent of type" << e->type();
 }
 
 
@@ -234,7 +244,7 @@ void ActionPlugin::configure() {
 }
 
 
-const bool ActionPlugin::loadSettings() {
+bool ActionPlugin::loadSettings() {
     // register commands
     QStringList commands;
     commands << _shortName
@@ -245,17 +255,17 @@ const bool ActionPlugin::loadSettings() {
 }
 
         
-const bool ActionPlugin::saveSettings() const {
+bool ActionPlugin::saveSettings() const {
   return true;
 }
 
 
-const bool ActionPlugin::startSession(QString s) {
+bool ActionPlugin::startSession(QString) {
   h = new ActionHolder;
   return true;
 }
 
-const bool ActionPlugin::stopSession(QString s) {
+bool ActionPlugin::stopSession(QString) {
   delete h;
   return true;
 }

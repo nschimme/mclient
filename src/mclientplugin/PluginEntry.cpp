@@ -48,11 +48,11 @@ const QStringList PluginEntry::apiList() const {
 }
 
 
-void PluginEntry::addAPI(const QString api, const int version) {
+void PluginEntry::addAPI(const QString api, int version) {
     _apiVersions.insert(api, version);
 }
 
 
-const int PluginEntry::version(const QString& api) const {
+int PluginEntry::version(const QString& api) const {
     return _apiVersions.contains(api) ? _apiVersions.value(api) : 0; 
 }

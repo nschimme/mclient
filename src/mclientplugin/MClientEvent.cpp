@@ -7,7 +7,7 @@
 #include <QString>
 
 MClientEvent::MClientEvent(MClientEventData* payload, const QStringList types,
-			   const QString session) 
+			   const QString session)
         : QEvent(QEvent::Type(10001)) {
 
     _payload = QSharedDataPointer<MClientEventData>(payload);
@@ -27,15 +27,15 @@ MClientEvent::MClientEvent(MClientEventData* payload, const QStringList types)
 }
 
 MClientEvent::MClientEvent(const MClientEvent& me) 
-        : QEvent(QEvent::Type(10001)), _payload(me._payload),
-        _dataTypes(me._dataTypes), _session(me.session()) {
-     //       qDebug() << "copying shit, yo";
-/*
-//    MClientEvent& me2 = const_cast<MClientEvent&>(me);
-    _dataType = me.dataType();
-    _payload = QSharedDataPointer<MClientEventData>(me.shared());
-//    me2.relinquishPayload();
-*/
+  : QEvent(QEvent::Type(10001)) {
+  _payload = me._payload;
+  _dataTypes = me._dataTypes;
+  _session = me.session();
+  //       qDebug() << "copying shit, yo";
+  //    MClientEvent& me2 = const_cast<MClientEvent&>(me);
+  //_dataType = me.dataType();
+  //_payload = QSharedDataPointer<MClientEventData>(me.shared());
+  //    me2.relinquishPayload();
 }
 
 

@@ -39,9 +39,6 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
 
 
 PluginSession::~PluginSession() {
-  quit();
-  wait();
-
   // Unload all plugins
   foreach(QPluginLoader *pm, _loadedPlugins) {
     //delete pm->instance();
@@ -49,6 +46,8 @@ PluginSession::~PluginSession() {
     //delete pm;
   }
 
+  quit();
+  wait();
   qDebug() << "* PluginSession " << _session << "destroyed";
 }
 
@@ -56,6 +55,9 @@ PluginSession::~PluginSession() {
 // We want to start an event loop in a separate thread to handle plugins
 void PluginSession::run() {
   loadAllPlugins();
+  // Send the receiving plugins to each plugin which delivers
+  postReceivingPlugins();
+
   qDebug() << "* PluginSession" << _session
 	   << "is running with thread:" << this->thread();
   emit doneLoading(this);
@@ -102,14 +104,14 @@ void PluginSession::loadAllPlugins() {
 }
 
 
-const bool PluginSession::loadPlugin(const QString& libName) {
+bool PluginSession::loadPlugin(const QString& libName) {
   qDebug() << "loadPlugin call for" << libName
 	   << "for session" << _session;
   
   QString fileName = _pluginManager->getPluginDir() + "/" + libName;
   
   // Try to load plugin from file
-  QPluginLoader* loader = new QPluginLoader(fileName);
+  QPluginLoader* loader = new QPluginLoader(fileName, this);
   // NOTE: can't have 'this' as parent because PluginManager is in a
   // different thread than its own.
   if(!loader->load()) {
@@ -142,7 +144,7 @@ const bool PluginSession::loadPlugin(const QString& libName) {
       // insert APIs for this plugin into hash
       QHash<QString, int> apis = iPlugin->implemented();
       QHash<QString, int>::iterator jt = apis.begin();
-      for(jt; jt!=apis.end(); ++jt) {
+      for(; jt!=apis.end(); ++jt) {
 	_pluginAPIs.insert(jt.key(), loader);
       }
       
@@ -176,12 +178,12 @@ const bool PluginSession::loadPlugin(const QString& libName) {
 }
 
 
-const bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
+bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
   QHash<QString, int> deps = iPlugin->dependencies();
 
   // Check dependencies
   QHash<QString, int>::iterator it = deps.begin();
-  for (it; it != deps.end(); ++it) {
+  for (; it != deps.end(); ++it) {
 
     // Ask what APIs each plugin implements and compare versions
     foreach(PluginEntry *pe, _pluginManager->getAvailablePlugins()) {
@@ -219,9 +221,7 @@ const bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
 
 
 void PluginSession::startSession() {
-  
-  postDataTypes();
-
+  // Start the sessions
   QList< QPair<int, QWidget*> > widgetList;
 
   foreach(QPluginLoader* pl,_loadedPlugins) {
@@ -284,7 +284,6 @@ void PluginSession::customEvent(QEvent* e) {
     
   }
   else if (e->type() == 10001) {
-
     MClientEvent* me = static_cast<MClientEvent*>(e);
     //qDebug() << "* copying posted event with payload" << me->payload();
     
@@ -304,7 +303,7 @@ void PluginSession::customEvent(QEvent* e) {
 		 << it.value()->instance() << "with" << me->payload();
 	
 	// Post the event
-	QApplication::postEvent(it.value()->instance(), nme);
+	QCoreApplication::postEvent(it.value()->instance(), nme);
 	found = true;
 	
 	++it; // Iterate
@@ -317,29 +316,31 @@ void PluginSession::customEvent(QEvent* e) {
 }
 
 
-void PluginSession::postDataTypes() {
+void PluginSession::postReceivingPlugins() {
   // Go through each unique plugin in this hash
   QList<QPluginLoader*> list = _deliversTypes.uniqueKeys();
-  qDebug() << "postDataTypes has:" << list;
-  for (int i = 0; i < list.size(); ++i) {
-    QPluginLoader *iPlugin = list.at(i); // the current plugin
 
-    qDebug() << "looking at" << iPlugin->instance() << i;
+  for (int i = 0; i < list.size(); ++i) {
+    QPluginLoader *pl = list.at(i); // the current plugin
+    MClientPluginInterface *pi
+      = qobject_cast<MClientPluginInterface*>(pl->instance());
+
+    //qDebug() << "looking at" << pi->shortName() << i;
 
     // Hash to be delivered to the current plugin
     QHash<QString, QVariant> hash;
     
     // Iterate through each type that this plugin delivers
     QMultiHash<QPluginLoader*, QString>::iterator j
-      = _deliversTypes.find(iPlugin);
-    for (j; j != _deliversTypes.end() && j.key() == iPlugin; ++j) {
+      = _deliversTypes.find(pl);
+    for (; j != _deliversTypes.end() && j.key() == pl; ++j) {
       QString dataType = j.value(); // the dataType
       QList<QPluginLoader*> rList = _receivesTypes.values(dataType);
 
-      foreach(QPluginLoader *pl, rList)
-	hash.insertMulti(dataType,
-			 qVariantFromValue(static_cast<QObject*>
-					   (pl->instance())));
+      foreach(QPluginLoader *rpl, rList)
+	hash.insert(dataType,
+		    qVariantFromValue(rpl->instance()));
+      
     }
 
     if (!hash.isEmpty()) {
@@ -351,9 +352,9 @@ void PluginSession::postDataTypes() {
 				 _session);
       
       // Post the event to the current plugin
-      //QApplication::postEvent(iPlugin->instance(), ee);
-      qDebug() << ">> delivering receiving types to" << iPlugin->instance()
-	       << hash;
+      QCoreApplication::postEvent(pl->instance(), ee);
+      qDebug() << ">> delivering receiving types to" << pi->shortName()
+	       << hash.uniqueKeys();
     }
   }
   qDebug() << "Done delivering types!";

@@ -21,10 +21,10 @@ class MClientEngineEvent : public QEvent {
     public:
         MClientEngineEvent(MClientEventData* payload,
 			   const MClientEngineEventDataType type,
-			   const QString session);
+			   const QString &session);
         MClientEngineEvent(MClientEventData* payload,
 			   const MClientEngineEventDataType type);
-        MClientEngineEvent(const MClientEngineEvent& me);
+        MClientEngineEvent (const MClientEngineEvent &me);
         ~MClientEngineEvent();
 
 	// Setters

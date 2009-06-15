@@ -12,7 +12,7 @@ MClientDisplayPlugin::~MClientDisplayPlugin() {
 }
 
 
-void MClientDisplayPlugin::customEvent(QEvent* e) {
+void MClientDisplayPlugin::customEvent(QEvent*) {
 }
 
 
@@ -21,12 +21,12 @@ const MClientDisplayLocations& MClientDisplayPlugin::displayLocations() const {
 }
 
 
-const bool MClientDisplayPlugin::initDisplay(QString s) {
+bool MClientDisplayPlugin::initDisplay(QString) {
   return false;
 }
 
 
-QWidget* MClientDisplayPlugin::getWidget(QString s) {
+QWidget* MClientDisplayPlugin::getWidget(QString) {
   return 0;
 }
 

@@ -86,7 +86,7 @@ PluginConfigWidget::~PluginConfigWidget() {
 
 
 void PluginConfigWidget::updateSelection(const QItemSelection &selected,
-        const QItemSelection &deselected) {
+					 const QItemSelection &) {
 
     QModelIndex index;
     QModelIndexList items = selected.indexes();

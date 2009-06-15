@@ -75,11 +75,14 @@ bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map) {
 
     }
     // Otherwise we have encountered an error
-    else if (xml.hasError())
+    else if (xml.hasError()) {
       qWarning() << "* Error parsing XML configuration file"
 		 << xml.errorString();
+      return false;
+    }
   }
   qDebug() << "* read in XML file"; // << map;
+  return true;
 }
 
 bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map) {
@@ -143,6 +146,7 @@ bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map) {
   xml.writeEndDocument();
 
   qDebug() << "* wrote out XML file"; // << map;
+  return true;
 }
 
 const QSettings::Format XmlFormat = 
@@ -163,7 +167,7 @@ ConfigManager::~ConfigManager() {
 }
 
 
-const bool ConfigManager::readApplicationSettings() {
+bool ConfigManager::readApplicationSettings() {
   QDir configDir = QDir(qApp->applicationDirPath());
   if (!configDir.exists("config")) {
     if (!configDir.mkdir("config")) {
@@ -192,7 +196,7 @@ const bool ConfigManager::readApplicationSettings() {
 }
 
 
-const bool ConfigManager::writeApplicationSettings() {
+bool ConfigManager::writeApplicationSettings() {
   QSettings conf("config/mClient.xml", XmlFormat);
 
   _appSettings->insert("mClient/version", "1.0");
@@ -210,7 +214,7 @@ const bool ConfigManager::writeApplicationSettings() {
 }
 
 
-const bool ConfigManager::readPluginSettings(const QString &pluginName) {
+bool ConfigManager::readPluginSettings(const QString &pluginName) {
   QString file = QString("%1/%2.xml").arg(_configPath, pluginName);
   QSettings conf(file, XmlFormat);
 
@@ -237,7 +241,7 @@ const bool ConfigManager::readPluginSettings(const QString &pluginName) {
   return true;
 }
 
-const bool ConfigManager::writePluginSettings(const QString &pluginName) {
+bool ConfigManager::writePluginSettings(const QString &pluginName) {
   QString file = QString("%1/%2.xml").arg(_configPath, pluginName);
   QSettings conf(file, XmlFormat);
 

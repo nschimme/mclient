@@ -8,7 +8,7 @@
 
 MClientEngineEvent::MClientEngineEvent(MClientEventData* payload,
 				       const MClientEngineEventDataType type,
-				       const QString session) 
+				       const QString &session) 
         : QEvent(QEvent::Type(10000)) {
 
     _payload = QSharedDataPointer<MClientEventData>(payload);
@@ -26,10 +26,13 @@ MClientEngineEvent::MClientEngineEvent(MClientEventData* payload,
     _dataType = type;
 }
 
-MClientEngineEvent::MClientEngineEvent(const MClientEngineEvent& me) 
-        : QEvent(QEvent::Type(10000)), _payload(me._payload),
-        _dataType(me._dataType), _session(me.session()) {
+
+MClientEngineEvent::MClientEngineEvent(const MClientEngineEvent& me)
+  : QEvent(QEvent::Type(10000)) {
   // Makes a copy of the event
+  _payload = me._payload;
+  _dataType = me._dataType;
+  _session = me.session();
 }
 
 

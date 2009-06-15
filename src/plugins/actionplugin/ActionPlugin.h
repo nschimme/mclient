@@ -23,10 +23,10 @@ class ActionPlugin : public MClientPlugin {
         // Plugin members
         void customEvent(QEvent* e);
         void configure();
-        const bool loadSettings();
-        const bool saveSettings() const;
-        const bool startSession(QString s);
-        const bool stopSession(QString s);
+        bool loadSettings();
+        bool saveSettings() const;
+        bool startSession(QString s);
+        bool stopSession(QString s);
 
     private:
 	ActionHolder *h;

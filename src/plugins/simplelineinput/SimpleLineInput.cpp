@@ -61,23 +61,23 @@ void SimpleLineInput::configure() {
 }
 
 
-const bool SimpleLineInput::loadSettings() {
+bool SimpleLineInput::loadSettings() {
   return true;
 }
 
         
-const bool SimpleLineInput::saveSettings() const {
+bool SimpleLineInput::saveSettings() const {
   return true;
 }
 
 
-const bool SimpleLineInput::startSession(QString s) {
+bool SimpleLineInput::startSession(QString s) {
     initDisplay(s);
     return true;
 }
 
 
-const bool SimpleLineInput::stopSession(QString s) {
+bool SimpleLineInput::stopSession(QString s) {
   if (_widget->close())
     qDebug() << "* removed SimpleLineInput InputWidget for session" << s;
   return true;
@@ -85,13 +85,13 @@ const bool SimpleLineInput::stopSession(QString s) {
 
 
 // Display plugin members
-const bool SimpleLineInput::initDisplay(QString s) {
+bool SimpleLineInput::initDisplay(QString s) {
   MainWindow *mw = _pluginSession->getManager()->getMainWindow();
   _widget = new InputWidget(s, this, mw);
   
   return true;
 }
 
-QWidget* SimpleLineInput::getWidget(QString s) {
+QWidget* SimpleLineInput::getWidget(QString) {
     return _widget;
 }

@@ -3,6 +3,7 @@
 #include "SocketReader.h"
 
 #include "MClientEvent.h"
+#include "MClientEngineEvent.h"
 #include "PluginManager.h"
 #include "PluginSession.h"
 #include "CommandManager.h"
@@ -43,27 +44,32 @@ SocketManagerIO::~SocketManagerIO() {
 
 // MClientPlugin members
 void SocketManagerIO::customEvent(QEvent* e) {
-  if(!e->type() == 10001) {
-    qDebug() << "SocketManagerIO received a different event";
-    return;
-  }
-  
-  MClientEvent* me = static_cast<MClientEvent*>(e);
-  
-  if(me->dataTypes().contains("SendToSocketData")) {
-    QByteArray ba = me->payload()->toByteArray();
-    sendData(ba);
+  if (e->type() == 10000) {
+    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
+    qDebug() << "* SocketManagerIO got engineEvent" << ee->dataType()
+	     << ee->payload()->toHash().uniqueKeys();
     
-  } else if (me->dataTypes().contains("ConnectToHost")) {
-    //QString arg = me->payload()->toString();
-    connectDevice();
-    
-  } else if (me->dataTypes().contains("DisconnectFromHost")) {
-    //QString arg = me->payload()->toString();
-    disconnectDevice();
   }
+  else if (e->type() == 10001) {
+    
+    MClientEvent* me = static_cast<MClientEvent*>(e);
+    
+    if(me->dataTypes().contains("SendToSocketData")) {
+      QByteArray ba = me->payload()->toByteArray();
+      sendData(ba);
+      
+    } else if (me->dataTypes().contains("ConnectToHost")) {
+      //QString arg = me->payload()->toString();
+      connectDevice();
+      
+    } else if (me->dataTypes().contains("DisconnectFromHost")) {
+      //QString arg = me->payload()->toString();
+      disconnectDevice();
+    }
+  }
+  else 
+    qDebug() << "SocketManagerIO got a customEvent of type" << e->type();
 }
-
 
 void SocketManagerIO::configure() {
     // Need to display a table of (identifier, host, port)
@@ -79,7 +85,7 @@ void SocketManagerIO::configure() {
 }
 
 
-const bool SocketManagerIO::loadSettings() {
+bool SocketManagerIO::loadSettings() {
   _settings =
     _pluginSession->getManager()->getConfig()->pluginSettings(_shortName);
   
@@ -95,13 +101,13 @@ const bool SocketManagerIO::loadSettings() {
 }
 
 
-const bool SocketManagerIO::saveSettings() const {
+bool SocketManagerIO::saveSettings() const {
   _pluginSession->getManager()->getConfig()->writePluginSettings(_shortName);
   return true;
 }
 
 
-const bool SocketManagerIO::startSession(QString s) {
+bool SocketManagerIO::startSession(QString s) {
     QString cfg = QString("config/%1/").arg(s);
 
     // Host settings
@@ -133,7 +139,7 @@ const bool SocketManagerIO::startSession(QString s) {
 }
 
 
-const bool SocketManagerIO::stopSession(QString s) {
+bool SocketManagerIO::stopSession(QString s) {
   delete _socketReader;
   qDebug() << "* removed SocketReader for session" << s;
   return true;

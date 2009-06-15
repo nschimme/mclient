@@ -1,6 +1,7 @@
 #include "MumeXML.h"
 
 #include "MClientEvent.h"
+#include "MClientEngineEvent.h"
 #include "PluginManager.h"
 
 #include <QApplication>
@@ -58,10 +59,13 @@ MumeXML::~MumeXML() {
 
 void MumeXML::customEvent(QEvent* e) {
   QMutexLocker locker(&_mutex);
-  if(e->type() != 10001) {
-    qDebug() << "MumeXML somehow received the wrong kind of event...";
-    
-  } else {
+  if (e->type() == 10000) {
+    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
+    qDebug() << "* MumeXML got engineEvent" << ee->dataType()
+	     << ee->payload()->toHash().uniqueKeys();
+
+  }
+  else if (e->type() == 10001) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
     QStringList types = me->dataTypes();
@@ -75,6 +79,10 @@ void MumeXML::customEvent(QEvent* e) {
       }
     }
   }
+  else {
+    qDebug() << "MumeXML somehow received the wrong kind of event...";
+
+  }
 }
 
 
@@ -82,22 +90,22 @@ void MumeXML::configure() {
 }
 
 
-const bool MumeXML::loadSettings() {
+bool MumeXML::loadSettings() {
     return true;
 }
 
 
-const bool MumeXML::saveSettings() const {
+bool MumeXML::saveSettings() const {
     return true;
 }
 
 
-const bool MumeXML::startSession(QString s) {
+bool MumeXML::startSession(QString) {
     return true;
 }
 
 
-const bool MumeXML::stopSession(QString s) {
+bool MumeXML::stopSession(QString) {
   return true;
 }
 

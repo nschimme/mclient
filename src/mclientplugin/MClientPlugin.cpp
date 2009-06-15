@@ -65,7 +65,7 @@ const QStringList& MClientPlugin::deliversDataTypes() const {
 }
 
 
-const bool MClientPlugin::configurable() const {
+bool MClientPlugin::configurable() const {
     return _configurable;
 }
 
@@ -78,7 +78,7 @@ void MClientPlugin::run() {
 // Post an event
 void MClientPlugin::postSession(QVariant* payload, QStringList tags) {
   MClientEvent* me = new MClientEvent(new MClientEventData(payload), tags,
-				      _session);
+				      "test");
   
   QApplication::postEvent(_pluginSession, me);
 }

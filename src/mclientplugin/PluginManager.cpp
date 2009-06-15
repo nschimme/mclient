@@ -88,7 +88,7 @@ PluginManager::~PluginManager() {
 }
 
 
-void PluginManager::customEvent(QEvent* e) {
+void PluginManager::customEvent(QEvent*) {
 //   MClientEvent* me = static_cast<MClientEvent*>(e);
 //   //qDebug() << "* copying posted event with payload" << me->payload();
   
@@ -126,7 +126,7 @@ void PluginManager::configure() {
 }
 
 
-const bool PluginManager::indexPlugins() {
+bool PluginManager::indexPlugins() {
   QDir pluginsDir = QDir(qApp->applicationDirPath());
   pluginsDir.cd(_pluginDir);
   
@@ -165,7 +165,7 @@ const bool PluginManager::indexPlugins() {
     e->longName(pi->longName());
     e->libName(fileName);
     QHash<QString, int>::const_iterator it = pi->implemented().begin();
-    for(it; it!=pi->implemented().end(); ++it) {
+    for(; it!=pi->implemented().end(); ++it) {
       e->addAPI(it.key(), it.value());
     }
     
@@ -180,7 +180,7 @@ const bool PluginManager::indexPlugins() {
 }
 
 
-const bool PluginManager::writePluginIndex() {
+bool PluginManager::writePluginIndex() {
     QHash<QString, QString> *hash = getConfig()->applicationSettings();
     
     QStringList groups;
@@ -217,10 +217,11 @@ const bool PluginManager::writePluginIndex() {
     groups.removeLast(); /* mClient */
     
     qDebug("* plugin index written");
+    return true;
 }
 
 
-const bool PluginManager::readPluginIndex() {
+bool PluginManager::readPluginIndex() {
     // Read in the plugin db xml into PluginEntrys
     QHash<QString, QString> *hash = getConfig()->applicationSettings();
     

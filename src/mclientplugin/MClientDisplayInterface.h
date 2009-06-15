@@ -17,7 +17,7 @@ class MClientDisplayInterface {
 	virtual const MClientDisplayLocations& displayLocations() const=0;
 
 	// Display functions
-        virtual const bool initDisplay(QString s)=0;
+        virtual bool initDisplay(QString s)=0;
 	virtual QWidget* getWidget(QString s)=0;
 
 };

@@ -24,7 +24,7 @@ class MClientDisplayPlugin : public MClientPlugin,
         virtual const MClientDisplayLocations& displayLocations() const;
 
         // Display members
-        virtual const bool initDisplay(QString s);
+        virtual bool initDisplay(QString s);
 	virtual QWidget* getWidget(QString s);
 
    protected:

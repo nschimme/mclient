@@ -39,22 +39,22 @@ class MClientPluginInterface {
         virtual void customEvent(QEvent* e)=0;
 
         // Can this be configured manually?
-        virtual const bool configurable() const=0;
+        virtual bool configurable() const=0;
 
         // If so, we need to implement this
         virtual void configure()=0;
 
         // Also, all plugins need to have the ability to load settings.
-        virtual const bool loadSettings()=0;
+        virtual bool loadSettings()=0;
 
         // And also they need to save them.
-        virtual const bool saveSettings() const=0;
+        virtual bool saveSettings() const=0;
 
         // Create objects local to one session
-        virtual const bool startSession(QString s)=0;
+        virtual bool startSession(QString s)=0;
 
         // Destroy objects local to one session
-        virtual const bool stopSession(QString s)=0;
+        virtual bool stopSession(QString s)=0;
 
 	// Receive the PluginSession reference upon load
 	virtual void setPluginSession(PluginSession *ps)=0;

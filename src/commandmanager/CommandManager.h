@@ -22,8 +22,8 @@ class CommandManager : public QThread {
         ~CommandManager();
 
         void configure();
-        const bool loadSettings();
-        const bool saveSettings() const;
+        bool loadSettings();
+        bool saveSettings() const;
 
 	void run();
 

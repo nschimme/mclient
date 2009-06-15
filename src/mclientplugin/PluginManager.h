@@ -52,9 +52,9 @@ public slots:
         static PluginManager* _pinstance;
 
     private:
-        const bool indexPlugins();
-        const bool writePluginIndex();
-        const bool readPluginIndex();
+        bool indexPlugins();
+        bool writePluginIndex();
+        bool readPluginIndex();
 
 	MainWindow *_mainWindow;
 	CommandManager *_commandManager;

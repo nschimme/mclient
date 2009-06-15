@@ -11,5 +11,5 @@ MClientFilterPlugin::~MClientFilterPlugin() {
 }
 
 
-void MClientFilterPlugin::customEvent(QEvent* e) {
+void MClientFilterPlugin::customEvent(QEvent*) {
 }

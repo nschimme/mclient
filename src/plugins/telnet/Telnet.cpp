@@ -19,6 +19,7 @@
 
 #include "Telnet.h"
 
+#include "MClientEngineEvent.h"
 #include "MClientEvent.h"
 #include "PluginManager.h"
 
@@ -147,53 +148,60 @@ Telnet::~Telnet() {
 }
 
 void Telnet::customEvent(QEvent* e) {
-    if(e->type() != 10001) {
-        qDebug() << "Telnet somehow received the wrong kind of event...";
+  if (e->type() == 10000) {
+    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
+    qDebug() << "* MumeXML got engineEvent" << ee->dataType()
+    	     << ee->payload()->toHash().uniqueKeys();
 
-    } else {
-        MClientEvent* me = static_cast<MClientEvent*>(e);
 
-        bool found = false;
-        QString s;
-        QStringList types = me->dataTypes();
-        foreach(s, types) {
-	  if (s.startsWith("SocketData")) {
-	    socketRead(me->payload()->toByteArray());
-
-	  }
-	  else if(s.startsWith("SocketConnected")) {
-	    d->_connected = true;
-
-	    reset ();
-
-	    d->sentbytes = 0;
-	    
+  }
+  else if (e->type() == 10001) {
+    MClientEvent* me = static_cast<MClientEvent*>(e);
+    
+    QString s;
+    QStringList types = me->dataTypes();
+    foreach(s, types) {
+      if (s.startsWith("SocketData")) {
+	socketRead(me->payload()->toByteArray());
+	
+      }
+      else if(s.startsWith("SocketConnected")) {
+	d->_connected = true;
+	
+	reset ();
+	
+	d->sentbytes = 0;
+	
 	    //negotiate some telnet options, if allowed
-	    if (d->_startupneg)
-	      {
+	if (d->_startupneg)
+	  {
 		//NAWS (used to send info about window size)
-		sendTelnetOption (TN_WILL, OPT_NAWS);
-		//do not allow server to echo our text!
-		sendTelnetOption (TN_DONT, OPT_ECHO);
-	      }
-
-	    // set up encoding
-	    d->encoding = DEFAULT_ENCODING;
-	    // d->encoding = sett ? sett->getString ("encoding") : DEFAULT_ENCODING;
-	    setupEncoding ();
-
+	    sendTelnetOption (TN_WILL, OPT_NAWS);
+	    //do not allow server to echo our text!
+	    sendTelnetOption (TN_DONT, OPT_ECHO);
 	  }
-	  else if(s.startsWith("SocketDisconnected")) {
-	    d->_connected = false;
-
-	    reset ();
-	  }
-	  else if(s.startsWith("DimensionsChanged")) {
-	    QList<QVariant> par = me->payload()->toList();
-	    windowSizeChanged (par.first().toInt(), par.last().toInt());
-	  }
-        }
+	
+	// set up encoding
+	d->encoding = DEFAULT_ENCODING;
+	// d->encoding = sett ? sett->getString ("encoding") : DEFAULT_ENCODING;
+	setupEncoding ();
+	
+      }
+      else if(s.startsWith("SocketDisconnected")) {
+	d->_connected = false;
+	
+	reset ();
+      }
+      else if(s.startsWith("DimensionsChanged")) {
+	QList<QVariant> par = me->payload()->toList();
+	windowSizeChanged (par.first().toInt(), par.last().toInt());
+      }
     }
+  }
+  else {
+    qDebug() << "Telnet somehow received the wrong kind of event...";
+    
+  }
 }
 
 
@@ -201,20 +209,22 @@ void Telnet::configure() {
 }
 
 
-const bool Telnet::loadSettings() {
+bool Telnet::loadSettings() {
+  return true;
 }
 
 
-const bool Telnet::saveSettings() const {
+bool Telnet::saveSettings() const {
+  return true;
 }
 
 
-const bool Telnet::startSession(QString s) {
+bool Telnet::startSession(QString) {
     return true;
 }
 
 
-const bool Telnet::stopSession(QString s) {
+bool Telnet::stopSession(QString) {
     return true;
 }
 

@@ -33,7 +33,7 @@ class PluginEntry {
 
         // Returns the version of a particular api.  NOTE: count starts at 1!
         // This function will return 0 if the api is not implemented.
-        const int version(const QString& api) const;
+        int version(const QString& api) const;
 
     protected:
         QString _shortName;

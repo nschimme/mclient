@@ -20,15 +20,15 @@ class ConfigManager : public QObject {
         ~ConfigManager();
 
         // Use QSettings to handle general app-level settings
-        const bool readApplicationSettings();
-        const bool writeApplicationSettings();
+        bool readApplicationSettings();
+        bool writeApplicationSettings();
 	QHash<QString, QString>* applicationSettings() {
 	  return _appSettings;
 	}
 
         // Take care of plugin settings that are stored in xml
-	const bool readPluginSettings(const QString &pluginName);
-	const bool writePluginSettings(const QString &pluginName);
+	bool readPluginSettings(const QString &pluginName);
+	bool writePluginSettings(const QString &pluginName);
 	QHash<QString, QString>* pluginSettings(const QString &pluginName) {
 	  return _pluginSettings[pluginName];
 	}

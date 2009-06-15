@@ -4,6 +4,7 @@
 #include "AliasPlugin.h"
 
 #include "MClientEvent.h"
+#include "MClientEngineEvent.h"
 #include "CommandManager.h"
 #include "PluginManager.h"
 #include "PluginSession.h"
@@ -63,20 +64,27 @@ AliasPlugin::~AliasPlugin() {
 }
 
 void AliasPlugin::customEvent(QEvent* e) {
-    if(!e->type() == 10001) return;
-    
-    MClientEvent* me;
-    me = static_cast<MClientEvent*>(e);
+  if (e->type() == 10000) {
+    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
+    qDebug() << "* AliasPlugin got engineEvent" << ee->dataType()
+	     << ee->payload()->toHash().uniqueKeys();
 
+  }
+  else if (e->type() == 10001) {
+    MClientEvent* me = static_cast<MClientEvent*>(e);
+    
     if(me->dataTypes().contains("AliasInput")) {
       QString alias = me->payload()->toString();
       parseInput(alias);
-
+      
     } else if (me->dataTypes().contains("AliasCommand")) {
       QString arguments = me->payload()->toString();
       handleCommand(arguments);
-
+      
     }
+  }
+  else 
+    qDebug() << "* AliasPlugin got a customEvent of type" << e->type();
 }
 
 
@@ -193,7 +201,7 @@ void AliasPlugin::configure() {
 }
 
 
-const bool AliasPlugin::loadSettings() {
+bool AliasPlugin::loadSettings() {
     // register commands
     QStringList commands;
     commands << _shortName
@@ -204,17 +212,17 @@ const bool AliasPlugin::loadSettings() {
 }
 
         
-const bool AliasPlugin::saveSettings() const {
+bool AliasPlugin::saveSettings() const {
   return true;
 }
 
 
-const bool AliasPlugin::startSession(QString s) {
+bool AliasPlugin::startSession(QString) {
   h = new AliasHolder;
   return true;
 }
 
-const bool AliasPlugin::stopSession(QString s) {
+bool AliasPlugin::stopSession(QString) {
   delete h;
   return true;
 }

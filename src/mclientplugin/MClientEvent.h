@@ -19,7 +19,8 @@ class MClientEvent : public QEvent {
     public:
         MClientEvent(MClientEventData* payload, const QStringList type, const QString session);
         MClientEvent(MClientEventData* payload, const QStringList type);
-        MClientEvent(const MClientEvent& me);
+	MClientEvent(const MClientEvent &me);
+
         ~MClientEvent();
         QStringList dataTypes() const;
         QVariant* payload();

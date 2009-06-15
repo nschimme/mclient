@@ -40,11 +40,11 @@ class PluginSession : public QThread {
     
     // For loading the plugins and checking for errors
     void loadAllPlugins();
-    const bool loadPlugin(const QString &libName);
-    const bool checkDependencies(MClientPluginInterface *iPlugin);
+    bool loadPlugin(const QString &libName);
+    bool checkDependencies(MClientPluginInterface *iPlugin);
 
     // For posting datatypes to each plugin
-    void postDataTypes();
+    void postReceivingPlugins();
 
     const QPluginLoader* pluginWithAPI(const QString &api) const;
 

@@ -246,23 +246,23 @@ void WebKitDisplay::configure() {
 }
 
 
-const bool WebKitDisplay::loadSettings() {
+bool WebKitDisplay::loadSettings() {
  return true;
 }
 
         
-const bool WebKitDisplay::saveSettings() const {
+bool WebKitDisplay::saveSettings() const {
   return true;
 }
 
 
-const bool WebKitDisplay::startSession(QString s) {
+bool WebKitDisplay::startSession(QString s) {
     initDisplay(s);
     return true;
 }
 
 
-const bool WebKitDisplay::stopSession(QString s) {
+bool WebKitDisplay::stopSession(QString s) {
   if (_widget->close())
     qDebug() << "* removed WebKit DisplayWidget for session" << s;
   return true;
@@ -270,13 +270,13 @@ const bool WebKitDisplay::stopSession(QString s) {
 
 
 // Display plugin members
-const bool WebKitDisplay::initDisplay(QString s) {
+bool WebKitDisplay::initDisplay(QString s) {
   MainWindow *mw = _pluginSession->getManager()->getMainWindow();
   _widget = new DisplayWidget(s, this, mw);
   
   return true;
 }
 
-QWidget* WebKitDisplay::getWidget(QString s) {
+QWidget* WebKitDisplay::getWidget(QString) {
     return _widget;
 }

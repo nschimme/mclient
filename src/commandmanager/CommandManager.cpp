@@ -238,12 +238,12 @@ void CommandManager::configure() {
 }
 
 
-const bool CommandManager::loadSettings() {
+bool CommandManager::loadSettings() {
     return true;
 }
 
 
-const bool CommandManager::saveSettings() const {
+bool CommandManager::saveSettings() const {
     return true;
 }
 
