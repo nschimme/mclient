@@ -3,6 +3,7 @@
 
 #include <QDebug>
 #include <QtWebKit>
+#include <QWebFrame>
 
 //#include <QFile>
 
@@ -18,17 +19,24 @@ DisplayWidget::DisplayWidget(QString s, WebKitDisplay* wkd, QWidget* parent)
     _maxCharacterCount = 300000000;
 
     // Create WebKit Display
-    load(QUrl("qrc:/webkitdisplay/page.html"));
+    page()->mainFrame()->load(QUrl("qrc:/webkitdisplay/page.html"));
 
     // Connect Signals/Slots
     connect(this, SIGNAL(loadFinished(bool)), SLOT(finishLoading(bool)));
     connect(_wkd, SIGNAL(dataReceived(const QString&)),
 	    SLOT(appendText(const QString&)));
 
+    // TODO: Why aren't frames working?
+    connect(page(), SIGNAL(frameCreated(QWebFrame *frame)),
+	    SLOT(loadFrame(QWebFrame *frame)));
+
     // Debugging Information
     qDebug() << "* WebKitDisplay thread:" << _wkd->thread();
     qDebug() << "* DisplayWidget thread:" << this->thread();
     
+    page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
+    page()->setContentEditable(false);
+
     /*
 #ifdef USE_JQUERY
     QFile file;
@@ -60,7 +68,7 @@ void DisplayWidget::appendText(const QString &output) {
     // Replace/Blank Section
 #ifdef USE_JQUERY
     QString code = QString("$('.section:first').appendTo('.container').html('%1').show();").arg(output);
-    //qDebug() << "* Blanking Section:" << code;
+    qDebug() << "* Blanking Section:" << code;
 
 #endif
   } else {
@@ -74,22 +82,28 @@ void DisplayWidget::appendText(const QString &output) {
     QString code = QString("$('.section:last').append('%1');").arg(output);
     //qDebug() << "* Appending Section:" << code;
     page()->mainFrame()->evaluateJavaScript(code);
-  }
-
-  //QString scrollCode = QString("$(window).scrollTop($(document).height());");
-  //page()->mainFrame()->evaluateJavaScript(scrollCode);
-  int height = page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
-  page()->mainFrame()->setScrollBarValue(Qt::Vertical, height);
-  
+  }  
 #endif
+  
+  scrollToBottom();
 }
 
 void DisplayWidget::finishLoading(bool) {
 #ifdef USE_JQUERY
   // Populate Page with Sections
-  QString code = QString("$('.section:first').each( function () { for (var id=1;id<%1;id++) { $('.section:first').clone(true).insertAfter(this); } $('.section').hide(); $('.section:last').show(); } )").arg(_maxSections);
+  //QString code = QString("$('.section:first').each( function () { for (var id=1;id<%1;id++) { $('.section:first').clone(true).insertAfter(this); } $('.section').hide(); $('.section:last').show(); } )").arg(_maxSections);
   //page()->mainFrame()->evaluateJavaScript(code);
 #endif
-
+  
   qDebug() << "* WebKit page loaded";
+}
+
+void DisplayWidget::scrollToBottom() {
+  int height = page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
+  page()->mainFrame()->setScrollBarValue(Qt::Vertical, height);
+}
+
+
+void DisplayWidget::loadFrame(QWebFrame *frame) {
+  qDebug() << "frame created!" << frame->frameName();
 }

@@ -50,25 +50,45 @@ WebKitDisplay::WebKitDisplay(QWidget* parent)
     _blink = false;
     _inverse = false;
     _strikethrough = false;
+
+    _quit = false;
 }
 
 
 WebKitDisplay::~WebKitDisplay() {
-    saveSettings();
+  _quit = true;
+  _cond.wakeOne();
+  wait();
+  qDebug() << "* WebKitDisplay thread quit";
 }
 
 
 void WebKitDisplay::customEvent(QEvent* e) {
-//    qDebug() << "* bork bork bork!";
-    if(!e->type() == 10001) return;
-    
-    MClientEvent* me;
-    me = static_cast<MClientEvent*>(e);
-
-    if(me->dataTypes().contains("DisplayData")) {
-      parseDisplayData(me->payload()->toString());
-    }
+  QMutexLocker locker(&_mutex);
+  if(!e->type() == 10001) return;
+  
+  MClientEvent* me = static_cast<MClientEvent*>(e);
+  if (me->dataTypes().contains("DisplayData")) {
+    _eventQueue.enqueue(me->payload()->toString());
+    if(!isRunning())
+      start(LowPriority);
+    else
+      _cond.wakeOne();
+  }
 }
+
+
+void WebKitDisplay::run() {
+  QMutexLocker locker(&_mutex);
+  while (!_quit) {
+    while (!_quit && !_eventQueue.isEmpty())
+      parseDisplayData(_eventQueue.dequeue());
+    
+    _cond.wait(&_mutex);
+  }
+}
+
+
 
 void WebKitDisplay::parseDisplayData(QString text) {
 
@@ -256,8 +276,7 @@ bool WebKitDisplay::saveSettings() const {
 }
 
 
-bool WebKitDisplay::startSession(QString s) {
-    initDisplay(s);
+bool WebKitDisplay::startSession(QString) {
     return true;
 }
 

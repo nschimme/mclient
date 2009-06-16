@@ -31,7 +31,7 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
 
   // Start the session in another thread to allow for widgets to be created
   connect(this, SIGNAL(doneLoading(PluginSession*)),
-	  _pluginManager, SLOT(startSession(PluginSession*)));
+	  _pluginManager, SLOT(initDisplay(PluginSession*)));
 
   qDebug() << "* PluginSession" << _session
 	   << "created with thread:" << this->thread();
@@ -46,7 +46,7 @@ PluginSession::~PluginSession() {
     //delete pm;
   }
 
-  quit();
+  exit();
   wait();
   qDebug() << "* PluginSession " << _session << "destroyed";
 }
@@ -57,6 +57,7 @@ void PluginSession::run() {
   loadAllPlugins();
   // Send the receiving plugins to each plugin which delivers
   postReceivingPlugins();
+  startSession();
 
   qDebug() << "* PluginSession" << _session
 	   << "is running with thread:" << this->thread();
@@ -111,8 +112,8 @@ bool PluginSession::loadPlugin(const QString& libName) {
   QString fileName = _pluginManager->getPluginDir() + "/" + libName;
   
   // Try to load plugin from file
-  QPluginLoader* loader = new QPluginLoader(fileName, this);
-  // NOTE: can't have 'this' as parent because PluginManager is in a
+  QPluginLoader* loader = new QPluginLoader(fileName);
+  // NOTE: can't have 'this' as parent because PluginSession is in a
   // different thread than its own.
   if(!loader->load()) {
     qWarning() << "! Failed to load plugin at" << fileName;
@@ -120,10 +121,11 @@ bool PluginSession::loadPlugin(const QString& libName) {
     return false;
     
   } else {
-    QObject* plugin = loader->instance();
-    
+    MClientPluginInterface* iPlugin
+      = qobject_cast<MClientPluginInterface*>(loader->instance());
+
     // Is it the correct kind of plugin?
-    if(!qobject_cast<MClientPluginInterface*>(plugin)) {
+    if(!iPlugin) {
       qWarning() << "! Plugin in file" << fileName
 		 << "does not implement interface";
       loader->unload();
@@ -131,8 +133,6 @@ bool PluginSession::loadPlugin(const QString& libName) {
       return false;
       
     } else {
-      MClientPluginInterface* iPlugin
-	= qobject_cast<MClientPluginInterface*>(loader->instance());
 
       // Check dependencies
       if (!checkDependencies(iPlugin))
@@ -221,36 +221,36 @@ bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
 
 
 void PluginSession::startSession() {
-  // Start the sessions
+  // Start the sessions within the thread
+  foreach(QPluginLoader* pl,_loadedPlugins) {
+    MClientPluginInterface* pi
+      = qobject_cast<MClientPluginInterface*>(pl->instance());
+    if (pi)
+      pi->startSession(_session);
+  }
+}
+
+
+void PluginSession::initDisplay() {
+  // Create the widgets outside of the threads
   QList< QPair<int, QWidget*> > widgetList;
 
   foreach(QPluginLoader* pl,_loadedPlugins) {
-    MClientPluginInterface* pi;
-    pi = qobject_cast<MClientPluginInterface*>(pl->instance());
-    if(pi) {
-      pi->startSession(_session);
-      
-      MClientDisplayInterface* pd
-	= qobject_cast<MClientDisplayInterface*>(pl->instance());
-      if (pd) {
-	qDebug() << "* Found a DISPLAY plugin! " << pi->shortName();
-	
-	
-	qDebug() << "* Display Locations for"
-		 << pi->shortName() << pd->displayLocations();
-	
-	QPair<int, QWidget*> pair(pd->displayLocations(),
-				  pd->getWidget(_session));
-	widgetList.append(pair);
-      }
+    MClientDisplayInterface* pd
+      = qobject_cast<MClientDisplayInterface*>(pl->instance());
+    if (pd) {
+      pd->initDisplay(_session);
+
+      QPair<int, QWidget*> pair(pd->displayLocations(),
+				pd->getWidget(_session));
+      widgetList.append(pair);
     }
   }
-  
+
   if (!widgetList.isEmpty())
     emit sendWidgets(widgetList);
   else
     qCritical() << "! No widgets to use as a display!";
-  
 }
 
 
@@ -322,22 +322,18 @@ void PluginSession::postReceivingPlugins() {
 
   for (int i = 0; i < list.size(); ++i) {
     QPluginLoader *pl = list.at(i); // the current plugin
-    MClientPluginInterface *pi
-      = qobject_cast<MClientPluginInterface*>(pl->instance());
-
-    //qDebug() << "looking at" << pi->shortName() << i;
 
     // Hash to be delivered to the current plugin
-    QHash<QString, QVariant> hash;
+    QMultiHash<QString, QVariant> hash;
     
     // Iterate through each type that this plugin delivers
     QMultiHash<QPluginLoader*, QString>::iterator j
       = _deliversTypes.find(pl);
     for (; j != _deliversTypes.end() && j.key() == pl; ++j) {
       QString dataType = j.value(); // the dataType
-      QList<QPluginLoader*> rList = _receivesTypes.values(dataType);
+      QList<QPluginLoader*> receivesTypes = _receivesTypes.values(dataType);
 
-      foreach(QPluginLoader *rpl, rList)
+      foreach(QPluginLoader *rpl, receivesTypes)
 	hash.insert(dataType,
 		    qVariantFromValue(rpl->instance()));
       
@@ -347,15 +343,18 @@ void PluginSession::postReceivingPlugins() {
       // Create the engineEvent
       QVariant *payload = new QVariant(hash);
       MClientEngineEvent *ee
-	= new MClientEngineEvent(new MClientEventData(payload),
+	= new MClientEngineEvent(new MClientEventData(payload, QStringList(),
+						      _session),
 				 EE_DATATYPE_UPDATE,
 				 _session);
-      
+
       // Post the event to the current plugin
       QCoreApplication::postEvent(pl->instance(), ee);
+
+      MClientPluginInterface *pi
+	= qobject_cast<MClientPluginInterface*>(pl->instance());
       qDebug() << ">> delivering receiving types to" << pi->shortName()
 	       << hash.uniqueKeys();
     }
   }
-  qDebug() << "Done delivering types!";
 }

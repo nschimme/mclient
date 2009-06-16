@@ -25,31 +25,33 @@ MMapperPluginParser::MMapperPluginParser(QString s, MMapperPlugin *plugin,
           mapMgr->getPrespammedPath(),
 	  SLOT(setPath(CommandQueue, bool)), Qt::QueuedConnection);
 
-  connect(plugin, SIGNAL(name(const QString&, const QString&)),
-	  SLOT(name(const QString&, const QString&)));
-  connect(plugin, SIGNAL(description(const QString&, const QString&)),
-	  SLOT(description(const QString&, const QString&)));
-  connect(plugin, SIGNAL(dynamicDescription(const QString&, const QString&)),
-	  SLOT(dynamicDescription(const QString&, const QString&)));
-  connect(plugin, SIGNAL(exits(const QString&, const QString&)),
-	  SLOT(exits(const QString&, const QString&)));
-  connect(plugin, SIGNAL(prompt(const QString&, const QString&)),
-	  SLOT(prompt(const QString&, const QString&)));
-  connect(plugin, SIGNAL(move(const QString&, const QString&)),
-	  SLOT(move(const QString&, const QString&)));
+  connect(plugin, SIGNAL(name(const QString&)),
+	  SLOT(name(const QString&)));
+  connect(plugin, SIGNAL(description(const QString&)),
+	  SLOT(description(const QString&)));
+  connect(plugin, SIGNAL(dynamicDescription(const QString&)),
+	  SLOT(dynamicDescription(const QString&)));
+  connect(plugin, SIGNAL(exits(const QString&)),
+	  SLOT(exits(const QString&)));
+  connect(plugin, SIGNAL(prompt(const QString&)),
+	  SLOT(prompt(const QString&)));
+  connect(plugin, SIGNAL(move(const QString&)),
+	  SLOT(move(const QString&)));
   
-  connect(plugin, SIGNAL(userInput(QString, const QString&)),
-	  SLOT(userInput(QString, const QString&)));
-  connect(plugin, SIGNAL(mudOutput(const QString&, const QString&)),
-	  SLOT(mudOutput(const QString&, const QString&)));
+  connect(plugin, SIGNAL(userInput(QString)),
+	  SLOT(userInput(QString)));
+  connect(plugin, SIGNAL(mudOutput(const QString&)),
+	  SLOT(mudOutput(const QString&)));
 
   connect(this, SIGNAL(sendToUser(const QByteArray&)),
 	  SLOT(sendToUserWrapper(const QByteArray&)));
 
-  connect(this, SIGNAL(sendToUser(const QString&, const QString&)),
- 	  plugin, SLOT(displayMessage(const QString&, const QString&)));
+  connect(this, SIGNAL(sendToUser(const QString&)),
+ 	  plugin, SLOT(displayMessage(const QString&)));
 
   _move = CID_NONE;
+
+  qDebug() << "MMapperPluginParser loaded";
 }
 
 
@@ -57,17 +59,13 @@ MMapperPluginParser::~MMapperPluginParser() {
 }
 
 
-void MMapperPluginParser::name(QString text, const QString &session) {
-  if (session != _session) return ;
+void MMapperPluginParser::name(QString text) {
   removeAnsiMarks(text);
   m_roomName = text.trimmed();
 }
 
 
-void MMapperPluginParser::description(const QString &text,
-				      const QString &session) {
-  if (session != _session) return ;
-
+void MMapperPluginParser::description(const QString &text) {
   if (m_descriptionReady) submit();
 
   m_staticRoomDesc = text;
@@ -76,24 +74,18 @@ void MMapperPluginParser::description(const QString &text,
 }
 
 
-void MMapperPluginParser::dynamicDescription(const QString &text,
-					     const QString &session) {
-  if (session != _session) return ;
+void MMapperPluginParser::dynamicDescription(const QString &text) {
   m_dynamicRoomDesc = text;
 }
 
 
-void MMapperPluginParser::exits(QString text, const QString &session) {
-  if (session != _session) return ;
-
+void MMapperPluginParser::exits(QString text) {
   m_readingRoomDesc = false; // to identify if we saw exits or not
   parseExits(text);
 }
 
 
-void MMapperPluginParser::prompt(QString text, const QString &session) {
-  if (session != _session) return ;
-
+void MMapperPluginParser::prompt(QString text) {
   if (m_readingRoomDesc) {
     emulateExits();
     m_readingRoomDesc = false;
@@ -105,9 +97,7 @@ void MMapperPluginParser::prompt(QString text, const QString &session) {
 }
 
 
-void MMapperPluginParser::move(QString text, const QString &session) {
-  if (session != _session) return ;
-
+void MMapperPluginParser::move(QString text) {
   switch (text.at(0).toAscii()) {
     case 'n':
       _move = CID_NORTH;
@@ -170,18 +160,13 @@ void MMapperPluginParser::submit() {
 }
 
 
-void MMapperPluginParser::userInput(QString text,
-				    const QString &session) {
-  if (session != _session) return ;
+void MMapperPluginParser::userInput(QString text) {
   qDebug() << "* MMapperPluginParser got input" << text << thread();
   parseUserCommands(text);
 }
 
 
-void MMapperPluginParser::mudOutput(const QString &text,
-				    const QString &session) {
-  if (session != _session) return ;
-
+void MMapperPluginParser::mudOutput(const QString &text) {
   if (text.startsWith('Y')) {
     qDebug() << "* MMapperPluginParser detected some text" << text;
 
@@ -214,11 +199,11 @@ void MMapperPluginParser::mudOutput(const QString &text,
 
 void MMapperPluginParser::sendToUserWrapper(const QByteArray &ba) {
   QString text(ba);
-  emit sendToUser(text, _session);
+  emit sendToUser(text);
 }
 
 
 void MMapperPluginParser::sendToMudWrapper(const QByteArray &ba) {
   QString text(ba);
-  emit sendToMud(text, _session);
+  emit sendToMud(text);
 }

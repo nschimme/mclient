@@ -148,13 +148,8 @@ Telnet::~Telnet() {
 }
 
 void Telnet::customEvent(QEvent* e) {
-  if (e->type() == 10000) {
-    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
-    qDebug() << "* MumeXML got engineEvent" << ee->dataType()
-    	     << ee->payload()->toHash().uniqueKeys();
-
-
-  }
+  if (e->type() == 10000)
+    engineEvent(e);
   else if (e->type() == 10001) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     

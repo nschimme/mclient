@@ -18,15 +18,15 @@ class MMapperPluginParser : public AbstractParser {
     //void parseNewMudInput(IncomingData& que) {} // Unused
 
 public slots:
-    void name(QString, const QString &);
-    void description(const QString &, const QString &);
-    void dynamicDescription(const QString &, const QString &);
-    void prompt(QString, const QString &);
-    void exits(QString, const QString &);
-    void move(QString, const QString &);
+    void name(QString);
+    void description(const QString &);
+    void dynamicDescription(const QString &);
+    void prompt(QString);
+    void exits(QString);
+    void move(QString);
     
-    void userInput(QString, const QString&);
-    void mudOutput(const QString&, const QString&);
+    void userInput(QString);
+    void mudOutput(const QString&);
 
     void sendToUserWrapper(const QByteArray&);
     void sendToMudWrapper(const QByteArray&);
@@ -38,8 +38,8 @@ public slots:
     void submit();
 
  signals:
-    void sendToUser(const QString&, const QString&);
-    void sendToMud(const QString&, const QString&);
+    void sendToUser(const QString&);
+    void sendToMud(const QString&);
 
 };
 

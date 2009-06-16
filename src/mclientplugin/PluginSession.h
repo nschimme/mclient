@@ -25,6 +25,7 @@ class PluginSession : public QThread {
     void customEvent(QEvent* e);
 
     // For starting/stopping the session
+    void initDisplay();
     void startSession();
     void stopSession();
 

@@ -378,7 +378,7 @@ bool MapperManager::saveFile(const QString &fileName)
   return true;
 }
 
-void MapperManager::newRoomSelection(const RoomSelection* rs)
+void MapperManager::newRoomSelection(const RoomSelection*) // rs)
 {
 //   ActionManager *actMgr = ActionManager::self();
 //   actMgr->forceRoomAct->setEnabled(FALSE);
@@ -396,7 +396,7 @@ void MapperManager::newRoomSelection(const RoomSelection* rs)
 //   }
 }
 
-void MapperManager::newConnectionSelection(ConnectionSelection* cs)
+void MapperManager::newConnectionSelection(ConnectionSelection*)// cs)
 {
 //   ActionManager *actMgr = ActionManager::self();
 //   _connectionSelection = cs;

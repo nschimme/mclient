@@ -44,12 +44,8 @@ SocketManagerIO::~SocketManagerIO() {
 
 // MClientPlugin members
 void SocketManagerIO::customEvent(QEvent* e) {
-  if (e->type() == 10000) {
-    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
-    qDebug() << "* SocketManagerIO got engineEvent" << ee->dataType()
-	     << ee->payload()->toHash().uniqueKeys();
-    
-  }
+  if (e->type() == 10000)
+    engineEvent(e);
   else if (e->type() == 10001) {
     
     MClientEvent* me = static_cast<MClientEvent*>(e);
@@ -154,7 +150,7 @@ void SocketManagerIO::connectDevice() {
 
     } else {
       // Connect a particular session's sockets.
-      _socketReader->connectToHost();
+      emit connectToHost();
 
     }
 }
@@ -166,7 +162,7 @@ void SocketManagerIO::disconnectDevice() {
 
     } else {
       // Disconnect a particular session's sockets.
-      _socketReader->closeSocket();
+      emit closeSocket();
     }
 }
 
@@ -179,9 +175,10 @@ void SocketManagerIO::sendData(const QByteArray& ba) {
     
   }
   else {
-    _socketReader->sendToSocket(new QByteArray(ba.data()));
+    // TODO: Why doesn't this work?
+    //emit sendToSocket(ba);
+    _socketReader->sendToSocket(ba);
   }
-  
 }
 
 

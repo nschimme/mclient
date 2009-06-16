@@ -3,6 +3,7 @@
 #include <QtScript>
 
 #include "PluginManager.h"
+#include "PluginSession.h"
 #include "CommandManager.h"
 #include "QtScriptPlugin.h"
 #include "ScriptEngine.h"
@@ -17,70 +18,66 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
     _description = "A JavaScript scripting language";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _dataTypes << "QtScriptEvaluate" << "QtScriptVariable";
+    _receivesDataTypes << "QtScriptEvaluate" << "QtScriptVariable";
+    _deliversDataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";
 }
 
 
 QtScriptPlugin::~QtScriptPlugin() {
-    stopAllSessions();
     saveSettings();
 }
 
 void QtScriptPlugin::customEvent(QEvent* e) {
-    if(!e->type() == 10001) return;
+  if (e->type() == 10000)
+    engineEvent(e);
+  else {
     
-    MClientEvent* me;
-    me = static_cast<MClientEvent*>(e);
-
+    MClientEvent* me = static_cast<MClientEvent*>(e);
+    
     if(me->dataTypes().contains("QtScriptEvaluate")) {
-      emit evaluate(me->payload()->toString(), me->session());
+      emit evaluate(me->payload()->toString());
       
     } else if (me->dataTypes().contains("QtScriptVariable")) {
-      emit variable(me->payload()->toString(), me->session());
+      emit variable(me->payload()->toString());
 
     }
+  }
 }
 
 void QtScriptPlugin::configure() {
 }
 
 
-const bool QtScriptPlugin::loadSettings() {
-    // register commands
-    QStringList commands;
-    commands << _shortName
-	     << "script" << "QtScriptEvaluate"
-	     << "var" << "QtScriptVariable";
-    CommandManager::instance()->registerCommand(commands);
+bool QtScriptPlugin::loadSettings() {
+  // register commands
+  QStringList commands;
+  commands << _shortName
+	   << "script" << "QtScriptEvaluate"
+	   << "var" << "QtScriptVariable";
+  _pluginSession->getManager()->getCommand()->registerCommand(commands);
 
   return true;
 }
 
         
-const bool QtScriptPlugin::saveSettings() const {
+bool QtScriptPlugin::saveSettings() const {
   return true;
 }
 
 
-const bool QtScriptPlugin::startSession(QString s) {
-  ScriptEngine *se = new ScriptEngine(s, this);
-  _engines.insert(s, se);
-  _runningSessions << s;
+bool QtScriptPlugin::startSession(QString s) {
+  _engine = new ScriptEngine(s, this);
   return true;
 }
 
-const bool QtScriptPlugin::stopSession(QString s) {
-  foreach(ScriptEngine *se, _engines.values(s)) {
-    delete se;
-    qDebug() << "* removed QtScriptPlugin for session" << s;
-  }
-  _engines.remove(s);
-  int removed = _runningSessions.removeAll(s);
-  return removed!=0?true:false;
+bool QtScriptPlugin::stopSession(QString s) {
+  delete _engine;
+  qDebug() << "* removed QtScriptPlugin for session" << s;
+  return true;
 }
 
-void QtScriptPlugin::parseInput(const QString &input, const QString &session) {
-  _pluginManager->getCommandManager()->parseInput(input, session);
+void QtScriptPlugin::parseInput(const QString &input) {
+  _pluginSession->getManager()->getCommand()->parseInput(input, _session);
 }

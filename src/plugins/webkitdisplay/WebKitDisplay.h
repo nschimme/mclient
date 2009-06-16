@@ -5,6 +5,9 @@
 
 #include <QHash>
 #include <QPointer>
+#include <QQueue>
+#include <QMutex>
+#include <QWaitCondition>
 
 class DisplayWidget;
 class QEvent;
@@ -29,6 +32,8 @@ class WebKitDisplay : public MClientDisplayPlugin {
         QWidget* getWidget(QString s);
 
   protected:
+	void run();
+
 	static const QChar greaterThanChar;
 	static const QChar lessThanChar;
 	static const QString greaterThanTemplate;
@@ -42,6 +47,11 @@ class WebKitDisplay : public MClientDisplayPlugin {
 
 	void parseDisplayData(QString);
 	QString convertANSI(int code);
+
+	bool _quit;
+	QMutex _mutex;
+	QWaitCondition _cond;
+	QQueue< QString > _eventQueue;
 
  signals:
 	void dataReceived(const QString&);

@@ -82,12 +82,8 @@ ActionPlugin::~ActionPlugin() {
 }
 
 void ActionPlugin::customEvent(QEvent* e) {
-  if (e->type() == 10000) {
-    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
-    qDebug() << "* ActionPlugin got engineEvent" << ee->dataType()
-	     << ee->payload()->toHash().uniqueKeys();
-
-  }
+  if (e->type() == 10000)
+    engineEvent(e);
   else if (e->type() == 10001) {
     
     MClientEvent* me = static_cast<MClientEvent*>(e);

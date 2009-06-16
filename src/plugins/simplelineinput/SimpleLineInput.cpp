@@ -39,18 +39,17 @@ SimpleLineInput::~SimpleLineInput() {
 }
 
 void SimpleLineInput::customEvent(QEvent* e) {
-//    qDebug() << "* bork bork bork!";
-    if(!e->type() == 10001) return;
+  if (e->type() == 10000)
+    engineEvent(e);
+  else if (e->type() == 10001) {
+    MClientEvent *me = static_cast<MClientEvent*>(e);
     
-    MClientEvent* me;
-    me = static_cast<MClientEvent*>(e);
-
     if(me->dataTypes().contains("ChangeUserInput")) {
-      //        QByteArray ba = me->payload()->toByteArray();
-//        qDebug() << "Displayed: " << ba.data();
-//        QVariant* qv = new QVariant(ba);
-      //emit dataReceived(qv->toByteArray());
+      // TODO: History, tab-completion
+
     }
+
+  }
 }
 
 void SimpleLineInput::sendUserInput(const QString &input) {
@@ -71,8 +70,7 @@ bool SimpleLineInput::saveSettings() const {
 }
 
 
-bool SimpleLineInput::startSession(QString s) {
-    initDisplay(s);
+bool SimpleLineInput::startSession(QString) {
     return true;
 }
 

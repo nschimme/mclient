@@ -121,8 +121,9 @@ void PluginManager::customEvent(QEvent*) {
 
 
 void PluginManager::configure() { 
-//     if(!_configWidget) _configWidget = new PluginConfigWidget(_loadedPlugins);
-//     if(!_configWidget->isVisible()) _configWidget->show();
+  qDebug() << "! ConfigWidget not available, needs rewrite!";
+  //if(!_configWidget) _configWidget = new PluginConfigWidget(_availablePlugins);
+  //if(!_configWidget->isVisible()) _configWidget->show();
 }
 
 
@@ -276,8 +277,11 @@ void PluginManager::initSession(const QString &s) {
 }
 
 
-void PluginManager::startSession(PluginSession *ps) {
-  ps->startSession();
+void PluginManager::initDisplay(PluginSession *ps) {
+  // We now start/create the widgets (this is a slot from
+  // PluginSession) in the main thread.
+  ps->initDisplay();
+
 }
 
 

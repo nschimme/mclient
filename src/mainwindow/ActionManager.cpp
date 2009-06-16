@@ -245,8 +245,9 @@ void ActionManager::reconnectSession() {
 }
 
 void ActionManager::postEvent(QVariant *payload, const QStringList& tags) {
-    MClientEvent *me = new MClientEvent(new MClientEventData(payload),
-					tags,
-					_mainWindow->session());
+  // TODO: Replace with EngineEvents
+    MClientEvent *me
+      = new MClientEvent(new MClientEventData(payload, tags,
+					      _mainWindow->session()));
     QApplication::postEvent(_mainWindow->getPluginManager(), me);
 }

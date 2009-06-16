@@ -45,7 +45,7 @@ class PluginManager : public QObject {
 public slots:
         void initSession(const QString &s);
         void stopSession(const QString &s);
-        void startSession(PluginSession *ps);
+        void initDisplay(PluginSession *ps);
 
     protected:
         PluginManager(QObject *parent=0);

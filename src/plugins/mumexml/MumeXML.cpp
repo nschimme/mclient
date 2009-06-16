@@ -54,17 +54,14 @@ MumeXML::~MumeXML() {
   _quit = true;
   _cond.wakeOne();
   wait();
+  qDebug() << "* MumeXML thread quit";
 }
 
 
 void MumeXML::customEvent(QEvent* e) {
   QMutexLocker locker(&_mutex);
-  if (e->type() == 10000) {
-    MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
-    qDebug() << "* MumeXML got engineEvent" << ee->dataType()
-	     << ee->payload()->toHash().uniqueKeys();
-
-  }
+  if (e->type() == 10000)
+    engineEvent(e);
   else if (e->type() == 10001) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
@@ -156,11 +153,10 @@ void MumeXML::parse(const QByteArray& line) {
 
 void MumeXML::run() {
   while (!_quit) {
-    parse(_eventQueue.dequeue());
-    
+    while (!_quit && !_eventQueue.isEmpty())
+      parse(_eventQueue.dequeue());
     _cond.wait(&_mutex);
   }
-  qDebug() << "* MumeXML::run() returning";
 }
 
 bool MumeXML::element(const QByteArray& line) {

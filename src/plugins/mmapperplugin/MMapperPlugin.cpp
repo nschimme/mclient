@@ -4,6 +4,7 @@
 
 #include "MClientEvent.h"
 #include "PluginManager.h"
+#include "PluginSession.h"
 #include "CommandManager.h"
 #include "ConfigManager.h"
 
@@ -22,10 +23,12 @@ MMapperPlugin::MMapperPlugin(QWidget* parent)
     _description = "An implementation of MMapper as a plugin for mClient";
     //_dependencies.insert("commandmanager", 10);
     //_implemented.insert("socketmanager",10);
-    _dataTypes << "MMapperInput"
-	       << "XMLName" << "XMLDescription" << "XMLDynamicDescription"
-	       << "XMLExits" << "XMLPrompt" << "XMLMove" << "XMLNone"
-	       << "MMapperLoadMap";
+    _receivesDataTypes << "MMapperInput"
+		       << "XMLName" << "XMLDescription"
+		       << "XMLDynamicDescription" << "XMLExits" << "XMLPrompt"
+		       << "XMLMove" << "XMLNone" 
+		       << "MMapperLoadMap";
+    _deliversDataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";
 
@@ -35,45 +38,45 @@ MMapperPlugin::MMapperPlugin(QWidget* parent)
 
 
 MMapperPlugin::~MMapperPlugin() {
-    stopAllSessions();
     //saveSettings();
 }
 
 // MClientPlugin members
 void MMapperPlugin::customEvent(QEvent* e) {
-    if(!e->type() == 10001) return;
-    
+  if(e->type() == 10000)
+    engineEvent(e);
+  else {
     MClientEvent* me = static_cast<MClientEvent*>(e);
-
+    
     foreach(QString s, me->dataTypes()) {
       if (s.startsWith("X")) {
 	if (s.startsWith("XMLNone")) {
-	  emit mudOutput(me->payload()->toString(), me->session());
+	  emit mudOutput(me->payload()->toString());
 	  
 	} else if (s.startsWith("XMLName")) {
-	  emit name(me->payload()->toString(), me->session());
+	  emit name(me->payload()->toString());
 	  
 	} else if (s.startsWith("XMLDescription")) {
-	  emit description(me->payload()->toString(), me->session());
+	  emit description(me->payload()->toString());
 	  
 	} else if (s.startsWith("XMLDynamicDescription")) {
-	  emit dynamicDescription(me->payload()->toString(), me->session());
+	  emit dynamicDescription(me->payload()->toString());
 	  
 	} else if (s.startsWith("XMLExits")) {
-	  emit exits(me->payload()->toString(), me->session());
+	  emit exits(me->payload()->toString());
       
 	} else if (s.startsWith("XMLPrompt")) {
-	  emit prompt(me->payload()->toString(), me->session());
+	  emit prompt(me->payload()->toString());
 
 	} else if (s.startsWith("XMLMove")) {
-	  emit move(me->payload()->toString(), me->session());
+	  emit move(me->payload()->toString());
 	  
 	}
 
       }
       else if (s.startsWith("M")) {
 	if(s.startsWith("MMapperInput")) {
-	  emit userInput(me->payload()->toString(), me->session());
+	  emit userInput(me->payload()->toString());
 	  
 	} else if (s.startsWith("MMapperLoadMap")) {
 	  emit loadFile("/home/nschimme/arda.mm2");
@@ -82,6 +85,7 @@ void MMapperPlugin::customEvent(QEvent* e) {
       }
       
     }
+  }
 }
 
 
@@ -89,65 +93,59 @@ void MMapperPlugin::configure() {
 }
 
 
-const bool MMapperPlugin::loadSettings() {
-    _settings = _pluginManager->getConfigManager()->pluginSettings(_shortName);
+bool MMapperPlugin::loadSettings() {
+    _settings = _pluginSession->getManager()->getConfig()->pluginSettings(_shortName);
 
     // register commands
     QStringList commands;
     commands << _shortName
 	     << "map" << "MMapperLoadMap"
 	     << "input" << "MMapperInput";
-    _pluginManager->getCommandManager()->registerCommand(commands);
+    _pluginSession->getManager()->getCommand()->registerCommand(commands);
 
     return true;
 }
 
 
-const bool MMapperPlugin::saveSettings() const {
-    _pluginManager->getConfigManager()->writePluginSettings(_shortName);
+bool MMapperPlugin::saveSettings() const {
+    _pluginSession->getManager()->getConfig()->writePluginSettings(_shortName);
     return true;
 }
 
 
-const bool MMapperPlugin::startSession(QString s) {
-    MapperManager *mm = new MapperManager(s, this);
-    mm->start(LowPriority);
-
-    connect(this, SIGNAL(loadFile(const QString&)),
-	    mm, SLOT(loadFile(const QString&)));
+bool MMapperPlugin::startSession(QString s) {
+  _mapper = new MapperManager(s, this);
+  _mapper->start(LowPriority);
+  
+  connect(this, SIGNAL(loadFile(const QString&)),
+	  _mapper, SLOT(loadFile(const QString&)));
     
-    _mappers.insert(s, mm);
-    _runningSessions << s;
-    return true;
+  return true;
 }
 
 
-const bool MMapperPlugin::stopSession(QString s) {
-    foreach(MapperManager *mm, _mappers.values(s)) {
-        mm->getMapWindow()->close();
-        delete mm;
-        qDebug() << "* removed MapperManager for session" << s;
-    }
-    _mappers.remove(s);
-    int removed = _runningSessions.removeAll(s);
-    return removed!=0?true:false;
+bool MMapperPlugin::stopSession(QString s) {
+  _mapper->getMapWindow()->close();
+  delete _mapper;
+  qDebug() << "* removed MapperManager for session" << s;
+  return true;
 }
 
 // Display plugin members
-const bool MMapperPlugin::initDisplay(QString s) {
+bool MMapperPlugin::initDisplay(QString) {
     return true;
 }
 
 
-QWidget* MMapperPlugin::getWidget(QString s) {
-  return _mappers[s]->getMapWindow();
+QWidget* MMapperPlugin::getWidget(QString) {
+  return _mapper->getMapWindow();
 }
 
 
-void MMapperPlugin::displayMessage(const QString& message, const QString& s) {
-    QVariant* qv = new QVariant(message);
-    QStringList sl("DisplayData");
-    postEvent(qv, sl, s);
+void MMapperPlugin::displayMessage(const QString& message) {
+  QVariant* qv = new QVariant(message);
+  QStringList sl("DisplayData");
+  postSession(qv, sl);
 }
 
 void MMapperPlugin::log(const QString& message, const QString& s) {

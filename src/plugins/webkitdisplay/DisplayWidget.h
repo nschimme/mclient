@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <QWebView>
 
+class QWebFrame;
 class WebKitDisplay;
 //class QWebView;
 
@@ -26,6 +27,8 @@ class DisplayWidget : public QWebView {
 
 public slots:
 	void appendText(const QString&);
+        void scrollToBottom();
+	void loadFrame(QWebFrame *frame);
 
 protected slots:
         void finishLoading(bool);

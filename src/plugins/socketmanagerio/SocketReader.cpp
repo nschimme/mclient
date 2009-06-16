@@ -14,6 +14,11 @@ SocketReader::SocketReader(const QString &s, SocketManagerIO *sm,
     _session = s;
     _sm = sm;
 
+    connect(_sm, SIGNAL(connectToHost()), SLOT(connectToHost()));
+    connect(_sm, SIGNAL(closeSocket()), SLOT(closeSocket()));
+    connect(_sm, SIGNAL(sendToSocket(const QByteArray &ba)),
+	    SLOT(sendToSocket(const QByteArray &ba)));
+    
     _proxy.setType(QNetworkProxy::NoProxy);
 }
 
@@ -21,51 +26,59 @@ SocketReader::SocketReader(const QString &s, SocketManagerIO *sm,
 void SocketReader::connectToHost() {
   _sm->displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port));
   
-  if(!isRunning()) start(LowPriority);
+  if (!isRunning()) start(LowPriority);
 }
 
 
 SocketReader::~SocketReader() {
+  if (isRunning()) {
     exit();
     wait();
-    delete _socket;
+  }
+  delete _socket;
+  qDebug() << "~SocketReader";
 }
 
 
-void SocketReader::sendToSocket(const QByteArray* ba) {
-    if(_socket->state() != QAbstractSocket::ConnectedState) return;
-    _socket->write(ba->data());
-    //qDebug() << dataLength << "bytes written";
-    delete ba;
+void SocketReader::sendToSocket(const QByteArray &ba) {
+    qDebug() << "in send to socket";
+    if(_socket->state() != QAbstractSocket::ConnectedState) {
+      qDebug() << "Socket not connected!";
+      return;
+    }
+    _socket->write(ba.data());
+    qDebug() << ba.size() << "bytes written";
 }
 
 
 void SocketReader::closeSocket() {
-    _socket->close();
+  _socket->close();
+  if (isRunning()) {
     exit();
     wait();
-    delete _socket;
+  }
+  delete _socket;
 }
 
 
 void SocketReader::run() {
     _socket = new QTcpSocket;
     _socket->setProxy(_proxy);
-    
+
     connect(_socket, SIGNAL(connected()), SLOT(onConnect())); 
     connect(_socket, SIGNAL(disconnected()), SLOT(onDisconnect())); 
     connect(_socket, SIGNAL(readyRead()), SLOT(onReadyRead())); 
     connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
 	    this, SLOT(onError(QAbstractSocket::SocketError))); 
 
+    
     qDebug() << "* SocketManagerIO thread:" << _sm->thread();
     qDebug() << "* SocketReader thread:" << this->thread();
     qDebug() << "* Socket thread:" << _socket->thread();
    
     _socket->connectToHost(_host, _port);
-
-    _socket->waitForConnected(5000);
     exec();
+    qDebug() << "* SocketReader thread quit";
 }
 
 
@@ -103,8 +116,10 @@ void SocketReader::onError(QAbstractSocket::SocketError error) {
       break;
     };
     _sm->displayMessage(errorMessage);
-    exit();
-    wait();
+    if (isRunning()) {
+      exit();
+      wait();
+    }
     delete _socket;
 }
 

@@ -52,18 +52,16 @@ ScriptEngine::ScriptEngine(QString s, QtScriptPlugin* qsp, QObject* parent)
   _qsp = qsp;
   
   // Connect Signals/Slots
-  connect(_qsp, SIGNAL(evaluate(const QString&, const QString&)),
-	  this, SLOT(evaluateExpression(const QString&, const QString&)));
-  connect(_qsp, SIGNAL(variable(const QString&, const QString&)),
-	  this, SLOT(variableCommand(const QString&, const QString&)));
+  connect(_qsp, SIGNAL(evaluate(const QString&)),
+	  this, SLOT(evaluateExpression(const QString&)));
+  connect(_qsp, SIGNAL(variable(const QString&)),
+	  this, SLOT(variableCommand(const QString&)));
   connect(this, SIGNAL(signalHandlerException(const QScriptValue&)),
 	  this, SLOT(handleException(const QScriptValue&)));
-  connect(this, SIGNAL(parseInput(const QString&, const QString&)),
-	  _qsp, SLOT(parseInput(const QString&, const QString&)));
-  connect(this, SIGNAL(postEvent(QVariant*, const QStringList&,
-				 const QString&)),
-	  _qsp, SLOT(postEvent(QVariant*, const QStringList&,
-			       const QString&)));
+  connect(this, SIGNAL(emitParseInput(const QString&)),
+	  _qsp, SLOT(parseInput(const QString&)));
+  connect(this, SIGNAL(postSession(QVariant*, const QStringList&)),
+	  _qsp, SLOT(postSession(QVariant*, const QStringList&)));
   
   
   // Add C++ functions to QtScript
@@ -87,11 +85,7 @@ ScriptEngine::~ScriptEngine() {
 }
 
 
-bool ScriptEngine::evaluateExpression(const QString &expr,
-				      const QString &session) {
-  if (session != _session)
-    return false;
-
+bool ScriptEngine::evaluateExpression(const QString &expr) {
   QScriptValue result = evaluate(expr);
 
   // Detect if an exception occured
@@ -108,11 +102,7 @@ bool ScriptEngine::evaluateExpression(const QString &expr,
   return true;
 }
 
-bool ScriptEngine::variableCommand(const QString &arguments,
-				   const QString &session) {
-  if (session != _session)
-    return false;
-
+bool ScriptEngine::variableCommand(const QString &arguments) {
   // Create a Map of variables
   QMap<QString, QScriptValue> variables;
   QScriptValueIterator it(globalObject());
@@ -190,7 +180,7 @@ bool ScriptEngine::variableCommand(const QString &arguments,
 
     // Create variable
     QString command = QString("var %1 = %2;").arg(name, value);
-    if (evaluateExpression(command, _session))
+    if (evaluateExpression(command))
       displayData(output);
 
   }
@@ -203,15 +193,15 @@ void ScriptEngine::handleException(const QScriptValue &value) {
 }
 
 void ScriptEngine::postEvent(QVariant *payload, const QStringList& tags) {
-  emit postEvent(payload, tags, _session);
+  emit postSession(payload, tags);
 }
 
 void ScriptEngine::parseInput(const QString &text) {
-  emit parseInput(text, _session);
+  emit emitParseInput(text);
 }
 
 void ScriptEngine::displayData(const QString& text) {
   QVariant *payload = new QVariant(text);
   QStringList tags("DisplayData");  
-  emit postEvent(payload, tags, _session);
+  emit postSession(payload, tags);
 }

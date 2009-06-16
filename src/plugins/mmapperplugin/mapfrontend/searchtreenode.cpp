@@ -66,7 +66,7 @@ void SearchTreeNode::getRooms(RoomOutStream & stream, ParseEvent * event) {
   selectedChild = children->get(currentProperty->next());
 
   if(selectedChild == 0) {
-    for (int i = 1; i < myChars[i] != 0; i++) currentProperty->prev();
+    for (int i = 1; (i < myChars[i]) != 0; i++) currentProperty->prev();
     return; // no such room
   }
   else selectedChild->getRooms(stream, event);	// the last character of name is 0, 

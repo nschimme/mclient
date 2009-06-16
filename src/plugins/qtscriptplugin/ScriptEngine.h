@@ -19,12 +19,12 @@ class ScriptEngine : public QScriptEngine {
         ~ScriptEngine();
 
 	void postEvent(QVariant *payload, const QStringList& tags);
-	void parseInput(const QString &);
+	void parseInput(const QString&);
 	void displayData(const QString&);
 
 protected slots:
-        bool evaluateExpression(const QString&, const QString&);
-        bool variableCommand(const QString&, const QString&);
+        bool evaluateExpression(const QString&);
+        bool variableCommand(const QString&);
 	void handleException(const QScriptValue &value);
 
     private:
@@ -32,8 +32,8 @@ protected slots:
 	QtScriptPlugin *_qsp;
 
  signals:
-	void parseInput(const QString&, const QString&);
-	void postEvent(QVariant*, const QStringList&, const QString&);
+	void emitParseInput(const QString&);
+	void postSession(QVariant*, const QStringList&);
 
 };
 

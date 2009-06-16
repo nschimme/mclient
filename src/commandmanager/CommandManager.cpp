@@ -91,7 +91,8 @@ void CommandManager::parseInput(const QString &input,
 				const QString &session) {
   // Display Data
   QVariant* qv = new QVariant(input + "\n");
-  QStringList sl("DisplayData");
+  QStringList sl;
+  sl << "DisplayData" << "UserInput";
   if (input.isEmpty()) sl << "SendToSocketData";
   postEvent(qv, sl, session);
   
@@ -176,10 +177,10 @@ bool CommandManager::parseCommand(QString command,
 
 	} else if (command == "version") {
 	  QString output = QString("mClient %1, \251 2009 by Jahara\n"
-				   "%2\n")
+				   "%2")
 	    .arg( // %1
 #ifdef SVN_REVISION
-		 "SVN Build " + QString::number(SVN_REVISION)
+		 "SVN Revision " + QString::number(SVN_REVISION)
 #else
 #ifdef MCLIENT_VERSION
 		 MCLIENT_VERSION
@@ -188,12 +189,12 @@ bool CommandManager::parseCommand(QString command,
 #endif
 #endif
 		 )
-	    .arg(// %2
+	    .arg( // %2
 
 #if __STDC__
-		 "Compiled " __TIME__ " " __DATE__
+		 "Compiled " __TIME__ " " __DATE__ "\n"
 #else
-		 "Unknown compile time"
+		 ""
 #endif
 		 );
 	  displayData(output, session);
@@ -251,14 +252,12 @@ void CommandManager::displayData(const QString &output,
 				 const QString &session) {
   QVariant* qv = new QVariant(output);
   QStringList sl("DisplayData");
-  postEvent(qv, sl, session);  
+  postEvent(qv, sl, session);
 }
 
 void CommandManager::postEvent(QVariant *payload, const QStringList& tags, 
         const QString& session) {
-    MClientEvent *me = new MClientEvent(new MClientEventData(payload),
-					tags,
-					session);
-    QObject* ps = _pluginManager->getPluginSession(session);
-    QApplication::postEvent(ps, me);
+  MClientEventData *med = new MClientEventData(payload, tags, session);
+  MClientEvent *me = new MClientEvent(med);
+  QApplication::postEvent(_pluginManager->getPluginSession(session), me);
 }

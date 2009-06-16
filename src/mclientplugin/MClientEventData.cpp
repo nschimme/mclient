@@ -1,19 +1,23 @@
 #include "MClientEventData.h"
 
 #include <QDebug>
-#include <QVariant>
 
-
-MClientEventData::MClientEventData(QVariant* payload) : QSharedData() {
+MClientEventData::MClientEventData(QVariant* payload, const QStringList types,
+				   const QString session) : QSharedData() {
     //qDebug() << "* creating a shared data containing" << payload;
     //qDebug() << "* payload is:" << payload->toByteArray().data();
-    _payload = payload;
+    _payload = *payload;
+    _dataTypes = types;
+    _session = session;
     
 }
 
-MClientEventData::MClientEventData(const MClientEventData& med)
+MClientEventData::MClientEventData(const MClientEventData &other)
   : QSharedData() {
-  _payload = new QVariant(*med._payload);
+  _payload = other._payload;
+  _dataTypes = other._dataTypes;
+  _session = other._session;
+  
       /*
     if (med._payload) {
       qDebug() << "* copied payload from" << med._payload << "to" 
@@ -26,21 +30,9 @@ MClientEventData::MClientEventData(const MClientEventData& med)
 
 
 MClientEventData::~MClientEventData() {
-  //qDebug() << "* deleting payload" << _payload << ref;
-  //qDebug() << "Deleting payload";
-
+  //  qDebug() << "* deleting payload" << _payload << _dataTypes << _session << ref;
   // Removed this because it would delete the plugin after transfer of
   // a MClientEngineEvent
 
   //delete _payload;
-}
-
-
-QVariant* MClientEventData::payload() {
-//    qDebug() << ref << this << "returns payload";
-    return _payload;
-}
-
-void MClientEventData::refs() const {
-    qDebug() << "refs" << ref;
 }

@@ -27,9 +27,10 @@ class MumeXML : public MClientFilterPlugin {
         bool saveSettings() const;
         bool startSession(QString s);
         bool stopSession(QString s);
-        void run();
 
  protected:
+        void run();
+
 	static const QString nullString;
 	static const QString emptyString;
 	static const QByteArray greatherThanChar;

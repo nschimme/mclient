@@ -1,14 +1,12 @@
 #ifndef MCLIENTEVENT_H
 #define MCLIENTEVENT_H
 
-#include <QEvent>
-
 #include "MClientEventData.h"
 
+#include <QEvent>
 #include <QSharedDataPointer>
 #include <QStringList>
-
-//class MClientEventData;
+#include <QVariant>
 
 class QVariant;
 class QSharedData;
@@ -17,27 +15,20 @@ class QString;
 class MClientEvent : public QEvent {
     
     public:
-        MClientEvent(MClientEventData* payload, const QStringList type, const QString session);
-        MClientEvent(MClientEventData* payload, const QStringList type);
-	MClientEvent(const MClientEvent &me);
-
+        MClientEvent(MClientEventData *payload);
+	MClientEvent(const MClientEvent &other);
         ~MClientEvent();
-        QStringList dataTypes() const;
-        QVariant* payload();
-        QSharedDataPointer<MClientEventData> shared() const;
 
-        const QString& session() const;
-        void session(const QString);
+        MClientEventData* shared();
+
+        QStringList dataTypes();
+        QVariant* payload();
+        const QString& session();
 
     protected:
-        QStringList _dataTypes;
+	// Payload is contained here
+        QSharedDataPointer<MClientEventData> _p;
 
-        // Here's where we store our data
-        QSharedDataPointer<MClientEventData> _payload;
-
-        QString _session;
-                
 };
-
 
 #endif /* MCLIENTEVENT_H */

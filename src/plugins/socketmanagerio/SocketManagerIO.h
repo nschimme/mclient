@@ -49,6 +49,12 @@ class SocketManagerIO : public MClientIOPlugin {
 
 	QHash<QString, QString> *_settings;
         QPointer<SocketManagerIOConfig> _configWidget;
+
+ signals:
+	void connectToHost();
+        void sendToSocket(const QByteArray &ba);
+        void closeSocket();        
+
 };
 
 

@@ -2,5 +2,6 @@
 <qresource prefix="/webkitdisplay" >
 	<file alias="jquery.min.js">resources/jquery.min.js</file>
 	<file alias="page.html">resources/page.html</file>
+	<file alias="frame.html">resources/frame.html</file>
 </qresource>
 </RCC>

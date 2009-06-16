@@ -19,35 +19,34 @@ class MMapperPlugin : public MClientDisplayPlugin {
         // Plugin members
         void customEvent(QEvent* e);
         void configure();
-        const bool loadSettings();
-        const bool saveSettings() const;
-        const bool startSession(QString s);
-        const bool stopSession(QString s);
+        bool loadSettings();
+        bool saveSettings() const;
+        bool startSession(QString s);
+        bool stopSession(QString s);
 
         // Display members
-        const bool initDisplay(QString s);
+        bool initDisplay(QString s);
         QWidget* getWidget(QString s);
 
 public slots:
-	void displayMessage(const QString&, const QString&);
+	void displayMessage(const QString&);
         void log(const QString&, const QString&);
 
     private:
 	QHash<QString, QString> *_settings;
-        QHash<QString, MapperManager*> _mappers;
+        MapperManager* _mapper;
 
  signals:
-	void name(QString, const QString &);
-	void description(const QString &, const QString &);
-	void dynamicDescription(const QString &, const QString &);
-	void prompt(QString, const QString &);
-	void exits(QString, const QString &);
-	void move(QString, const QString &);
+	void name(QString);
+	void description(const QString &);
+	void dynamicDescription(const QString &);
+	void prompt(QString);
+	void exits(QString);
+	void move(QString);
 
-	void userInput(QString, const QString&);
-	void mudOutput(const QString&, const QString&);
+	void userInput(QString);
+	void mudOutput(const QString&);
 
-	// TODO: add session support
 	void loadFile(const QString&);
 };
 

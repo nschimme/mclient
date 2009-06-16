@@ -18,20 +18,20 @@ class QtScriptPlugin : public MClientPlugin {
         // Plugin members
         void customEvent(QEvent* e);
         void configure();
-        const bool loadSettings();
-        const bool saveSettings() const;
-        const bool startSession(QString s);
-        const bool stopSession(QString s);
+        bool loadSettings();
+        bool saveSettings() const;
+        bool startSession(QString s);
+        bool stopSession(QString s);
 	
 public slots:
-        void parseInput(const QString &input, const QString &session);
+        void parseInput(const QString &input);
 
     private:
-	QHash<QString, ScriptEngine*> _engines;
+	ScriptEngine* _engine;
 	
  signals:
-	void evaluate(const QString&, const QString&);
-	void variable(const QString&, const QString&);
+	void evaluate(const QString&);
+	void variable(const QString&);
 };
 
 #endif /* QTSCRIPTPLUGIN_H */

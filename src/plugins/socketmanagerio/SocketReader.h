@@ -18,10 +18,6 @@ class SocketReader : public QThread {
         SocketReader(const QString&, SocketManagerIO*, QObject* parent=0);
         ~SocketReader();
 
-        void connectToHost();
-        void sendToSocket(const QByteArray* ba);
-        void closeSocket();        
-        
         void port(const int);
         void host(const QString);
         void proxy(const QNetworkProxy* proxy);
@@ -29,6 +25,12 @@ class SocketReader : public QThread {
         const QString& session() const;
         const int& port() const;
         const QString& host() const;
+
+
+public slots:
+        void connectToHost();
+        void sendToSocket(const QByteArray &ba);
+        void closeSocket();        
 
 
  protected:
