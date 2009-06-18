@@ -23,10 +23,12 @@
 #define MainWindow_H
 
 #include <QtGui>
+#include <QPointer>
 
 class QAction;
 class QMenu;
 class PluginManager;
+class QuickConnectDialog;
 
 class MainWindow:public QMainWindow
 {
@@ -44,6 +46,7 @@ class MainWindow:public QMainWindow
 public slots:
     void start();
     void receiveWidgets(const QList< QPair<int, QWidget*> >&);
+    void startProfile(const QString&);
 
 private slots:
     void changeConfiguration();
@@ -64,6 +67,9 @@ private slots:
     QBoxLayout *_layout;
     QHash<QString, QDockWidget*> _dockWidgets;
     PluginManager *_pluginManager;
+
+    QPointer<QuickConnectDialog> _quickConnectDlg;
+    QPointer<QSplashScreen> _splash;
 
     void readSettings();
     void writeSettings();

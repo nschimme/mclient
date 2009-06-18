@@ -28,7 +28,7 @@ QScriptValue send(QScriptContext *context, QScriptEngine *engine) {
   QScriptValue a = context->argument(0);
 
   QVariant* payload = new QVariant(a.toString().append("\n"));
-  QStringList tags = (QStringList() << "SendToSocketData");
+  QStringList tags = (QStringList() << "SocketWriteData");
   ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
   e->postEvent(payload, tags);
 

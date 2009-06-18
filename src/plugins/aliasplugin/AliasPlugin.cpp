@@ -53,7 +53,7 @@ AliasPlugin::AliasPlugin(QObject *parent)
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
     _receivesDataTypes << "AliasInput" << "AliasCommand";
-    _deliversDataTypes << "DisplayData" << "SendToSocketData";
+    _deliversDataTypes << "DisplayData" << "SocketWriteData";
     _configurable = false;
     _configVersion = "2.0";
 }
@@ -186,7 +186,7 @@ void AliasPlugin::parseInput(const QString &input) {
   } else {
     // Not an alias, send it to the socket
     QVariant* qv = new QVariant(input + "\n");
-    QStringList sl("SendToSocketData");
+    QStringList sl("SocketWriteData");
     postSession(qv, sl);
   }
 

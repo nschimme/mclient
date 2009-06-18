@@ -27,7 +27,7 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
     _implemented.insert("socketmanager",10);
     _receivesDataTypes << "SendToSocketData" << "ConnectToHost"
 		       << "DisconnectFromHost";
-    _deliversDataTypes << "SocketData" << "SocketConnected"
+    _deliversDataTypes << "SocketReadData" << "SocketConnected"
 		       << "SocketDisconnected" << "DisplayData";
     _configurable = true;
     _configVersion = "2.0";
@@ -184,7 +184,7 @@ void SocketManagerIO::sendData(const QByteArray& ba) {
 
 void SocketManagerIO::socketReadData(const QByteArray& data) {
   QVariant* qv = new QVariant(data);
-  QStringList tags("SocketData");
+  QStringList tags("SocketReadData");
   postSession(qv, tags);
 }
 

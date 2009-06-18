@@ -17,6 +17,76 @@ ConfigManager* ConfigManager::instance() {
 }
 
 
+class ConfigModel : public QAbstractTableModel {
+  public:
+  ConfigModel (ConfigManager *manager)
+    : QAbstractTableModel (0), _mgr(manager) {}
+  
+  virtual ~ConfigModel() {}
+
+  virtual int columnCount(const QModelIndex &parent = QModelIndex()) const {
+    if (parent.isValid()) return 0;  // because Qt docs say so
+    return 1;  // we have 1 column
+  }
+  
+  virtual int rowCount(const QModelIndex &parent = QModelIndex()) const {
+    if (parent.isValid()) return 0;  // because Qt docs say so
+    return _mgr->profileNames().size();
+  }
+  
+  virtual QVariant headerData(int section, Qt::Orientation /*orientation*/,
+			      int role = Qt::DisplayRole) const {
+    if (role != Qt::DisplayRole) return QVariant();
+    switch (section) {
+    case 0: return QVariant("Profile");
+    default: return QVariant();
+    };
+  }
+
+  virtual QVariant data(const QModelIndex &index,
+			int role = Qt::DisplayRole) const {
+    // display role only
+    if (role != Qt::DisplayRole) return QVariant();
+    
+    if (index.parent().isValid()) return QVariant();
+    int row = index.row();
+    int col = index.column();
+    // Return something else if we're out of bounds
+    if ((col < 0) || (col > columnCount())) return QVariant();
+    
+    if ((row < 0) || (row > _mgr->profileNames().size())) return QVariant();
+    // fetch the requested information and return it
+    switch (col) {
+    case 0: return QVariant(_mgr->profileNames()[row]);
+    default: return QVariant();
+    };
+  }
+
+  void rowChanged(int row) {
+    emit dataChanged(index(row, 0), index(row, 3));
+  }
+
+  void addRow(int row) {
+    beginInsertRows(QModelIndex(), row, row);
+  }
+
+  void rowAdded() {
+    endInsertRows();
+  }
+
+  void removeRow(int row) {
+    beginRemoveRows(QModelIndex(), row, row);
+  }
+
+  void rowRemoved() {
+    endRemoveRows();
+  }
+
+  private:
+  ConfigManager *_mgr;
+};
+
+
 bool sortXmlElements(const QString &s1, const QString &s2) {
   QStringList t1 = s1.split("/");
   QStringList t2 = s2.split("/");
@@ -154,6 +224,7 @@ QSettings::registerFormat("xml", readXmlFile, writeXmlFile);
 
 
 ConfigManager::ConfigManager(QObject* parent) : QObject(parent) {
+    _model = new ConfigModel(this);
     _appSettings = 0;
     readApplicationSettings();
     qDebug() << "ConfigManager created with thread:" << this->thread();
@@ -161,11 +232,15 @@ ConfigManager::ConfigManager(QObject* parent) : QObject(parent) {
 
 
 ConfigManager::~ConfigManager() {
-  this->deleteLater();
+  delete _model;
   _pinstance = 0;
   qDebug() << "* ConfigManager destroyed";
 }
 
+
+QAbstractTableModel *ConfigManager::model () const {
+  return _model;
+}
 
 bool ConfigManager::readApplicationSettings() {
   QDir configDir = QDir(qApp->applicationDirPath());
@@ -229,7 +304,7 @@ bool ConfigManager::readPluginSettings(const QString &pluginName) {
   int size = conf.beginReadArray("profile");
   for (int i = 0; i <= size; ++i) {
     conf.setArrayIndex(i);
-    QString profile = conf.value("name", "test").toString();
+    QString profile = conf.value("name", "Default").toString();
     _profilePlugins[profile] << pluginName;
     qDebug() << "* found profile" << profile << "for" << pluginName;
 
@@ -240,6 +315,7 @@ bool ConfigManager::readPluginSettings(const QString &pluginName) {
   qDebug() << "* read config file" << file;
   return true;
 }
+
 
 bool ConfigManager::writePluginSettings(const QString &pluginName) {
   QString file = QString("%1/%2.xml").arg(_configPath, pluginName);
@@ -254,5 +330,75 @@ bool ConfigManager::writePluginSettings(const QString &pluginName) {
   }
   
   qDebug() << "* wrote config file" << file;
+  return true;
+}
+
+
+bool ConfigManager::duplicateProfile(const QString &oldProfile, const QString &newProfile) {
+  if (!_profilePlugins.contains(oldProfile)) {
+    qDebug() << "Unable to duplicate session" << oldProfile
+	     << "because it does not exist";
+    return false;
+    
+  }
+  else if (_profilePlugins.contains(newProfile)) {
+    qDebug() << "Unable to duplicate session" << oldProfile
+	     << "because" << newProfile << "already exists";
+    return false;
+  }
+
+  QString oldProfilePrefix = QString("config/%1/").arg(oldProfile);
+  QString newProfilePrefix = QString("config/%1/").arg(newProfile);
+
+  // Go through each plugin within the profile
+  foreach(QString pluginName, profilePlugins(oldProfile)) {
+
+    // Grab the current plugin's settings hash
+    QHash<QString, QString> *hash = _pluginSettings[pluginName];
+
+    // Iterate through each key, looking for a certain profile
+    QHash<QString, QString>::iterator i;
+    for (i = hash->begin(); i != hash->end(); ++i) {
+      if (i.key().startsWith(oldProfilePrefix)) {
+	
+	// Replace the name, and insert into the hash
+	QString key = i.key();
+	key.replace(0, oldProfilePrefix.size(), newProfilePrefix);
+	hash->insert(key, i.value());
+	
+      }
+    }
+    
+  }
+  return true;
+}
+
+
+bool ConfigManager::deleteProfile(const QString &profile) {
+  if (!_profilePlugins.contains(profile)) {
+    qDebug() << "Unable to delete profile" << profile
+	     << "because it does not exist";
+    return false;
+    
+  }
+
+  QString profilePrefix = QString("config/%1/").arg(profile);
+
+  // Go through each plugin within the profile
+  foreach(QString pluginName, profilePlugins(profile)) {
+    
+    // Grab the current plugin's settings hash
+    QHash<QString, QString> *hash = _pluginSettings[pluginName];
+
+    // Iterate through each key, looking for a certain profile
+    QHash<QString, QString>::iterator i;
+    for (i = hash->begin(); i != hash->end(); ++i) {
+
+      // Remove keys that are within this profile
+      if (i.key().startsWith(profilePrefix))
+	hash->remove(i.key());
+      
+    }
+  }
   return true;
 }

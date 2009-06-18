@@ -93,7 +93,7 @@ void CommandManager::parseInput(const QString &input,
   QVariant* qv = new QVariant(input + "\n");
   QStringList sl;
   sl << "DisplayData" << "UserInput";
-  if (input.isEmpty()) sl << "SendToSocketData";
+  if (input.isEmpty()) sl << "SocketWriteData";
   postEvent(qv, sl, session);
   
   // TODO: only split given the #delim command

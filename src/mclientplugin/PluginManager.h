@@ -69,9 +69,6 @@ public slots:
         // In what directory are plugins located?  ConfigManager knows.
         QString _pluginDir;
 
-        // The plugin index
-        QString _pluginIndex;
-
         QPointer<PluginConfigWidget> _configWidget;
 
  signals:

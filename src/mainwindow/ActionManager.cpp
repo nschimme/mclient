@@ -17,6 +17,7 @@
 #include "ActionManager.h"
 #include "MainWindow.h"
 
+#include "PluginSession.h"
 #include "PluginManager.h"
 #include "MClientEvent.h"
 
@@ -246,8 +247,11 @@ void ActionManager::reconnectSession() {
 
 void ActionManager::postEvent(QVariant *payload, const QStringList& tags) {
   // TODO: Replace with EngineEvents
-    MClientEvent *me
-      = new MClientEvent(new MClientEventData(payload, tags,
-					      _mainWindow->session()));
-    QApplication::postEvent(_mainWindow->getPluginManager(), me);
+  QString session = _mainWindow->session();
+  PluginSession *ps
+    = _mainWindow->getPluginManager()->getPluginSession(session);
+  
+  MClientEvent *me
+    = new MClientEvent(new MClientEventData(payload, tags, session));
+  QCoreApplication::postEvent(ps, me);
 }

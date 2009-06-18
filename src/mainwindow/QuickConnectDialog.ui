@@ -1,0 +1,83 @@
+<ui version="4.0" >
+ <class>QuickConnectDialog</class>
+ <widget class="QWidget" name="QuickConnectDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>463</width>
+    <height>397</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>mClient Profiles</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout_2" >
+   <item rowspan="3" row="0" column="0" >
+    <widget class="QGraphicsView" name="profilePicture" >
+     <property name="verticalScrollBarPolicy" >
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="horizontalScrollBarPolicy" >
+      <enum>Qt::ScrollBarAlwaysOff</enum>
+     </property>
+     <property name="interactive" >
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item row="0" column="1" >
+    <widget class="QGroupBox" name="groupBox" >
+     <property name="title" >
+      <string>Select a Profile</string>
+     </property>
+     <layout class="QGridLayout" name="gridLayout" >
+      <item row="0" column="0" >
+       <widget class="QPushButton" name="playButton" >
+        <property name="text" >
+         <string>&amp;Play</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0" >
+       <widget class="QPushButton" name="profileButton" >
+        <property name="text" >
+         <string>Profile &amp;Manager</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0" >
+       <widget class="QTreeView" name="profileView" />
+      </item>
+     </layout>
+    </widget>
+   </item>
+   <item row="2" column="1" >
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Close|QDialogButtonBox::Help</set>
+     </property>
+    </widget>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>QuickConnectDialog</receiver>
+   <slot>reject()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>338</x>
+     <y>371</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>231</x>
+     <y>198</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

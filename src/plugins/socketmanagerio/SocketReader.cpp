@@ -41,13 +41,17 @@ SocketReader::~SocketReader() {
 
 
 void SocketReader::sendToSocket(const QByteArray &ba) {
-    qDebug() << "in send to socket";
     if(_socket->state() != QAbstractSocket::ConnectedState) {
       qDebug() << "Socket not connected!";
       return;
     }
-    _socket->write(ba.data());
-    qDebug() << ba.size() << "bytes written";
+
+//     for( int i = 0; i < ba.size(); i++)
+//       qDebug() << i << (unsigned char)ba.at(i) << ba.at(i);
+
+    // this shouldn't be ba.data() !!
+    _socket->write(ba);
+    qDebug() << "socket" << ba.size() << "bytes written";
 }
 
 

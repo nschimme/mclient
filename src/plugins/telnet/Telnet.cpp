@@ -38,47 +38,23 @@ using std::string;
 Q_EXPORT_PLUGIN2(telnet, Telnet)
 
 struct cTelnetPrivate {
-  /** socket */
-  QString hostName;
-  int hostPort;
-
   QString encoding;
 
   QTextCodec *codec;
   QTextDecoder *inCoder;
   QTextEncoder *outCoder;
 
-#ifdef HAVE_MCCP
-  /** object that handles MCCP */
-  MCCP *_MCCP;
-  bool usingmccp;
-#endif
-
-#ifdef HAVE_MSP
-  /** object that handles MSP */
-  cMSP *MSP;
-  bool usingmsp;
-#endif
-
-#ifdef HAVE_MXP
-  bool usingmxp, mxpNegotiated;
-  int mxpallow;
-#endif
- 
   //iac: last char was IAC
   //iac2: last char was DO, DONT, WILL or WONT
   //insb: we're in IAC SB, waiting for IAC SE
   string command;
   bool iac, iac2, insb;
   
-  /** are we connected? */
-  bool _connected;
-  
   /** current state of options on our side and on server side */
   bool myOptionState[256], hisOptionState[256];
-    /** whether we have announced WILL/WON'T for that option (if we have, we don't
-  respond to DO/DON'T sent by the server -- see implementation and RFC 854
-  for more information... */
+  /** whether we have announced WILL/WON'T for that option (if we have, we don't
+      respond to DO/DON'T sent by the server -- see implementation and RFC 854
+      for more information... */
   bool announcedState[256];
   /** whether the server has already announced his WILL/WON'T */
   bool heAnnouncedState[256];
@@ -92,11 +68,11 @@ struct cTelnetPrivate {
   bool prependGANewLine;
   bool t_cmdEcho;
   bool t_lpmudstyle;
-  bool _startupneg;
+  bool startupneg;
   /** current dimensions */
   int curX, curY;
   /** offline connection */
-  bool offLineConnection;
+  bool offlineConnection;
 
   QString termType;
 };
@@ -108,17 +84,16 @@ Telnet::Telnet(QObject* parent)
     _shortName = "telnetdatafilter";
     _longName = "Telnet Data Filter";
     _description = "A telnet data filter.";
-    // TODO
     _dependencies.insert("socketmanager", 10);
     _implemented.insert("telnet",1);
-    _receivesDataTypes << "SocketData" << "SocketConnected"
-		       << "SocketDisconnected";
-    _deliversDataTypes << "TelnetData";
+    _receivesDataTypes << "SocketReadData" << "SocketConnected"
+		       << "SocketDisconnected" << "SocketWriteData";
+    _deliversDataTypes << "TelnetData" << "TelnetGA" << "SendToSocketData";
 
     /** KMuddy Telnet */
     d = new cTelnetPrivate;
     
-    d->termType = "KMuddy";
+    d->termType = "mClient";
     
     d->codec = 0;
     d->inCoder = 0;
@@ -128,13 +103,12 @@ Telnet::Telnet(QObject* parent)
     d->command = "";
     
     d->sentbytes = 0;
-    d->offLineConnection=false;
-    d->_connected = false;
-    d->curX = 0;
-    d->curY = 0;
-    d->_startupneg = false;
+    d->offlineConnection = true;
+    d->curX = 125;
+    d->curY = 39;
+    d->startupneg = false;
     d->encoding = DEFAULT_ENCODING;
-    
+
     reset ();
 }
 
@@ -153,28 +127,32 @@ void Telnet::customEvent(QEvent* e) {
   else if (e->type() == 10001) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
-    QString s;
     QStringList types = me->dataTypes();
-    foreach(s, types) {
-      if (s.startsWith("SocketData")) {
+    foreach(QString s, types) {
+      if (s.startsWith("SocketReadData")) {
 	socketRead(me->payload()->toByteArray());
 	
       }
+      else if(s.startsWith("SocketWriteData")) {
+	socketWrite(me->payload()->toByteArray());
+
+      }
       else if(s.startsWith("SocketConnected")) {
-	d->_connected = true;
+	qDebug() << "Telnet detected socket connect!";
+	d->offlineConnection = false;
 	
-	reset ();
-	
+	reset ();	
 	d->sentbytes = 0;
 	
-	    //negotiate some telnet options, if allowed
-	if (d->_startupneg)
-	  {
-		//NAWS (used to send info about window size)
-	    sendTelnetOption (TN_WILL, OPT_NAWS);
-	    //do not allow server to echo our text!
-	    sendTelnetOption (TN_DONT, OPT_ECHO);
-	  }
+	//negotiate some telnet options, if allowed
+	if (d->startupneg) {
+	  //NAWS (used to send info about window size)
+	  sendTelnetOption (TN_WONT, OPT_NAWS);
+	  //do not allow server to echo our text!
+	  sendTelnetOption (TN_DONT, OPT_ECHO);
+	  //we will send our terminal type
+	  sendTelnetOption (TN_WILL, OPT_TERMINAL_TYPE);
+	}
 	
 	// set up encoding
 	d->encoding = DEFAULT_ENCODING;
@@ -183,13 +161,13 @@ void Telnet::customEvent(QEvent* e) {
 	
       }
       else if(s.startsWith("SocketDisconnected")) {
-	d->_connected = false;
-	
-	reset ();
+	d->offlineConnection = true;
+
       }
       else if(s.startsWith("DimensionsChanged")) {
 	QList<QVariant> par = me->payload()->toList();
 	windowSizeChanged (par.first().toInt(), par.last().toInt());
+
       }
     }
   }
@@ -252,14 +230,7 @@ void Telnet::reset ()
   d->command = "";
 }
 
-bool Telnet::sendData (const QString &data)
-{
-  if (!(isConnected()))
-    return false;
-  // return true and dont send, since offline is used
-  if (isOffLineConnection())
-    return true;
-
+bool Telnet::socketWrite(const QByteArray &data) {
   if (d->t_cmdEcho == true && d->t_lpmudstyle)
     d->prependGANewLine = false;
 
@@ -286,31 +257,24 @@ bool Telnet::sendData (const QString &data)
   }
 
   //data ready, send it
-  return doSendData (outdata);
+  return doSendData(outdata);
 }
 
 bool Telnet::doSendData (const string &data)
 {
-  if (!(isConnected()))
-    return false;
-  if (isOffLineConnection())
-    return true;
   //write data to socket - it's so complicated because sometimes only a part of data
   //is accepted at a time
-  int dataLength = data.length ();
-
-//   QByteArray ba(data.c_str(), dataLength);
-//   QVariant* qv = new QVariant(ba);
-//   QStringList sl("SendToSocketData");  
-//   // FIXME: HACK! :(
-//   foreach(QString s, _runningSessions) {
-//       postSession(qv, sl, s);
-//   }
-
-// HACK: This is BROKEN in the protocol, disabled.
-
+  int dataLength = data.length();
+  
   //update counter
   d->sentbytes += dataLength;
+  
+  QByteArray ba(data.c_str(), dataLength);
+  qDebug() << "telnet" << ba.size();
+
+  QVariant* qv = new QVariant(ba);
+  QStringList sl("SendToSocketData");  
+  postSession(qv, sl);
   return true;
 }
 
@@ -321,8 +285,6 @@ void Telnet::windowSizeChanged (int x, int y)
   //we won't be called again when connecting
   d->curX = x;
   d->curY = y;
-  if (!(isConnected()))
-    return;
   if (d->myOptionState[OPT_NAWS])   //only if we have negotiated this option
   {
     string s;
@@ -350,12 +312,13 @@ void Telnet::windowSizeChanged (int x, int y)
     
     s += TN_IAC;
     s += TN_SE;
-    doSendData (s);
+    doSendData(s);
   }
 }
 
 void Telnet::sendTelnetOption (unsigned char type, unsigned char option)
 {
+  
   qDebug() << "Sending Telnet Option: " << type << " " << option;
   string s;
   s = TN_IAC;
@@ -366,9 +329,11 @@ void Telnet::sendTelnetOption (unsigned char type, unsigned char option)
 
 void Telnet::processTelnetCommand (const string &command)
 {
+  QByteArray a(command.c_str());
   unsigned char ch = command[1];
   unsigned char option;
-  qDebug() << "Received Telnet Command: " << ch << " " << option;
+  qDebug() << "Processing Telnet Command: " << (unsigned char)a.at(1) << (unsigned char)a.at(2);
+
   switch (ch) {
     case TN_AYT:
       doSendData ("I'm here! Please be more patient!\r\n");
@@ -407,66 +372,6 @@ void Telnet::processTelnetCommand (const string &command)
             sendTelnetOption (TN_DO, option);
             d->hisOptionState[option] = true;
           }
-#ifdef HAVE_MXP
-          else
-          if (option == OPT_MXP)
-          {
-            // allow or disallow, MXP depending on whether it's disabled
-            sendTelnetOption ((d->mxpallow >= 2) ? TN_DO : TN_DONT, option);
-            d->hisOptionState[option] = true;
-
-            //MXP is now negotiated
-            d->mxpNegotiated = true;
-            if (d->mxpallow == 2)  //MXP: if negotiated
-            {
-              cMXPManager *mm = dynamic_cast<cMXPManager *>(object ("mxpmanager"));
-              mm->setMXPActive (true);
-              puts ("KMuddy: MXP enabled !");
-            }
-          }
-#endif
-#ifdef HAVE_MSP
-          else
-          if (option == OPT_MSP)
-          {
-            sendTelnetOption (TN_DO, option);
-            d->hisOptionState[option] = true;
-
-            //MSP is now enabled
-            d->usingmsp = true;
-            d->MSP->enableMSP ();
-            puts ("KMuddy: MSP enabled !");
-          }
-#endif
-#ifdef HAVE_MCCP
-          else
-          if ((option == OPT_COMPRESS) || (option == OPT_COMPRESS2))
-          //these are handled separately, as they're a bit special
-          {
-            if ((option == OPT_COMPRESS) && (d->hisOptionState[OPT_COMPRESS2]))
-            {
-              //protocol says: reject MCCP v1 if you have previously accepted
-              //MCCP v2...
-              sendTelnetOption (TN_DONT, option);
-              d->hisOptionState[option] = false;
-              puts ("KMuddy: Rejecting MCCP v1, because v2 is already used !");
-            }
-            else
-            {
-              sendTelnetOption (TN_DO, option);
-              d->hisOptionState[option] = true;
-              //inform MCCP object about the change
-              if ((option == OPT_COMPRESS)) {
-                d->_MCCP->setMCCP1 (true);
-                puts ("KMuddy: MCCP v1 enabled !");
-              }
-              else {
-                d->_MCCP->setMCCP2 (true);
-                puts ("KMuddy: MCCP v2 enabled !");
-              }
-            }
-          }
-#endif
           else
           {
             sendTelnetOption (TN_DONT, option);
@@ -491,39 +396,9 @@ void Telnet::processTelnetCommand (const string &command)
         {
           sendTelnetOption (TN_DONT, option);
           d->hisOptionState[option] = false;
-#ifdef HAVE_MCCP
-          //inform MCCP object about the change - won't cause problems in
-          //MCCP - see cmccp.cpp for more info
-          if ((option == OPT_COMPRESS)) {
-            d->_MCCP->setMCCP1 (false);
-            puts ("KMuddy: MCCP v1 disabled !");
-          }
-          if ((option == OPT_COMPRESS2)) {
-            d->_MCCP->setMCCP2 (false);
-            puts ("KMuddy: MCCP v1 disabled !");
-          }
-#endif
         }
         d->heAnnouncedState[option] = true;
       }
-#ifdef HAVE_MSP
-      if (option == OPT_MSP)
-      {
-        //MSP is now disabled
-        d->usingmsp = false;
-        d->MSP->disableMSP ();
-        puts ("KMuddy: MSP disabled !");
-      }
-#endif
-#ifdef HAVE_MXP
-      if (option == OPT_MXP)
-      {
-        //MXP is now disabled
-        cMXPManager *mm = dynamic_cast<cMXPManager *>(object ("mxpmanager"));
-        mm->setMXPActive (false);
-        puts ("KMuddy: MXP disabled !");
-      }
-#endif
       break;
     case TN_DO:
       //server wants us to enable some option
@@ -566,6 +441,7 @@ void Telnet::processTelnetCommand (const string &command)
     case TN_SB:
       //subcommand - we analyze and respond...
       option = command[2];
+      qDebug() << "option2" << option << "option3" << (unsigned char)a.at(3);
       switch (option) {
         case OPT_STATUS:
           //see OPT_TERMINAL_TYPE for explanation why I'm doing this
@@ -633,37 +509,10 @@ void Telnet::socketRead (const QByteArray &ba)
   char data[32769]; //clean data after decompression
   int amount = ba.size();
 
-//   //we'll need cProfileSettings later on
-//   cProfileSettings *sett = settings();
-
   int datalen;
-#ifdef HAVE_MCCP
-  //MCCP will be handled first. This is done in a separate class, which
-  //detects all MCCP-related codes itself. I know that this involves some
-  //code duplication (two telnet option parsers), but it's needed because
-  //telnet sequences may (and will) appear inside the compressed streams,
-  //so it's best to get plain uncompressed data first. Another reason is
-  //improper design of MCCP v1, which uses unterminated telnet subsequences.
-  //This has been fixed in MCCP v2, but some MUDs may still use the old
-  //version.
-
-  d->_MCCP->prepareDecompression ((char*)ba.data(), data, amount, 32768);
-  while ((datalen = d->_MCCP->uncompressNext ()) != -1)
-#else
   strncpy(data, ba.data(), amount);
   datalen = amount;
-#endif
   {
-
-    //inform plug-ins about uncompressed data (can be equal to raw data if MCCP isn't used
-//  invokeEvent ("raw-data", sess(), QString (data));
-
-#if 0
-printf ("DATA IN: ");
-for (int i = 0; i < datalen; ++i) printf ("%02x ", (unsigned char) data[i]);
-printf ("\n");
-#endif
-
     data[datalen] = '\0';
     string cleandata;
 
@@ -756,6 +605,26 @@ printf ("\n");
           d->command = "";
         }
       }
+//       else
+// 	// Check for MUME MPI commands
+// 	if (d->mpi_n || d->mpi-r || ch == '\n')
+//       {
+// 	if (! (d->mpi_r || d->mpi_n) && (ch == '\n'))
+// 	{
+// 	  // 1. We have received a newline
+// 	  d->mpi_n = true;
+// 	else
+// 	  if (!d->mpi_r && d->mpi_n && ch == '\r')
+// 	  // 2. We have received a carriage return
+// 	{
+// 	  d->mpi_n = true;
+// 	}
+// 	else 
+// 	  // 3. Check if there is a MPI message here
+// 	{
+
+// 	}
+//       }
       else   //plaintext
       {
         //everything except CRLF is okay; CRLF is replaced by LF(\n) (CR ignored)
@@ -768,15 +637,6 @@ printf ("\n");
       //we've just received the GA signal - higher layers shall be informed about it
       if (d->recvdGA)
       {
-#ifdef HAVE_MSP
-        //ask MSP parser to look for MSP tags if MSP is enabled
-        //look if the user want to have MSP all the time
-        bool alwaysmsp = sett ? sett->getBool ("always-msp") : false;
-        //hand data to MSP parser if desired
-        if (d->usingmsp || alwaysmsp)
-          cleandata = d->MSP->parseServerOutput (cleandata);
-#endif
-
         //prepend a newline, if needed
         if (d->prependGANewLine && d->t_lpmudstyle)
           cleandata = "\n" + cleandata;
@@ -785,20 +645,19 @@ printf ("\n");
         QString unicodeData = d->inCoder->toUnicode (cleandata.data(), cleandata.length());
 
 	QVariant* qv = new QVariant(unicodeData);
-	QStringList sl;
-	sl << "TelnetData";
-    //FIXME: HACK! :(
+	QStringList sl("TelnetData");
         postSession(qv, sl);
-	qDebug() << "posted FilteredData!";
+	qDebug() << "posted FilteredData with GA!";
 	
-//         invokeEvent ("data-received", sess(), unicodeData);
-
-//         if (sett && sett->getBool ("prompt-console"))
-//           //we'll need to prepend a new-line in next data sending
-//           d->prependGANewLine = true;
-//         //we got a prompt
-//         invokeEvent ("received-ga", sess());
-
+	//we'll need to prepend a new-line in next data sending
+	d->prependGANewLine = true;
+        //we got a prompt
+	qv = new QVariant();
+	sl.clear();
+	sl << "TelnetGA";
+        postSession(qv, sl);
+	qDebug() << "posted TelnetGA!";
+	
         //clean the flag, and the data (so that we don't send it multiple times)
         cleandata = "";
         d->recvdGA = false;
@@ -808,64 +667,18 @@ printf ("\n");
     //some data left to send - do it now!
     if (!cleandata.empty())
     {
-#ifdef HAVE_MSP
-      //ask MSP parser to look for MSP tags if MSP is enabled
-      //look if the user want to have MSP all the time
-      bool alwaysmsp = sett ? sett->getBool ("always-msp") : false;
-      //hand data to MSP parser if desired
-      if (d->usingmsp || alwaysmsp)
-        cleandata = d->MSP->parseServerOutput (cleandata);
-#endif
-
       //prepend a newline, if needed
       if (d->prependGANewLine && d->t_lpmudstyle)
         cleandata = "\n" + cleandata;
       d->prependGANewLine = false;
+
       //forward data for further processing
       QString unicodeData = d->inCoder->toUnicode (cleandata.data(), cleandata.length());
       QVariant* qv = new QVariant(unicodeData);
       QStringList sl;
       sl << "TelnetData";
-      //FIXME: HACK! :(
       postSession(qv, sl);
       qDebug() << "posted FilteredData!";
-//    invokeEvent ("data-received", sess(), unicodeData);
     }
   }
-
-  //invokeEvent ("text-here", sess());
-}
-
-void Telnet::setOffLineConnection (bool type)
-{
-  d->offLineConnection = type;
-}
-
-/** are we connected (offline connection is counted as connected) ? */
-bool Telnet::isConnected ()
-{
-  return (isOffLineConnection() || d->_connected);
-}
-
-bool Telnet::isOffLineConnection () { 
-  return d->offLineConnection;
-}
-
-int Telnet::sentBytes () {
-  return d->sentbytes;
-}
-
-void Telnet::setCommandEcho (bool cmdEcho)
-{
-  d->t_cmdEcho = cmdEcho;
-}
-
-void Telnet::setLPMudStyle (bool lpmudstyle)
-{
-  d->t_lpmudstyle = lpmudstyle;
-}
-
-void Telnet::setNegotiateOnStartup (bool startupneg)
-{
-  d->_startupneg = startupneg;
 }

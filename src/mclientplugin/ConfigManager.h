@@ -11,6 +11,9 @@ bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map);
 bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map);
 bool sortXmlElements(const QString &s1, const QString &s2);
 
+class QAbstractTableModel;
+class ConfigModel;
+
 class ConfigManager : public QObject {
     Q_OBJECT
 
@@ -43,6 +46,11 @@ class ConfigManager : public QObject {
 	  return _profilePlugins.value(s);
 	}
 
+	// For Profile management
+	bool duplicateProfile(const QString &, const QString &);
+	bool deleteProfile(const QString &);
+	QAbstractTableModel *model () const;
+
 
     protected:
         // It's a singleton, so these go here
@@ -64,6 +72,7 @@ class ConfigManager : public QObject {
 	// List of plugins for a given profile
 	QHash<QString, QStringList> _profilePlugins;
 
+	ConfigModel *_model;
 };
 
 

@@ -222,7 +222,7 @@ bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
 
 void PluginSession::startSession() {
   // Start the sessions within the thread
-  foreach(QPluginLoader* pl,_loadedPlugins) {
+  foreach(QPluginLoader *pl, _loadedPlugins) {
     MClientPluginInterface* pi
       = qobject_cast<MClientPluginInterface*>(pl->instance());
     if (pi)

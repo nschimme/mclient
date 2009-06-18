@@ -67,8 +67,6 @@ a) FULLY SUPPORTED COMMANDS:
 - TERMINAL-TYPE (cmd 24, RFC 1091) - terminal type sending
 - NAWS (cmd 31, RFC 1073) - negotiate about window size - used to inform
   the server about window size (cols x rows)
-- MCCP v1 (cmd 85) - compression protocol version 1; handled by cMCCP class
-- MCCP v2 (cmd 86) - compression protocol version 2; handled by cMCCP class
   
 b) PARTIALLY SUPPORTED COMMANDS
 - SUPPRESS-GO-AHEAD (cmd 3, RFC 858) - we try to suppress GA's if possible.
@@ -146,10 +144,6 @@ else does it ;))
 #define OPT_TIMING_MARK (unsigned char) 6
 #define OPT_TERMINAL_TYPE (unsigned char) 24
 #define OPT_NAWS (unsigned char) 31
-#define OPT_COMPRESS (unsigned char) 85
-#define OPT_COMPRESS2 (unsigned char) 86
-#define OPT_MSP (unsigned char) 90
-#define OPT_MXP (unsigned char) 91
 
 //telnet SB suboption types
 #define TNSB_IS (char) 0
@@ -170,46 +164,30 @@ class Telnet : public MClientFilterPlugin {
         bool startSession(QString s);
         bool stopSession(QString s);
 
-  int sentBytes ();
+	/** Prepares data, doubles IACs, sends it using doSendData. */
+	bool socketWrite(const QByteArray &data);
 
-  void setOffLineConnection (bool type);
-  bool isOffLineConnection ();
-
-  /** returns whether we're connected to some other host */
-  bool isConnected ();
-
-  /** Prepares data, doubles IACs, sends it using doSendData. */
-  bool sendData (const QString &data);
-
-  /** Command echo setting */
-  void setCommandEcho(bool cmdEcho);
-
-  /** LPMud prompt style */
-  void setLPMudStyle (bool lpmustyle);
-  
-  /** Start-up telnet negotiation */
-  void setNegotiateOnStartup (bool startupneg);
-
-  /** window size has changed - informs the server about it */
-  void windowSizeChanged (int x, int y);
-  
+	
+	/** window size has changed - informs the server about it */
+	void windowSizeChanged (int x, int y);
+	
  protected:
-  void socketRead (const QByteArray &ba);
-
-  void reset ();
-  void setupEncoding ();
-
-  /** Send out the data. Does not double IACs, this must be done by caller
-  if needed. This function is suitable for sending telnet sequences. */
-  bool doSendData (const std::string &data);
-  
-  /** processes a telnet command (IAC ...) */
-  void processTelnetCommand (const std::string &command);
-
-  /** send a telnet option */
-  void sendTelnetOption (unsigned char type, unsigned char option);
-
-  cTelnetPrivate *d;
+	void socketRead (const QByteArray &ba);
+	
+	void reset ();
+	void setupEncoding ();
+	
+	/** Send out the data. Does not double IACs, this must be done by caller
+	    if needed. This function is suitable for sending telnet sequences. */
+	bool doSendData (const std::string &data);
+	
+	/** processes a telnet command (IAC ...) */
+	void processTelnetCommand (const std::string &command);
+	
+	/** send a telnet option */
+	void sendTelnetOption (unsigned char type, unsigned char option);
+	
+	cTelnetPrivate *d;
 };
 
 

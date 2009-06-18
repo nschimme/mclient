@@ -21,6 +21,7 @@
 
 #include "MainWindow.h"
 #include "ActionManager.h"
+#include "QuickConnectDialog.h"
 
 #include "ConfigManager.h"
 #include "PluginManager.h"
@@ -54,7 +55,15 @@ MainWindow::MainWindow(PluginManager *pm) {
   _tabWidget = new QTabWidget;
   setCentralWidget(_tabWidget);
 
-  setCurrentProfile("test");
+  /** Create Splash Screen */
+  _splash = new QSplashScreen(QPixmap(":/mainwindow/intro.png"));
+  _splash->setAttribute(Qt::WA_DeleteOnClose);
+  _splash->showMessage("Loading configuration...",
+		       Qt::AlignBottom | Qt::AlignHCenter,
+		       Qt::white);
+  _splash->show();
+  _splash->finish(this);
+    
   qDebug() << "MainWindow created with thread:" << this->thread();
 }
 
@@ -69,8 +78,34 @@ MainWindow::~MainWindow() {
 
 
 void MainWindow::start() {
-  emit startSession(_currentProfile);
+  _quickConnectDlg = new QuickConnectDialog(getPluginManager()->getConfig());
+  
+  connect(_quickConnectDlg, SIGNAL(profileSelected(const QString&)),
+	  this, SLOT(startProfile(const QString&)));
+
+  _quickConnectDlg->show();
 }
+
+
+void MainWindow::startProfile(const QString &profile) {
+  qDebug() << "* starting profile" << profile;
+
+  _quickConnectDlg->close();
+  delete _quickConnectDlg;
+
+  /** Create Second Splash Screen */
+  _splash = new QSplashScreen(QPixmap(":/mainwindow/intro.png"));
+  _splash->setAttribute(Qt::WA_DeleteOnClose);
+  _splash->showMessage("Loading plugins...",
+		       Qt::AlignBottom | Qt::AlignHCenter,
+		       Qt::white);
+  _splash->show();
+  _splash->finish(this);
+
+  setCurrentProfile(profile);
+  emit startSession(profile);
+}
+
 
 void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList) {
   // Create the layout
