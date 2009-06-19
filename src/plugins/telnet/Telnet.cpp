@@ -66,8 +66,7 @@ struct cTelnetPrivate {
   bool recvdGA;
   /** should we prepend newline after receving a GA */
   bool prependGANewLine;
-  bool t_cmdEcho;
-  bool t_lpmudstyle;
+  bool echoMode;
   bool startupneg;
   /** current dimensions */
   int curX, curY;
@@ -88,13 +87,15 @@ Telnet::Telnet(QObject* parent)
     _implemented.insert("telnet",1);
     _receivesDataTypes << "SocketReadData" << "SocketConnected"
 		       << "SocketDisconnected" << "SocketWriteData";
-    _deliversDataTypes << "TelnetData" << "TelnetGA" << "SendToSocketData";
+    _deliversDataTypes << "TelnetData" << "TelnetGA" << "SendToSocketData"
+		       << "EchoMode";
 
     /** KMuddy Telnet */
     d = new cTelnetPrivate;
     
     d->termType = "mClient";
     
+    // set up encoding
     d->codec = 0;
     d->inCoder = 0;
     d->outCoder = 0;
@@ -110,6 +111,7 @@ Telnet::Telnet(QObject* parent)
     d->encoding = DEFAULT_ENCODING;
 
     reset ();
+    setupEncoding ();
 }
 
 
@@ -133,7 +135,7 @@ void Telnet::customEvent(QEvent* e) {
 	socketRead(me->payload()->toByteArray());
 	
       }
-      else if(s.startsWith("SocketWriteData")) {
+      else if(s.startsWith("SocketWriteData")) {	
 	socketWrite(me->payload()->toByteArray());
 
       }
@@ -147,17 +149,12 @@ void Telnet::customEvent(QEvent* e) {
 	//negotiate some telnet options, if allowed
 	if (d->startupneg) {
 	  //NAWS (used to send info about window size)
-	  sendTelnetOption (TN_WONT, OPT_NAWS);
+	  sendTelnetOption (TN_WILL, OPT_NAWS);
 	  //do not allow server to echo our text!
 	  sendTelnetOption (TN_DONT, OPT_ECHO);
 	  //we will send our terminal type
 	  sendTelnetOption (TN_WILL, OPT_TERMINAL_TYPE);
 	}
-	
-	// set up encoding
-	d->encoding = DEFAULT_ENCODING;
-	// d->encoding = sett ? sett->getString ("encoding") : DEFAULT_ENCODING;
-	setupEncoding ();
 	
       }
       else if(s.startsWith("SocketDisconnected")) {
@@ -231,7 +228,7 @@ void Telnet::reset ()
 }
 
 bool Telnet::socketWrite(const QByteArray &data) {
-  if (d->t_cmdEcho == true && d->t_lpmudstyle)
+  if (d->echoMode)
     d->prependGANewLine = false;
 
   string outdata = (d->outCoder->fromUnicode(data)).data();
@@ -270,13 +267,21 @@ bool Telnet::doSendData (const string &data)
   d->sentbytes += dataLength;
   
   QByteArray ba(data.c_str(), dataLength);
-  qDebug() << "telnet" << ba.size();
+  //qDebug() << "telnet" << ba.size();
 
   QVariant* qv = new QVariant(ba);
   QStringList sl("SendToSocketData");  
   postSession(qv, sl);
   return true;
 }
+
+void Telnet::echoModeChanged(bool b) {
+  d->echoMode = b;
+  QVariant* qv = new QVariant(d->echoMode);
+  QStringList sl("EchoMode");
+  postSession(qv, sl);
+}
+
 
 void Telnet::windowSizeChanged (int x, int y)
 {
@@ -318,7 +323,6 @@ void Telnet::windowSizeChanged (int x, int y)
 
 void Telnet::sendTelnetOption (unsigned char type, unsigned char option)
 {
-  
   qDebug() << "Sending Telnet Option: " << type << " " << option;
   string s;
   s = TN_IAC;
@@ -329,9 +333,9 @@ void Telnet::sendTelnetOption (unsigned char type, unsigned char option)
 
 void Telnet::processTelnetCommand (const string &command)
 {
-  QByteArray a(command.c_str());
   unsigned char ch = command[1];
   unsigned char option;
+  QByteArray a(command.c_str());
   qDebug() << "Processing Telnet Command: " << (unsigned char)a.at(1) << (unsigned char)a.at(2);
 
   switch (ch) {
@@ -365,12 +369,14 @@ void Telnet::processTelnetCommand (const string &command)
             //unless explicitly requested)
         {
           if ((option == OPT_SUPPRESS_GA) || (option == OPT_STATUS) ||
-              (option == OPT_TERMINAL_TYPE) || (option == OPT_NAWS))
-                 //these options are supported; compression is handled
-                 //separately
+              (option == OPT_TERMINAL_TYPE) || (option == OPT_NAWS) ||
+	      (option == OPT_ECHO))
+                 //these options are supported
           {
             sendTelnetOption (TN_DO, option);
             d->hisOptionState[option] = true;
+	    // Echo mode support
+	    if (option == OPT_ECHO) echoModeChanged(false);
           }
           else
           {
@@ -396,6 +402,8 @@ void Telnet::processTelnetCommand (const string &command)
         {
           sendTelnetOption (TN_DONT, option);
           d->hisOptionState[option] = false;
+	  if (option == OPT_ECHO) echoModeChanged(true);
+
         }
         d->heAnnouncedState[option] = true;
       }
@@ -441,7 +449,6 @@ void Telnet::processTelnetCommand (const string &command)
     case TN_SB:
       //subcommand - we analyze and respond...
       option = command[2];
-      qDebug() << "option2" << option << "option3" << (unsigned char)a.at(3);
       switch (option) {
         case OPT_STATUS:
           //see OPT_TERMINAL_TYPE for explanation why I'm doing this
@@ -638,7 +645,7 @@ void Telnet::socketRead (const QByteArray &ba)
       if (d->recvdGA)
       {
         //prepend a newline, if needed
-        if (d->prependGANewLine && d->t_lpmudstyle)
+        if (d->prependGANewLine)
           cleandata = "\n" + cleandata;
         d->prependGANewLine = false;
         //forward data for further processing
@@ -667,9 +674,6 @@ void Telnet::socketRead (const QByteArray &ba)
     //some data left to send - do it now!
     if (!cleandata.empty())
     {
-      //prepend a newline, if needed
-      if (d->prependGANewLine && d->t_lpmudstyle)
-        cleandata = "\n" + cleandata;
       d->prependGANewLine = false;
 
       //forward data for further processing

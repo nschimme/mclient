@@ -89,12 +89,13 @@ void CommandManager::registerCommand(const QStringList& sl) {
 
 void CommandManager::parseInput(const QString &input,
 				const QString &session) {
-  // Display Data
-  QVariant* qv = new QVariant(input + "\n");
-  QStringList sl;
-  sl << "DisplayData" << "UserInput";
-  if (input.isEmpty()) sl << "SocketWriteData";
-  postEvent(qv, sl, session);
+
+  // Send Data to Socket
+  if (input.isEmpty()) {
+    QVariant* qv = new QVariant(input + "\n");
+    QStringList sl("SocketWriteData");
+    postEvent(qv, sl, session);
+  }
   
   // TODO: only split given the #delim command
   QStringList tokens = input.split("\n", QString::SkipEmptyParts);
@@ -103,9 +104,8 @@ void CommandManager::parseInput(const QString &input,
   
     if (!input.startsWith(_symbol)) {
       // Non-command; check if it is an alias
-      qv = new QVariant(input);
-      sl.clear();
-      sl << "AliasInput";
+      QVariant *qv = new QVariant(input);
+      QStringList sl("AliasInput");
       postEvent(qv, sl, session);
 
     } else {

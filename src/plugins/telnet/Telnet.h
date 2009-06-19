@@ -170,6 +170,9 @@ class Telnet : public MClientFilterPlugin {
 	
 	/** window size has changed - informs the server about it */
 	void windowSizeChanged (int x, int y);
+
+	/** toggles echo mode for passwords */
+	void echoModeChanged(bool);
 	
  protected:
 	void socketRead (const QByteArray &ba);

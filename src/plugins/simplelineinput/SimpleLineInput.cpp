@@ -21,8 +21,8 @@ SimpleLineInput::SimpleLineInput(QWidget* parent)
     _description = "A simple line input plugin.";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _receivesDataTypes << "ChangeUserInput";
-    //    _deliversDataTypes << "?";
+    _receivesDataTypes << "ChangeUserInput" << "EchoMode";
+    _deliversDataTypes << "UserInput";
     _configurable = false;
     _configVersion = "2.0";
 
@@ -48,11 +48,21 @@ void SimpleLineInput::customEvent(QEvent* e) {
       // TODO: History, tab-completion
 
     }
+    else if (me->dataTypes().contains("EchoMode")) {
+      emit setEchoMode(me->payload()->toBool());
+
+    }
 
   }
 }
 
-void SimpleLineInput::sendUserInput(const QString &input) {
+void SimpleLineInput::sendUserInput(const QString &input, bool echo) {
+  if (echo) {
+    QVariant* qv = new QVariant(input + "\n");
+    QStringList sl("UserInput");
+    postSession(qv, sl);
+  }
+
   _pluginSession->getManager()->getCommand()->parseInput(input, _session);
 }
 
@@ -61,6 +71,7 @@ void SimpleLineInput::configure() {
 
 
 bool SimpleLineInput::loadSettings() {
+
   return true;
 }
 

@@ -52,7 +52,7 @@ class SocketManagerIO : public MClientIOPlugin {
 
  signals:
 	void connectToHost();
-        void sendToSocket(const QByteArray &ba);
+        void sendToSocket(const QByteArray &);
         void closeSocket();        
 
 };

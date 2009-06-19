@@ -12,8 +12,10 @@ InputWidget::InputWidget(QString s, SimpleLineInput* sli, QWidget* parent)
 
     // Connect Signals/Slots
     connect(this, SIGNAL(returnPressed()), SLOT(gotInput()));
-    connect(this, SIGNAL(sendUserInput(const QString&)),
-	    _sli, SLOT(sendUserInput(const QString&)));
+    connect(this, SIGNAL(sendUserInput(const QString&, bool)),
+	    _sli, SLOT(sendUserInput(const QString&, bool)));
+    connect(_sli, SIGNAL(setEchoMode(bool)),
+	    this, SLOT(toggleEchoMode(bool)));
 
     // Debugging Information
     qDebug() << "* SimpleLineInput thread:" << _sli->thread();
@@ -26,5 +28,17 @@ InputWidget::~InputWidget() {
 
 void InputWidget::gotInput() {
     selectAll();
-    emit sendUserInput(text());
+    emit sendUserInput(text(), _echoMode);
+}
+
+void InputWidget::toggleEchoMode(bool b) {
+  _echoMode = b;
+  clear();
+  if (echoMode() == QLineEdit::Normal) {
+    setEchoMode(QLineEdit::Password);
+
+  }
+  else {
+    setEchoMode(QLineEdit::Normal);
+  }
 }

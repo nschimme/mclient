@@ -16,8 +16,8 @@ SocketReader::SocketReader(const QString &s, SocketManagerIO *sm,
 
     connect(_sm, SIGNAL(connectToHost()), SLOT(connectToHost()));
     connect(_sm, SIGNAL(closeSocket()), SLOT(closeSocket()));
-    connect(_sm, SIGNAL(sendToSocket(const QByteArray &ba)),
-	    SLOT(sendToSocket(const QByteArray &ba)));
+    connect(_sm, SIGNAL(sendToSocket(const QByteArray &)),
+	    SLOT(sendToSocket(const QByteArray &)));
     
     _proxy.setType(QNetworkProxy::NoProxy);
 }
@@ -51,7 +51,7 @@ void SocketReader::sendToSocket(const QByteArray &ba) {
 
     // this shouldn't be ba.data() !!
     _socket->write(ba);
-    qDebug() << "socket" << ba.size() << "bytes written";
+    //qDebug() << "socket" << ba.size() << "bytes written";
 }
 
 

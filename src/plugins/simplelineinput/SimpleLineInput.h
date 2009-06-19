@@ -29,11 +29,14 @@ class SimpleLineInput : public MClientDisplayPlugin {
         QWidget* getWidget(QString s);
 
 public slots:
-        void sendUserInput(const QString&);
+        void sendUserInput(const QString&, bool);
 
     private:
 	QString _settingsFile;
 	QPointer<InputWidget> _widget;
+
+ signals:
+	void setEchoMode(bool);
 };
 
 

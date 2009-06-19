@@ -26,7 +26,7 @@ WebKitDisplay::WebKitDisplay(QWidget* parent)
     _description = "A display plugin using WebKit.";
 //   _dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _receivesDataTypes << "DisplayData";
+    _receivesDataTypes << "DisplayData" << "UserInput";
     //_deliversDataTypes << "?";
     _configurable = false;
     _configVersion = "2.0";
@@ -68,7 +68,8 @@ void WebKitDisplay::customEvent(QEvent* e) {
   if(!e->type() == 10001) return;
   
   MClientEvent* me = static_cast<MClientEvent*>(e);
-  if (me->dataTypes().contains("DisplayData")) {
+  if (me->dataTypes().contains("DisplayData") ||
+      me->dataTypes().contains("UserInput")) {
     _eventQueue.enqueue(me->payload()->toString());
     if(!isRunning())
       start(LowPriority);
