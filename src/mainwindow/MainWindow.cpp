@@ -78,20 +78,46 @@ MainWindow::~MainWindow() {
 
 
 void MainWindow::start() {
-  _quickConnectDlg = new QuickConnectDialog(getPluginManager()->getConfig());
-  
-  connect(_quickConnectDlg, SIGNAL(profileSelected(const QString&)),
-	  this, SLOT(startProfile(const QString&)));
+  bool showQuickConnect = true;
 
-  _quickConnectDlg->show();
+  // Profile Command Line support
+  QStringList args = QCoreApplication::arguments();
+  if (args.contains("-profile")) {
+    int pos = args.indexOf("-profile");
+    if ((pos + 1) < args.size()) {
+      QString profile = args.at(pos + 1);
+      QStringList profileNames
+	= getPluginManager()->getConfig()->profileNames();
+      if (profileNames.contains(profile)) {
+	startProfile(profile);
+	showQuickConnect = false;
+      }
+      else
+	qDebug() << "Unknown profile" << profile;
+      
+    }
+  }
+
+  // Quick Connect Dialog
+  if (showQuickConnect) {
+    _quickConnectDlg = new QuickConnectDialog(getPluginManager()->getConfig());
+    
+    connect(_quickConnectDlg, SIGNAL(profileSelected(const QString&)),
+	    this, SLOT(startProfile(const QString&)));
+    
+    _quickConnectDlg->show();
+  }
+
 }
 
 
 void MainWindow::startProfile(const QString &profile) {
   qDebug() << "* starting profile" << profile;
 
-  _quickConnectDlg->close();
-  delete _quickConnectDlg;
+  if (_quickConnectDlg) {
+    _quickConnectDlg->close();
+    delete _quickConnectDlg;
+  }
 
   /** Create Second Splash Screen */
   _splash = new QSplashScreen(QPixmap(":/mainwindow/intro.png"));
