@@ -1,0 +1,88 @@
+<ui version="4.0" >
+ <class>ProfileManagerDialog</class>
+ <widget class="QWidget" name="ProfileManagerDialog" >
+  <property name="geometry" >
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>637</width>
+    <height>323</height>
+   </rect>
+  </property>
+  <property name="windowTitle" >
+   <string>mClient Profile Manager</string>
+  </property>
+  <layout class="QGridLayout" name="gridLayout" >
+   <item rowspan="5" row="0" column="0" >
+    <widget class="QTreeView" name="profileView" />
+   </item>
+   <item row="0" column="1" >
+    <widget class="QPushButton" name="addButton" >
+     <property name="text" >
+      <string>&amp;New Profile</string>
+     </property>
+    </widget>
+   </item>
+   <item row="1" column="1" >
+    <widget class="QPushButton" name="modifyButton" >
+     <property name="text" >
+      <string>&amp;Modify Profile</string>
+     </property>
+    </widget>
+   </item>
+   <item row="2" column="1" >
+    <widget class="QPushButton" name="deleteButton" >
+     <property name="text" >
+      <string>&amp;Delete Profile</string>
+     </property>
+    </widget>
+   </item>
+   <item row="3" column="1" >
+    <widget class="QPushButton" name="duplicateButton" >
+     <property name="text" >
+      <string>Duplicate &amp;Profile</string>
+     </property>
+    </widget>
+   </item>
+   <item row="5" column="0" colspan="2" >
+    <widget class="QDialogButtonBox" name="buttonBox" >
+     <property name="standardButtons" >
+      <set>QDialogButtonBox::Close|QDialogButtonBox::Help</set>
+     </property>
+    </widget>
+   </item>
+   <item row="4" column="1" >
+    <spacer name="verticalSpacer" >
+     <property name="orientation" >
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0" >
+      <size>
+       <width>20</width>
+       <height>40</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>buttonBox</sender>
+   <signal>rejected()</signal>
+   <receiver>ProfileManagerDialog</receiver>
+   <slot>close()</slot>
+   <hints>
+    <hint type="sourcelabel" >
+     <x>318</x>
+     <y>297</y>
+    </hint>
+    <hint type="destinationlabel" >
+     <x>318</x>
+     <y>161</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>

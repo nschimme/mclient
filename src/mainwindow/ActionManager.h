@@ -68,6 +68,7 @@ public slots:
     QAction *aboutAct;
     QAction *aboutQtAct;
 
+    QAction *profileAct;
     QAction *settingsAct;
 
     QAction *connectAct;

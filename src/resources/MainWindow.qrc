@@ -1,7 +1,7 @@
 <!DOCTYPE RCC><RCC version="1.0">
 <qresource>
 	<file>mainwindow/m.png</file>
-	<file>mainwindow/preferences.png</file>
+	<file>mainwindow/settings.png</file>
 	<file>mainwindow/copy.png</file>
 	<file>mainwindow/cut.png</file>
 	<file>mainwindow/paste.png</file>
@@ -9,5 +9,7 @@
 	<file>mainwindow/open.png</file>
 	<file>mainwindow/save.png</file>
 	<file>mainwindow/intro.png</file>
+	<file>mainwindow/exit.png</file>
+	<file>mainwindow/profile.png</file>
 </qresource>
 </RCC>

@@ -85,6 +85,10 @@ void ActionManager::createActions() {
   alwaysOnTopAct->setStatusTip(tr("Toggle the window to always stay on the top"));
   connect(alwaysOnTopAct, SIGNAL(triggered()), this, SLOT(alwaysOnTop()));
 
+  profileAct = new QAction(QIcon(":/mainwindow/profile.png"), tr("Profile &Manager..."), this);
+  profileAct->setStatusTip(tr("Manage mClient profile settings"));
+  connect(profileAct, SIGNAL(triggered()), _mainWindow, SLOT(manageProfiles()));
+
   settingsAct = new QAction(QIcon(":/mainwindow/settings.png"), tr("&Preferences..."), this);
   settingsAct->setStatusTip(tr("Change mClient settings"));
   connect(settingsAct, SIGNAL(triggered()), _mainWindow, SLOT(changeConfiguration()) );
@@ -157,6 +161,7 @@ void ActionManager::createMenus() {
 
   settingsMenu = menuBar->addMenu(tr("&Settings"));
   settingsMenu->addAction(settingsAct);
+  settingsMenu->addAction(profileAct);
 
   menuBar->addSeparator();
 

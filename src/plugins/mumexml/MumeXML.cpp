@@ -153,7 +153,7 @@ void MumeXML::parse(const QByteArray& line) {
 
 void MumeXML::run() {
   while (!_quit) {
-    while (!_quit && !_eventQueue.isEmpty())
+    while (!_eventQueue.isEmpty())
       parse(_eventQueue.dequeue());
     _cond.wait(&_mutex);
   }

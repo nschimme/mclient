@@ -21,13 +21,15 @@
 
 #include "MainWindow.h"
 #include "ActionManager.h"
-#include "QuickConnectDialog.h"
 
 #include "ConfigManager.h"
 #include "PluginManager.h"
 #include "CommandManager.h"
 
 #include "MClientDefinitions.h"
+
+#include "QuickConnectDialog.h"
+#include "ProfileManagerDialog.h"
 
 MainWindow* MainWindow::_pinstance = 0;
 
@@ -259,5 +261,12 @@ void MainWindow::setCurrentProfile(const QString &session)
 
 void MainWindow::changeConfiguration() {
   getPluginManager()->configure();
+}
+
+void MainWindow::manageProfiles() {
+  ProfileManagerDialog *profileManager
+    = new ProfileManagerDialog(getPluginManager()->getConfig(), 0, this);
+  profileManager->exec();
+  delete profileManager;
 }
 

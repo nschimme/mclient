@@ -1,4 +1,4 @@
 #!/bin/bash
 cd build
-./mclient
+./mclient -profile Default
 cd ..

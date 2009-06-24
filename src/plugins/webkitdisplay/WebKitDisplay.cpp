@@ -82,7 +82,7 @@ void WebKitDisplay::customEvent(QEvent* e) {
 void WebKitDisplay::run() {
   QMutexLocker locker(&_mutex);
   while (!_quit) {
-    while (!_quit && !_eventQueue.isEmpty())
+    while (!_eventQueue.isEmpty())
       parseDisplayData(_eventQueue.dequeue());
     
     _cond.wait(&_mutex);

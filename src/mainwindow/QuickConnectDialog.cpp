@@ -24,6 +24,7 @@
 #include <QDebug>
 
 #include "QuickConnectDialog.h"
+#include "ProfileManagerDialog.h"
 #include "ConfigManager.h"
 
 QString QuickConnectDialog::selectedProfile() {
@@ -57,16 +58,15 @@ void QuickConnectDialog::relayLoadProfile(const QString& /*profile*/) {
 }
 
 void QuickConnectDialog::profileClicked() {
-  qDebug() << "* ProfileManager not implemented!";
-//   dialog = new ProfileManagerDialog(profileView->selectionModel(), this);
+  _dialog = new ProfileManagerDialog(_mgr, profileView->selectionModel(),
+				     this);
+   
+  connect(_dialog, SIGNAL(loadProfile(const QString&)),
+	  this, SLOT(relayLoadProfile(const QString&) ));
 
-//   connect(dialog, SIGNAL(loadProfile(const QString&)),
-// 	  this, SLOT(relayLoadProfile(const QString&) ));
+  _dialog->exec();
 
-//   dialog->exec();
-
-//   delete dialog;
-//   dialog = NULL;
+  delete _dialog;
 }
 
 void QuickConnectDialog::selectionChanged (const QItemSelection &index)

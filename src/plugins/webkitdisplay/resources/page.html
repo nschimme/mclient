@@ -4,9 +4,9 @@
   html, body { 
     background-color: black;
     color: white;
-    font-family: sans-serif;
     padding: 0 0 0 0;
     margin: 0 0 0 0;
+    font-family: "Lucidatypewriter", monospace, mono;
   }
 
   div {
@@ -23,7 +23,8 @@
     //border: 1px solid yellow;
     //margin: 1px 1px;
     overflow: auto;
-    white-space: pre;
+    white-space: pre-wrap;
+    word-wrap: normal;
   }
 
   .bold {
@@ -120,7 +121,7 @@ $(function(){
 </script>
 </head>
 <body>
-<div id="welcome" style="display: none;">
+<div id="welcome" style="display: none; font-family: sans serif;">
 <h1>Welcome to mClient!</h1>
 <p>A next generation client for all your <b>MUME</b> needs...</p>
 </div>

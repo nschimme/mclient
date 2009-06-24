@@ -34,11 +34,12 @@ void InputWidget::gotInput() {
 void InputWidget::toggleEchoMode(bool b) {
   _echoMode = b;
   clear();
-  if (echoMode() == QLineEdit::Normal) {
-    setEchoMode(QLineEdit::Password);
+  if (_echoMode) {
+    setEchoMode(QLineEdit::Normal);
 
   }
   else {
-    setEchoMode(QLineEdit::Normal);
+    setEchoMode(QLineEdit::Password);
+
   }
 }

@@ -14,40 +14,48 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef _QUICKCONNECTDIALOG_H
-#define _QUICKCONNECTDIALOG_H
+#ifndef _PROFILEMANAGERDIALOG_H
+#define _PROFILEMANAGERDIALOG_H
 
 #include <QDialog>
-#include <QPointer>
-#include "ui_QuickConnectDialog.h"
+#include "ui_ProfileManagerDialog.h"
 
+//class ProfileEditDialog;
 class ConfigManager;
-class ProfileManagerDialog;
 
-class QuickConnectDialog : public QDialog, public Ui::QuickConnectDialog
+class ProfileManagerDialog : public QDialog, public Ui::ProfileManagerDialog
 {
   Q_OBJECT
 
   public:
-    QuickConnectDialog(ConfigManager *mgr, QWidget* parent=0);
-    virtual ~QuickConnectDialog();
+    ProfileManagerDialog(ConfigManager *mgr, QItemSelectionModel *model,
+			 QWidget* parent);
+    virtual ~ProfileManagerDialog();
+
+    QString selectedProfile ();
+
+  private:
+    void updateProfileFromDialog(const QString &profile);
+    //ProfileEditDialog *mdlg;
+    QPushButton *loadButton;
+    ConfigManager *_mgr;
 
   signals:
-    void profileSelected(const QString&);
+    void loadProfile(const QString &profile);
+
+  public slots:
+    void doAdd();
+    void doModify();
 
   private slots:
-    void playClicked();
-    void profileClicked();
-    void relayLoadProfile(const QString&);
+    void addClicked();
+    void modifyClicked();
+    void deleteClicked();
+    void duplicateClicked();
+    void loadClicked();
     void doubleClicked(const QModelIndex &index);
     void selectionChanged(const QItemSelection &index);
-
-   private:
-    QString selectedProfile();
-
-    ConfigManager *_mgr;
-    QPointer<ProfileManagerDialog> _dialog;
-
+    
 };
 
-#endif /* _QUICKCONNECTDIALOG_H */
+#endif /* _PROFILEMANAGERDIALOG_H */

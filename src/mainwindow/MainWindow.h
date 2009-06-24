@@ -50,6 +50,7 @@ public slots:
 
 private slots:
     void changeConfiguration();
+    void manageProfiles();
 
     void setCurrentProfile(const QString &profile);
 

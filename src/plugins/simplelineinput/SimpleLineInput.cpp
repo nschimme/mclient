@@ -21,7 +21,8 @@ SimpleLineInput::SimpleLineInput(QWidget* parent)
     _description = "A simple line input plugin.";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _receivesDataTypes << "ChangeUserInput" << "EchoMode";
+    _receivesDataTypes << "ChangeUserInput" << "EchoMode"
+		       << "SocketDisconnected";
     _deliversDataTypes << "UserInput";
     _configurable = false;
     _configVersion = "2.0";
@@ -50,6 +51,10 @@ void SimpleLineInput::customEvent(QEvent* e) {
     }
     else if (me->dataTypes().contains("EchoMode")) {
       emit setEchoMode(me->payload()->toBool());
+
+    }
+    else if (me->dataTypes().contains("SocketDisconnected")) {
+      emit setEchoMode(true);
 
     }
 
