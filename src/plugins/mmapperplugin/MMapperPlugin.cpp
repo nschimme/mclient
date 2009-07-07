@@ -113,13 +113,7 @@ bool MMapperPlugin::saveSettings() const {
 }
 
 
-bool MMapperPlugin::startSession(QString s) {
-  _mapper = new MapperManager(s, this);
-  _mapper->start(LowPriority);
-  
-  connect(this, SIGNAL(loadFile(const QString&)),
-	  _mapper, SLOT(loadFile(const QString&)));
-    
+bool MMapperPlugin::startSession(QString /* s */) {   
   return true;
 }
 
@@ -133,6 +127,12 @@ bool MMapperPlugin::stopSession(QString s) {
 
 // Display plugin members
 bool MMapperPlugin::initDisplay(QString) {
+  _mapper = new MapperManager(_session, this);
+  _mapper->start(LowPriority);
+  
+  connect(this, SIGNAL(loadFile(const QString&)),
+	  _mapper, SLOT(loadFile(const QString&)));
+
     return true;
 }
 

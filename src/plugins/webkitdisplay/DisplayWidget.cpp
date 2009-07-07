@@ -5,12 +5,16 @@
 #include <QtWebKit>
 #include <QWebFrame>
 
+#include <QTimer> // Debug (for identifying lag)
+
 //#include <QFile>
 
 DisplayWidget::DisplayWidget(QString s, WebKitDisplay* wkd, QWidget* parent) 
     : QWebView(parent) {
     _session = s;
     _wkd = wkd;
+
+    QWidget::setMinimumSize(0, 30);
 
     // Sections Information
     _currentSection = 0;
@@ -78,11 +82,14 @@ void DisplayWidget::appendText(const QString &output) {
     //QString code = QString("$('<div
     //class=\"section\">Something!</div>').appendTo('.container');");
     //QString code = QString("$('.section').css('background-color', 'yellow');");
-    
-    QString code = QString("$('.section:last').append('%1');").arg(output);
-    //qDebug() << "* Appending Section:" << code;
+
+    QTime t;
+    t.start();
+    QString code = QString("$('.section').append('%1');").arg(output);
     page()->mainFrame()->evaluateJavaScript(code);
-  }  
+    qDebug() << "* Displaying (" << t.elapsed() << "ms):" << output;
+
+  }
 #endif
   
   scrollToBottom();

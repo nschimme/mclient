@@ -27,6 +27,7 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
 
 QtScriptPlugin::~QtScriptPlugin() {
     saveSettings();
+    exit();
 }
 
 void QtScriptPlugin::customEvent(QEvent* e) {
@@ -44,6 +45,11 @@ void QtScriptPlugin::customEvent(QEvent* e) {
 
     }
   }
+}
+
+void QtScriptPlugin::run() {
+  _engine = new ScriptEngine(_session, this);
+  exec();
 }
 
 void QtScriptPlugin::configure() {
@@ -67,13 +73,14 @@ bool QtScriptPlugin::saveSettings() const {
 }
 
 
-bool QtScriptPlugin::startSession(QString s) {
-  _engine = new ScriptEngine(s, this);
+bool QtScriptPlugin::startSession(QString /* s */) {
+  if (!isRunning()) start(LowPriority);
   return true;
 }
 
 bool QtScriptPlugin::stopSession(QString s) {
-  delete _engine;
+  _engine->deleteLater();
+  exit();
   qDebug() << "* removed QtScriptPlugin for session" << s;
   return true;
 }

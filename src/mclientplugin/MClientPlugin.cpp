@@ -102,8 +102,15 @@ void MClientPlugin::postSession(QVariant* payload, QStringList tags) {
       ++it; // Iterate
     }
   }
-  if (!found)
-    qWarning() << "! No plugins accepted data types" << tags; 
+  if (!found) {
+    qWarning() << "! No plugins accepted data types" << tags;
+
+    qWarning() << "! Rerouting event to session";
+    MClientEventData *med = new MClientEventData(payload, tags, _session);
+    MClientEvent* me = new MClientEvent(med);
+    QCoreApplication::postEvent(_pluginSession, me);
+
+  }
 }
 
 
@@ -134,7 +141,7 @@ void MClientPlugin::engineEvent(QEvent *e) {
   else if (ee->dataType() == EE_DATATYPE_UPDATE) {
     // Contains a hash of receiving plugins we need to post to
     QHash<QString, QVariant> raw = ee->payload()->toHash();
-    qDebug() << raw;
+    //qDebug() << raw;
     
     QHash<QString, QObject*> hash;
     QHash<QString, QVariant>::const_iterator i;

@@ -18,6 +18,7 @@
 #include <QTextStream>
 #include <QCloseEvent>
 #include <QTabWidget>
+#include <QSplitter>
 
 #include "MainWindow.h"
 #include "ActionManager.h"
@@ -45,9 +46,10 @@ MainWindow::MainWindow(PluginManager *pm) {
   _pluginManager = pm;
   setWindowIcon(QIcon(":/mainwindow/m.png"));
   readSettings();
-
+  
   /** Create Other Child Widgets */
-  ActionManager *actMgr = ActionManager::instance(this); // Initialize ActionManager
+  // Initialize ActionManager
+  ActionManager *actMgr = ActionManager::instance(this);
   actMgr->createActions();
   actMgr->createMenus();
   actMgr->createToolBars();
@@ -141,6 +143,13 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
   _layout->setSpacing(0);
   _layout->setContentsMargins(0, 0, 0, 0);
 
+  // Create the splitter
+  // TODO: Make it smart and resizable upon request of the widget!
+  QSplitter *_splitter = new QSplitter(Qt::Vertical);
+
+  // Create the dock widget
+  QDockWidget *dockWidget = new QDockWidget(this);
+
   QWidget *display, *input;
   bool displaySet, inputSet = false;
   for (int i = 0; i < widgetList.size(); ++i) {
@@ -152,17 +161,18 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
       // Primary Display Widget
       display = widget;
       displaySet = true;
-      _layout->addWidget(widget);
+      _splitter->addWidget(widget);
+      _splitter->setCollapsible(_splitter->indexOf(widget), false);
 
     } else if (ISSET(position, DL_INPUT) && !inputSet) {
       // Primary Input Widget
       input = widget;
       inputSet = true;
-      _layout->insertWidget(-1, widget); // insert to the bottom
+      _splitter->insertWidget(-1, widget); // insert to the bottom
+      _splitter->setCollapsible(_splitter->indexOf(widget), false);
 
     } else {
       // Display the widget if it floats (or is unsupported)
-      QDockWidget *dockWidget = new QDockWidget;
       dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
       dockWidget->setFeatures(QDockWidget::DockWidgetMovable |
 			      QDockWidget::DockWidgetFloatable |
@@ -178,6 +188,7 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
   }
 
   // Add the widgets
+  _layout->addWidget(_splitter);
   _tabWidget->setLayout(_layout);
 
   // TODO: add tabs?

@@ -306,7 +306,6 @@ bool ConfigManager::readPluginSettings(const QString &pluginName) {
     conf.setArrayIndex(i);
     QString profile = conf.value("name", "Default").toString();
     _profilePlugins[profile] << pluginName;
-    qDebug() << "* found profile" << profile << "for" << pluginName;
 
   }
   conf.endArray(); /* profile */

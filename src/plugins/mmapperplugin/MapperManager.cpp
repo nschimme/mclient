@@ -36,6 +36,7 @@ MapperManager::MapperManager(QString s, MMapperPlugin *mp) {
   _plugin = mp;
   _mainWindow = MainWindow::instance();
 
+  qDebug() << "Creating MapWindow...";
   _mapWindow = new MapWindow(_mainWindow);
   qDebug() << "MapWindow loaded" << _mapWindow->thread();
 

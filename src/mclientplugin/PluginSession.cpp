@@ -76,7 +76,7 @@ void PluginSession::loadAllPlugins() {
     = _pluginManager->getAvailablePlugins();
 
   qDebug() << "* PluginSession" << _session
-	   << " needs plugins" << pluginsToLoad;
+	   << "needs plugins" << pluginsToLoad;
 
   // Load the plugins in question
   bool foundAllPlugins = true;
@@ -150,16 +150,20 @@ bool PluginSession::loadPlugin(const QString& libName) {
       
       // Insert datatypes this plugin wants into hash
       if(!iPlugin->receivesDataTypes().isEmpty()) {
+	/*
 	qDebug() << ">> receiving for " << iPlugin->shortName()
 		 << "types" << iPlugin->receivesDataTypes();
+	*/
 	foreach(QString s, iPlugin->receivesDataTypes())
 	  _receivesTypes.insert(s, loader);
       }
 
       // Insert datatypes this plugin wants into hash
       if(!iPlugin->deliversDataTypes().isEmpty()) {
+	/*
 	qDebug() << "<< delivering for" << iPlugin->shortName()
 		 << "types" << iPlugin->deliversDataTypes();
+	*/
 	foreach(QString s, iPlugin->deliversDataTypes())
 	  _deliversTypes.insert(loader, s);
       }
@@ -351,10 +355,12 @@ void PluginSession::postReceivingPlugins() {
       // Post the event to the current plugin
       QCoreApplication::postEvent(pl->instance(), ee);
 
+      /*
       MClientPluginInterface *pi
 	= qobject_cast<MClientPluginInterface*>(pl->instance());
       qDebug() << ">> delivering receiving types to" << pi->shortName()
 	       << hash.uniqueKeys();
+      */
     }
   }
 }

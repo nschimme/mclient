@@ -1,20 +1,20 @@
-#ifndef WEBKITDISPLAY_H
-#define WEBKITDISPLAY_H
+#ifndef SIMPLELINEINPUT_H
+#define SIMPLELINEINPUT_H
 
 #include "MClientDisplayPlugin.h"
 
+#include <QHash>
 #include <QPointer>
 
-class DisplayWidget;
-class DisplayParser;
+class InputWidget;
 class QEvent;
 
-class WebKitDisplay : public MClientDisplayPlugin {
+class MultiLineInput : public MClientDisplayPlugin {
     Q_OBJECT
     
     public:
-        WebKitDisplay(QWidget* parent=0);
-        ~WebKitDisplay();
+        MultiLineInput(QWidget* parent=0);
+        ~MultiLineInput();
 
         // Plugin members
         void customEvent(QEvent* e);
@@ -28,17 +28,16 @@ class WebKitDisplay : public MClientDisplayPlugin {
         bool initDisplay(QString s);
         QWidget* getWidget(QString s);
 
-  protected:
-	void run();
+public slots:
+        void sendUserInput(const QString&, bool);
 
     private:
-	QPointer<DisplayWidget> _widget;
-	DisplayParser *_parser;
+	QString _settingsFile;
+	QPointer<InputWidget> _widget;
 
  signals:
-	void displayData(const QString&);
-	void userInput(const QString&);
+	void setEchoMode(bool);
 };
 
 
-#endif /* WEBKITDISPLAY_H */
+#endif /* SIMPLELINEINPUT_H */

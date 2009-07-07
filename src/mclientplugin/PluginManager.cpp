@@ -58,6 +58,7 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
     foreach(QString fileName, pluginsDir.entryList(QDir::Files)) {
       QDateTime pluginMod = 
 	QFileInfo(pluginsDir.absoluteFilePath(fileName)).lastModified();
+      //qDebug() << fileName << pluginMod << "vs" << indexMod;
       if(indexMod < pluginMod) {
 	reIndex = true;
 	break;
@@ -70,6 +71,8 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
     } else {
       readPluginIndex();
     }
+
+    qDebug() << "* Found profiles" << _configManager->profileNames();
 
     qDebug() << "PluginManager created with thread:" << this->thread();
     emit doneLoading();
@@ -138,7 +141,7 @@ bool PluginManager::indexPlugins() {
 
     // See if it is a library
     if(!QLibrary::isLibrary(fileName)) {
-      qWarning() << "* ERROR: " << fileName << "is not a library!";
+      qWarning() << "! ERROR: " << fileName << "is not a library!";
       continue;
     }
     
@@ -146,7 +149,7 @@ bool PluginManager::indexPlugins() {
     QPluginLoader* loader = new QPluginLoader(pluginsDir
 					      .absoluteFilePath(fileName));
     if(!loader->load()) {
-      qCritical() << "* ERROR: Couldn't load" << fileName
+      qCritical() << "! ERROR: Couldn't load" << fileName
 		  << loader->errorString();
       continue;
     }
@@ -155,7 +158,7 @@ bool PluginManager::indexPlugins() {
     MClientPluginInterface* pi = 
       qobject_cast<MClientPluginInterface*>(loader->instance());
     if(!pi) {
-      qCritical() << "* ERROR: Couldn't cast to interface" << fileName
+      qCritical() << "! ERROR: Couldn't cast to interface" << fileName
 		  << loader->errorString();
       continue;
     }

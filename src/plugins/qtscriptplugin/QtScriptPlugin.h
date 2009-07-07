@@ -22,6 +22,9 @@ class QtScriptPlugin : public MClientPlugin {
         bool saveSettings() const;
         bool startSession(QString s);
         bool stopSession(QString s);
+
+ protected:
+	void run();
 	
 public slots:
         void parseInput(const QString &input);
