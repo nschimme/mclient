@@ -5,22 +5,22 @@ add_definitions(-DQT_SHARED)
 
 # Source files
 set(mclient_SRCS main.cpp)
-# foreach(dir commandmanager mainwindow)
-#   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.cpp")
-#   set(mclient_SRCS ${mclient_SRCS} ${files})
-# endforeach()
+foreach(dir mainwindow)
+  file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.cpp")
+  set(mclient_SRCS ${mclient_SRCS} ${files})
+endforeach()
 
-# # Header Files
-# foreach(dir commandmanager mainwindow)
-#   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.h")
-#   set(mclient_MOC_HDRS ${files})
-# endforeach()
+# Header Files
+foreach(dir mainwindow)
+  file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.h")
+  set(mclient_MOC_HDRS ${files})
+endforeach()
 
-# # UI Files
-# foreach(dir commandmanager mainwindow)
-#   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.ui")
-#   set(mclient_UIS ${files})
-# endforeach()
+# UI Files
+foreach(dir mainwindow)
+  file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.ui")
+  set(mclient_UIS ${files})
+endforeach()
 
 # Library Resource Files
 file(GLOB_RECURSE mclient_RCS
@@ -46,7 +46,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
     mclientplugin
     mainwindow
-    commandmanager
+    commandprocessor
 )
   
 QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
@@ -65,14 +65,13 @@ target_link_libraries(mclient
     ${QT_QTMAIN_LIBRARY}
     ${QT_LIBRARIES}
     mclientplugin
-    mainwindow
-    commandmanager
+    commandprocessor
 )
 
 # mClient's Core Engine
 add_subdirectory(mclientplugin)
-add_subdirectory(mainwindow)
-add_subdirectory(commandmanager)
+#add_subdirectory(mainwindow)
+add_subdirectory(commandprocessor)
 
 # Various Plugins
 add_subdirectory(plugins)
@@ -97,7 +96,7 @@ if (WIN32)
         DESTINATION .
 	COMPONENT libraries
     )
-    # Debug Libraries
+    # Debug Libraries (not necessary if compiling for release)
     install(FILES
         "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll"
         "${QT_LIBRARY_DIR}/QtGuid${QT_VERSION_MAJOR}.dll"
@@ -145,7 +144,7 @@ set(CPACK_STRIP_FILES TRUE)
 # Applications Component
 set(CPACK_COMPONENTS_ALL applications plugins libraries)
 set(CPACK_COMPONENT_APPLICATIONS_DISPLAY_NAME "mClient")
-set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "A mud client especially written for the mud MUME")
+set(CPACK_COMPONENT_APPLICATIONS_DESCRIPTION "An advanced mud client written for the mud MUME")
 set(CPACK_COMPONENT_APPLICATIONS_REQUIRED TRUE)
 
 # Plugins Component

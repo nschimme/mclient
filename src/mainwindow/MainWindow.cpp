@@ -18,19 +18,20 @@
 #include <QTextStream>
 #include <QCloseEvent>
 #include <QTabWidget>
-#include <QSplitter>
 
 #include "MainWindow.h"
-#include "ActionManager.h"
+#include "WindowActionManager.h"
+#include "SmartSplitter.h"
 
 #include "ConfigManager.h"
 #include "PluginManager.h"
-#include "CommandManager.h"
+#include "PluginSession.h"
 
 #include "MClientDefinitions.h"
 
 #include "QuickConnectDialog.h"
 #include "ProfileManagerDialog.h"
+#include "AliasEditorDialog.h"
 
 MainWindow* MainWindow::_pinstance = 0;
 
@@ -48,8 +49,8 @@ MainWindow::MainWindow(PluginManager *pm) {
   readSettings();
   
   /** Create Other Child Widgets */
-  // Initialize ActionManager
-  ActionManager *actMgr = ActionManager::instance(this);
+  // Initialize WindowActionManager
+  WindowActionManager *actMgr = WindowActionManager::instance(this);
   actMgr->createActions();
   actMgr->createMenus();
   actMgr->createToolBars();
@@ -73,7 +74,7 @@ MainWindow::MainWindow(PluginManager *pm) {
 
 
 MainWindow::~MainWindow() {
-  getPluginManager()->getCommand()->~CommandManager();
+  //getPluginManager()->getCommand()->~CommandManager();
   getPluginManager()->getConfig()->~ConfigManager();
   getPluginManager()->~PluginManager();
   _pinstance = 0;
@@ -145,10 +146,7 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
 
   // Create the splitter
   // TODO: Make it smart and resizable upon request of the widget!
-  QSplitter *_splitter = new QSplitter(Qt::Vertical);
-
-  // Create the dock widget
-  QDockWidget *dockWidget = new QDockWidget(this);
+  SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical);
 
   QWidget *display, *input;
   bool displaySet, inputSet = false;
@@ -173,6 +171,7 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
 
     } else {
       // Display the widget if it floats (or is unsupported)
+      QDockWidget *dockWidget = new QDockWidget(this);
       dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
       dockWidget->setFeatures(QDockWidget::DockWidgetMovable |
 			      QDockWidget::DockWidgetFloatable |
@@ -212,6 +211,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
   if (maybeSave()) {
     emit stopSession(_currentProfile);
     writeSettings();
+    deleteLater();
     event->accept();
   } else {
     event->ignore();
@@ -281,3 +281,11 @@ void MainWindow::manageProfiles() {
   delete profileManager;
 }
 
+void MainWindow::aliasEditor() {
+  AliasEditorDialog *aliasEditor
+    = new AliasEditorDialog(getPluginManager()->
+			    getPluginSession(_currentProfile)->
+			    getAlias(), this);
+  aliasEditor->exec();
+  delete aliasEditor;
+}

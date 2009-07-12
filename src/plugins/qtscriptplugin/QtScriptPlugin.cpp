@@ -4,7 +4,7 @@
 
 #include "PluginManager.h"
 #include "PluginSession.h"
-#include "CommandManager.h"
+#include "CommandProcessor.h"
 #include "QtScriptPlugin.h"
 #include "ScriptEngine.h"
 #include "MClientEvent.h"
@@ -62,7 +62,7 @@ bool QtScriptPlugin::loadSettings() {
   commands << _shortName
 	   << "script" << "QtScriptEvaluate"
 	   << "var" << "QtScriptVariable";
-  _pluginSession->getManager()->getCommand()->registerCommand(commands);
+  _pluginSession->getCommand()->registerCommand(commands);
 
   return true;
 }
@@ -86,5 +86,5 @@ bool QtScriptPlugin::stopSession(QString s) {
 }
 
 void QtScriptPlugin::parseInput(const QString &input) {
-  _pluginSession->getManager()->getCommand()->parseInput(input, _session);
+  _pluginSession->getCommand()->parseInput(input);
 }

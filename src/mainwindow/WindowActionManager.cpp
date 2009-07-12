@@ -14,38 +14,38 @@
  *                                                                         *
  ***************************************************************************/
 
-#include "ActionManager.h"
+#include "WindowActionManager.h"
 #include "MainWindow.h"
 
 #include "PluginSession.h"
 #include "PluginManager.h"
 #include "MClientEvent.h"
 
-ActionManager* ActionManager::_pinstance = 0;
+WindowActionManager* WindowActionManager::_pinstance = 0;
 
-ActionManager *ActionManager::instance(MainWindow *parent) {
+WindowActionManager *WindowActionManager::instance(MainWindow *parent) {
   if(!_pinstance) {
-    _pinstance = new ActionManager(parent);
+    _pinstance = new WindowActionManager(parent);
     qDebug("Action Manager created.");
   }
   return _pinstance;
 }
 
 
-void ActionManager::destroy() {
+void WindowActionManager::destroy() {
   delete this;
 }
 
 
-ActionManager::ActionManager(MainWindow *parent) {
+WindowActionManager::WindowActionManager(MainWindow *parent) {
   _mainWindow = parent;
 }
 
 
-ActionManager::~ActionManager() {
+WindowActionManager::~WindowActionManager() {
 }
 
-void ActionManager::createActions() {
+void WindowActionManager::createActions() {
   connectAct = new QAction(QIcon(":/mainwindow/connect.png"), tr("&Connect..."), this);
   connectAct->setStatusTip(tr("Load a new session and connect to the remote host"));
   connect(connectAct, SIGNAL(triggered()), SLOT(connectSession()) );
@@ -93,6 +93,10 @@ void ActionManager::createActions() {
   settingsAct->setStatusTip(tr("Change mClient settings"));
   connect(settingsAct, SIGNAL(triggered()), _mainWindow, SLOT(changeConfiguration()) );
 
+  aliasAct = new QAction(tr("&Alias"), this);
+  aliasAct->setStatusTip(tr("Manage mClient aliases"));
+  connect(aliasAct, SIGNAL(triggered()), _mainWindow, SLOT(aliasEditor()));
+
   mumeHelpAct = new QAction(tr("M&ume"), this);
   mumeHelpAct->setStatusTip(tr("MUME Website"));
 
@@ -123,7 +127,7 @@ void ActionManager::createActions() {
 }
 
 
-void ActionManager::disableActions(bool value)
+void WindowActionManager::disableActions(bool value)
 {
 //   newAct->setDisabled(value);
 //   openAct->setDisabled(value);
@@ -141,7 +145,7 @@ void ActionManager::disableActions(bool value)
 }
 
 
-void ActionManager::createMenus() {
+void WindowActionManager::createMenus() {
   QMenuBar *menuBar = _mainWindow->menuBar();
 
   fileMenu = menuBar->addMenu(tr("&File"));
@@ -162,6 +166,7 @@ void ActionManager::createMenus() {
   settingsMenu = menuBar->addMenu(tr("&Settings"));
   settingsMenu->addAction(settingsAct);
   settingsMenu->addAction(profileAct);
+  settingsMenu->addAction(aliasAct);
 
   menuBar->addSeparator();
 
@@ -178,7 +183,7 @@ void ActionManager::createMenus() {
 }
 
 
-void ActionManager::createToolBars() {
+void WindowActionManager::createToolBars() {
   connectToolBar = _mainWindow->addToolBar(tr("Connection"));
   connectToolBar->setObjectName("ToolBarConnect");
   connectToolBar->addAction(connectAct);
@@ -195,19 +200,19 @@ void ActionManager::createToolBars() {
 }
 
 
-void ActionManager::createStatusBar()
+void WindowActionManager::createStatusBar()
 {
   _mainWindow->statusBar()->showMessage(tr("Ready"));
 }
 
 
-void ActionManager::alwaysOnTop() {
+void WindowActionManager::alwaysOnTop() {
   _mainWindow->setWindowFlags(_mainWindow->windowFlags() ^ Qt::WindowStaysOnTopHint);
   _mainWindow->show();
 }
 
 
-void ActionManager::about() {
+void WindowActionManager::about() {
   QString version = 
 #ifdef SVN_REVISION
     tr("<b>Subversion Revision ") + QString::number(SVN_REVISION)
@@ -228,29 +233,29 @@ void ActionManager::about() {
 			"for more information."));
 }
 
-void ActionManager::clientHelp() {
+void WindowActionManager::clientHelp() {
   if (!QDesktopServices::openUrl(QUrl::fromEncoded("http://mume.org/wiki/index.php/mClient_Help")))
     qWarning() << "Failed to open web browser";
 }
 
-void ActionManager::connectSession() {
+void WindowActionManager::connectSession() {
   QVariant *payload = new QVariant();
   QStringList tags("ConnectToHost");
   postEvent(payload, tags);
 }
 
-void ActionManager::disconnectSession() {
+void WindowActionManager::disconnectSession() {
   QVariant *payload = new QVariant();
   QStringList tags("DisconnectFromHost");
   postEvent(payload, tags);  
 }
 
-void ActionManager::reconnectSession() {
+void WindowActionManager::reconnectSession() {
   disconnectSession();
   connectSession();
 }
 
-void ActionManager::postEvent(QVariant *payload, const QStringList& tags) {
+void WindowActionManager::postEvent(QVariant *payload, const QStringList& tags) {
   // TODO: Replace with EngineEvents
   QString session = _mainWindow->session();
   PluginSession *ps

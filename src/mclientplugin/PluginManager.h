@@ -15,7 +15,6 @@ class QPluginLoader;
 class QString;
 class QWidget;
 
-class CommandManager;
 class ConfigManager;
 class MainWindow;
 
@@ -27,7 +26,6 @@ class PluginManager : public QObject {
         ~PluginManager();
 
 	MainWindow* getMainWindow() { return _mainWindow; }
-	CommandManager* getCommand() { return _commandManager; }
 	ConfigManager* getConfig() { return _configManager; }
 	PluginSession* getPluginSession(const QString &s) {
 	  return _pluginSessions[s];
@@ -57,7 +55,6 @@ public slots:
         bool readPluginIndex();
 
 	MainWindow *_mainWindow;
-	CommandManager *_commandManager;
 	ConfigManager *_configManager;
 
 	// Sessions

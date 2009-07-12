@@ -5,7 +5,7 @@
 #include "MClientEvent.h"
 #include "PluginManager.h"
 #include "PluginSession.h"
-#include "CommandManager.h"
+#include "CommandProcessor.h"
 #include "ConfigManager.h"
 
 #include "mapwindow.h" // for grabbing the QWidget
@@ -100,8 +100,8 @@ bool MMapperPlugin::loadSettings() {
     QStringList commands;
     commands << _shortName
 	     << "map" << "MMapperLoadMap"
-	     << "input" << "MMapperInput";
-    _pluginSession->getManager()->getCommand()->registerCommand(commands);
+	     << "offline" << "MMapperInput";
+    _pluginSession->getCommand()->registerCommand(commands);
 
     return true;
 }

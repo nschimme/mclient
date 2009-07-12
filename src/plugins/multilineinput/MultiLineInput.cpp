@@ -8,7 +8,7 @@
 #include "PluginManager.h"
 #include "PluginSession.h"
 //#include "MainWindow.h"
-#include "CommandManager.h"
+#include "CommandProcessor.h"
 #include "MClientEvent.h"
 
 Q_EXPORT_PLUGIN2(multilineinput, MultiLineInput)
@@ -68,7 +68,7 @@ void MultiLineInput::sendUserInput(const QString &input, bool echo) {
     postSession(qv, sl);
   }
 
-  _pluginSession->getManager()->getCommand()->parseInput(input, _session);
+  _pluginSession->getCommand()->parseInput(input);
 }
 
 void MultiLineInput::configure() {

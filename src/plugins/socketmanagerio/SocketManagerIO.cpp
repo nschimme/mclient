@@ -6,7 +6,7 @@
 #include "MClientEngineEvent.h"
 #include "PluginManager.h"
 #include "PluginSession.h"
-#include "CommandManager.h"
+#include "CommandProcessor.h"
 #include "ConfigManager.h"
 
 #include <QApplication>
@@ -91,7 +91,7 @@ bool SocketManagerIO::loadSettings() {
 	   << "connect" << "ConnectToHost"
 	   << "zap" << "DisconnectFromHost";
   
-  _pluginSession->getManager()->getCommand()->registerCommand(commands);
+  _pluginSession->getCommand()->registerCommand(commands);
   
   return true;
 }

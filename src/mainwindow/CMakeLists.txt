@@ -29,7 +29,6 @@ add_library(mainwindow STATIC
 
 target_link_libraries(
     mainwindow
-    commandmanager
     mclientplugin
     ${QT_LIBRARIES}
 )

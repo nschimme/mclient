@@ -47,13 +47,11 @@ void QuickConnectDialog::playClicked() {
   
   qDebug("running with settings...");
   accept();
+  close();
   emit profileSelected(profile);
 }
 
 void QuickConnectDialog::relayLoadProfile(const QString& /*profile*/) {
-  //hide the dialog, so that it doesn't look like we've crashed
-  //dialog->hide();
-  //click play!
   playClicked();
 }
 
@@ -69,16 +67,15 @@ void QuickConnectDialog::profileClicked() {
   delete _dialog;
 }
 
-void QuickConnectDialog::selectionChanged (const QItemSelection &index)
-{
+void QuickConnectDialog::selectionChanged (const QItemSelection &index) {
   //enable/disable Connect button
   playButton->setEnabled(index.indexes().empty() ? false : true);
 }
 
-void QuickConnectDialog::doubleClicked(const QModelIndex &index)
-{
-  if (index.isValid ())
-    playButton->click();
+void QuickConnectDialog::doubleClicked(const QModelIndex &index) {
+  // TODO: why does double clicking crash?!
+  if (index.isValid())
+    playClicked();
 }
 
 /* Objects */

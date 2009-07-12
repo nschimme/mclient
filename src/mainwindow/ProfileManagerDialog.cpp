@@ -173,8 +173,8 @@ void ProfileManagerDialog::doubleClicked (const QModelIndex &index)
     loadButton->click();
 }
 
-void ProfileManagerDialog::loadClicked()
-{
+void ProfileManagerDialog::loadClicked() {
+  close();
   emit loadProfile(selectedProfile());
 }
 

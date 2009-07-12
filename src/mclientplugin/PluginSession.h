@@ -10,6 +10,10 @@ class PluginManager;
 class PluginLoader;
 class PluginEntry;
 
+class CommandProcessor;
+class ActionManager;
+class AliasManager;
+
 class QApplication;
 class QEvent;
 class QPluginLoader;
@@ -30,6 +34,9 @@ class PluginSession : public QThread {
     void stopSession();
 
     PluginManager* getManager() { return _pluginManager; }
+    CommandProcessor* getCommand() { return _commandProcessor; }
+    AliasManager* getAlias() { return _aliasManager; }
+    ActionManager* getAction() { return _actionManager; }
     const QString& session() { return _session; }
 
  protected:
@@ -38,6 +45,9 @@ class PluginSession : public QThread {
   private:
     QString _session;
     PluginManager *_pluginManager;
+    CommandProcessor *_commandProcessor;
+    ActionManager *_actionManager;
+    AliasManager *_aliasManager;
     
     // For loading the plugins and checking for errors
     void loadAllPlugins();

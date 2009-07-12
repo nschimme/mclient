@@ -14,19 +14,19 @@
  *                                                                         *
  ***************************************************************************/
 
-#ifndef _ACTIONMANAGER_H_
-#define _ACTIONMANAGER_H_
+#ifndef _WINDOWACTIONMANAGER_H_
+#define _WINDOWACTIONMANAGER_H_
 
 #include <QMainWindow>
 
 class MainWindow;
 class QActionGroup;
 
-class ActionManager: public QObject {
+class WindowActionManager: public QObject {
   Q_OBJECT
 
   public:
-    static ActionManager* instance(MainWindow *parent = 0);
+    static WindowActionManager* instance(MainWindow *parent = 0);
     void destroy();
 
     void createActions();
@@ -44,10 +44,10 @@ public slots:
     void reconnectSession();
 
  protected:
-    ActionManager(MainWindow*);
-    ~ActionManager();
+    WindowActionManager(MainWindow*);
+    ~WindowActionManager();
     
-    static ActionManager* _pinstance;
+    static WindowActionManager* _pinstance;
 
   private:
     void disableActions(bool value);
@@ -70,6 +70,7 @@ public slots:
 
     QAction *profileAct;
     QAction *settingsAct;
+    QAction *aliasAct;
 
     QAction *connectAct;
     QAction *disconnectAct;
@@ -87,4 +88,4 @@ public slots:
     QToolBar *connectToolBar;
 };
 
-#endif /* _ACTIONMANAGER_H_ */
+#endif /* _WINDOWACTIONMANAGER_H_ */

@@ -5,7 +5,7 @@
 #include "PluginEntry.h"
 #include "PluginSession.h"
 
-#include "CommandManager.h"
+#include "CommandProcessor.h"
 #include "ConfigManager.h"
 #include "MainWindow.h"
 
@@ -29,14 +29,12 @@ PluginManager* PluginManager::instance() {
 
 PluginManager::PluginManager(QObject *parent) : QObject(parent) {
     _configManager = ConfigManager::instance();
-    _commandManager = CommandManager::instance(this);
     _mainWindow = MainWindow::instance(this);
 
     qDebug() << "* All singletons created!";
 
     /** Connect Other Necessary Objects */
     connect(this, SIGNAL(doneLoading()), _mainWindow, SLOT(start()));
-    connect(_commandManager, SIGNAL(quit()), _mainWindow, SLOT(close()));
     connect(_mainWindow, SIGNAL(startSession(const QString&)),
 	    this, SLOT(initSession(const QString&)));
     connect(_mainWindow, SIGNAL(stopSession(const QString&)),

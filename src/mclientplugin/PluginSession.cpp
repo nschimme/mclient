@@ -1,8 +1,14 @@
 #include "PluginSession.h"
 
+// World
 #include "ConfigManager.h"
 #include "PluginManager.h"
 #include "MainWindow.h"
+
+// Session
+#include "CommandProcessor.h"
+#include "ActionManager.h"
+#include "AliasManager.h"
 
 #include "MClientDisplayInterface.h"
 #include "MClientPluginInterface.h"
@@ -20,6 +26,15 @@
 PluginSession::PluginSession(const QString &s, PluginManager *pm,
 			     QObject *parent)
   : QThread(parent), _session(s), _pluginManager(pm) {
+
+  // Create alias and action managers
+  _aliasManager = new AliasManager;
+  _actionManager = new ActionManager;
+
+  // Create the command processor
+  _commandProcessor = new CommandProcessor(this);
+  connect(_commandProcessor, SIGNAL(quit()),
+	  _pluginManager->getMainWindow(), SLOT(close()));
 
   // To transfer widgets to the MainWindow we use the following lines
   // TODO: rewrite this to send the MClientDisplayInterface object
@@ -39,16 +54,19 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
 
 
 PluginSession::~PluginSession() {
-  // Unload all plugins
+  /**
+  // Unload all plugins 
   foreach(QPluginLoader *pm, _loadedPlugins) {
     //delete pm->instance();
     pm->unload();
     //delete pm;
   }
+  */
 
   exit();
   wait();
-  qDebug() << "* PluginSession " << _session << "destroyed";
+  deleteLater();
+  qDebug() << "* PluginSession" << _session << "destroyed";
 }
 
 
@@ -259,12 +277,10 @@ void PluginSession::initDisplay() {
 
 
 void PluginSession::stopSession() {
-  foreach(QPluginLoader* pl,_loadedPlugins) {
-    MClientPluginInterface* pi;
-    pi = qobject_cast<MClientPluginInterface*>(pl->instance());
-    if(pi) {
-      pi->stopSession(_session);
-    }
+  foreach(QPluginLoader *pl, _loadedPlugins) {
+    MClientPluginInterface *pi
+      = qobject_cast<MClientPluginInterface*>(pl->instance());
+    if (pi) pi->stopSession(_session);
   }
   qDebug() << "* All" << _session << "sessions have been stopped.";
 }
@@ -340,6 +356,13 @@ void PluginSession::postReceivingPlugins() {
       foreach(QPluginLoader *rpl, receivesTypes)
 	hash.insert(dataType,
 		    qVariantFromValue(rpl->instance()));
+
+      // Hack to deliver output to CommandProcessor
+      if (dataType == "XMLAll") {
+	hash.insert(dataType,
+		    qVariantFromValue(static_cast<QObject*>
+				      (_commandProcessor)));
+      }
       
     }
 

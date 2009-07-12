@@ -25,13 +25,13 @@ public slots:
 	MultiLineInput* _mli;
 	bool _echoMode;
 
-	int _textPixelHeight;
-
         void gotInput();
 	void detectedLineChange();
+	void wordHistory(int);
 
  signals:
 	void sendUserInput(const QString&, bool);
+	void resizeSplitter(QWidget*);
 };
 
 

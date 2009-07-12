@@ -11,9 +11,9 @@
 
 Q_EXPORT_PLUGIN2(mumexml, MumeXML)
 
-const QByteArray MumeXML::greatherThanChar(">");
+const QByteArray MumeXML::greaterThanChar(">");
 const QByteArray MumeXML::lessThanChar("<");
-const QByteArray MumeXML::greatherThanTemplate("&gt;");
+const QByteArray MumeXML::greaterThanTemplate("&gt;");
 const QByteArray MumeXML::lessThanTemplate("&lt;");
 const QString MumeXML::nullString;
 const QString MumeXML::emptyString("");
@@ -29,7 +29,7 @@ MumeXML::MumeXML(QObject* parent)
     _dependencies.insert("telnet", 1);
     _implemented.insert("mumexml",1);
     _receivesDataTypes << "TelnetData";
-    _deliversDataTypes << "XMLNone" << "XMLAll"
+    _deliversDataTypes << "XMLNone" << "XMLAll" << "XMLTag"
 
 		       << "XMLPrompt" << "XMLRoom" << "XMLDescription"
 		       << "XMLDynamicDescription" << "XMLExits"
@@ -561,7 +561,7 @@ bool MumeXML::element(const QByteArray& line) {
 
 bool MumeXML::characters(QByteArray& ch) {
   // replace > and < chars
-  ch.replace(greatherThanTemplate, greatherThanChar);
+  ch.replace(greaterThanTemplate, greaterThanChar);
   ch.replace(lessThanTemplate, lessThanChar);
   
   /*

@@ -33,9 +33,9 @@ class MumeXML : public MClientFilterPlugin {
 
 	static const QString nullString;
 	static const QString emptyString;
-	static const QByteArray greatherThanChar;
+	static const QByteArray greaterThanChar;
 	static const QByteArray lessThanChar;
-	static const QByteArray greatherThanTemplate;
+	static const QByteArray greaterThanTemplate;
 	static const QByteArray lessThanTemplate;
 
     private:

@@ -51,6 +51,7 @@ public slots:
 private slots:
     void changeConfiguration();
     void manageProfiles();
+    void aliasEditor();
 
     void setCurrentProfile(const QString &profile);
 

@@ -4,7 +4,7 @@
 
 #include "PluginManager.h"
 #include "PluginSession.h"
-#include "MainWindow.h"
+//#include "MainWindow.h"
 #include "MClientEvent.h"
 
 #include <QApplication>
@@ -88,7 +88,7 @@ bool WebKitDisplay::saveSettings() const {
 
 
 bool WebKitDisplay::startSession(QString) {
-  start(LowPriority);
+  if (!isRunning()) start(LowPriority);
   return true;
 }
 
@@ -104,8 +104,13 @@ bool WebKitDisplay::stopSession(QString s) {
 
 // Display plugin members
 bool WebKitDisplay::initDisplay(QString s) {
-  MainWindow *mw = _pluginSession->getManager()->getMainWindow();
-  _widget = new DisplayWidget(s, this, mw);
+  //MainWindow *mw = _pluginSession->getManager()->getMainWindow();
+  _widget = new DisplayWidget(s, this);
+
+  if (!isRunning()) {
+    qDebug() << "Session wasn't started before initDisplay!";
+    start(LowPriority);
+  }
 
   /* I made this blocking so that it doesn't look like the program
      has locked up. The problem is that the Javascript DOM is slow. */
