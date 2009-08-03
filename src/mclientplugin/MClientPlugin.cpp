@@ -82,6 +82,7 @@ void MClientPlugin::run() {
 // Post an event
 void MClientPlugin::postSession(QVariant* payload, QStringList tags) {
   bool found = false;
+  /*
   foreach (QString s, tags) {
     // Iterate through all the data types
     //qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
@@ -102,6 +103,7 @@ void MClientPlugin::postSession(QVariant* payload, QStringList tags) {
       ++it; // Iterate
     }
   }
+  */
   if (!found) {
     qWarning() << "! No plugins accepted data types" << tags;
 

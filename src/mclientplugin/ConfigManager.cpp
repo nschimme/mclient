@@ -111,46 +111,55 @@ bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map) {
   QXmlStreamReader xml(&device);
 
   QStringList elementStack;
-
   while (!xml.atEnd()) {
+    //qDebug() << elementStack << xml.tokenString();
     xml.readNext();
 
     // If we start an element then add it to the stack
-    if(xml.isStartElement()) {
+    if (xml.isStartElement()) {
       QString name = xml.name().toString();
       name.replace(QRegExp("^array(\\d+)$"), "\\1");
       elementStack.append(name);
-
-      // See if there are attributes, if there aren't, then the data
-      // is held within the text
-      if (xml.attributes().isEmpty()) {
-	QString key = elementStack.join("/");
-	QVariant value = QVariant(xml.readElementText());
-	if (!value.toString().trimmed().isEmpty())
-	  map.insert(key, value);
 	
-      } else {
-	// The data is usually held within the attributes
+      // Read attributes
+      if (!xml.attributes().isEmpty()) {
 	foreach(QXmlStreamAttribute a, xml.attributes()) {
 	  QString key = elementStack.join("/") + "/" + a.name().toString();
 	  QVariant value = QVariant(a.value().toString());
 	  map.insert(key, value);
+	  //qDebug() << "attribute" << key << value;
 	}
       }
-
+      
     }
     // If we end an element, then pop it from the stack
     else if (xml.isEndElement()) {
+      QString name = xml.name().toString();
+      name.replace(QRegExp("^array(\\d+)$"), "\\1");
+      if (name != elementStack.last())
+	qWarning() << "! Error, this endElement was" << name
+		   << ", not" << elementStack.last();
       elementStack.removeLast();
-
+      
+    }
+    // Are these characters?
+    else if (xml.isCharacters()) {
+      QString key = elementStack.join("/");
+      QVariant value = QVariant(xml.text().toString());
+      if (!value.toString().trimmed().isEmpty()) {
+	map.insert(key, value);
+	//qDebug() << "characters" << key << value;
+      }
+      
     }
     // Otherwise we have encountered an error
     else if (xml.hasError()) {
-      qWarning() << "* Error parsing XML configuration file"
+      qWarning() << "! Error parsing XML configuration file"
 		 << xml.errorString();
       return false;
     }
   }
+
   qDebug() << "* read in XML file"; // << map;
   return true;
 }
@@ -206,12 +215,15 @@ bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map) {
     //qDebug() << "stream:" << currentElements << currentAttribute;
 
     // Write the value usually as an attribute of an element
-    if (elementStack.size() > 0)
-      xml.writeAttribute(currentAttribute, map[keys.at(i)].toString());
-    // if we can't, then write it as text element
-    else
+    if (elementStack.size() == 0)
       xml.writeTextElement(currentAttribute, map[keys.at(i)].toString());
-
+    else {
+      QString data = map[keys.at(i)].toString();
+      if (!data.contains("\n"))
+	xml.writeAttribute(currentAttribute, data);
+      else
+	xml.writeTextElement(currentAttribute, data);
+    }
   }
   xml.writeEndDocument();
 
@@ -243,23 +255,10 @@ QAbstractTableModel *ConfigManager::model () const {
 }
 
 bool ConfigManager::readApplicationSettings() {
-  QDir configDir = QDir(qApp->applicationDirPath());
-  if (!configDir.exists("config")) {
-    if (!configDir.mkdir("config")) {
-      qCritical() << "* Unable to create configuration directory";
-    }
-    qDebug() << "* created configuration directory" << configDir.path();
-  }
-  
   QSettings conf("config/mClient.xml", XmlFormat);
-  //QSettings conf(XmlFormat, QSettings::UserScope, "MUME", "mClient");
-  //conf.setPath(XmlFormat, QSettings::UserScope, "./config");
 
-  conf.beginGroup("mClient");
-  conf.beginGroup("general");
-  _configPath = conf.value("config_path", "./config").toString();
-  conf.endGroup(); /* general */
-  conf.endGroup(); /* mClient */
+  _configPath = conf.value("mClient/config/path", "config").toString();
+  _pluginPath = conf.value("mClient/plugins/path", "plugins").toString();
 
   // Transfer results to settings hash
   _appSettings = new QHash<QString, QString>;
@@ -275,7 +274,7 @@ bool ConfigManager::writeApplicationSettings() {
   QSettings conf("config/mClient.xml", XmlFormat);
 
   _appSettings->insert("mClient/version", "1.0");
-  _appSettings->insert("mClient/general/config_path", _configPath);
+  _appSettings->insert("mClient/config/path", _configPath);
   
   // Place the hash values back into the settings
   QHash<QString, QString>::const_iterator i = _appSettings->constBegin();
@@ -289,115 +288,216 @@ bool ConfigManager::writeApplicationSettings() {
 }
 
 
-bool ConfigManager::readPluginSettings(const QString &pluginName) {
-  QString file = QString("%1/%2.xml").arg(_configPath, pluginName);
+bool ConfigManager::discoverProfiles() {
+  // Move into the config directory
+  QDir configDir = QDir(qApp->applicationDirPath());
+  configDir.cd(_configPath);
+
+  // Look at each directory in the config path, as this might be a
+  // potential profile
+  foreach(QString dirName, configDir.entryList(QDir::AllDirs)) {
+
+    QString absolutePath = configDir.absolutePath() + "/" + dirName;
+    qDebug() << absolutePath;
+
+    // A profile directory must contain "profile.xml"
+    QFileInfo profileFile(absolutePath, "profile.xml");
+    profileFile.setCaching(false);
+    if (profileFile.exists()) {
+      readProfileSettings(dirName);
+      
+    } else {
+      qDebug() << "! Invalid profile discovered" << dirName;
+    }
+  }
+
+  // If there are no profiles, add the "Default" one
+  if (_pluginSettings.isEmpty()) {
+    _profileSettings["Default"] = new QHash<QString, QString>;
+
+    qDebug() << "! No profiles found, creating default profile.";
+
+  }
+
+  qDebug() << "* Discovered following profiles:" << profileNames();
+  return true;
+}
+
+
+bool ConfigManager::readProfileSettings(const QString &dirName) {
+  // Read the plugin settings from this profile directory
+  QString file = QString("%1/%2/profile.xml").arg(_configPath, dirName);
   QSettings conf(file, XmlFormat);
+
+  QString profileName = conf.value("profile/name", dirName).toString();
 
   // Transfer the results to the settings hash
   QHash<QString, QString> *hash = new QHash<QString, QString>;
   foreach(QString s, conf.allKeys())
     hash->insert(s, conf.value(s).toString());
-  _pluginSettings.insert(pluginName, hash);
 
-  // Identify the profiles within this plugin
-  conf.beginGroup("config");
-  int size = conf.beginReadArray("profile");
-  for (int i = 0; i <= size; ++i) {
-    conf.setArrayIndex(i);
-    QString profile = conf.value("name", "Default").toString();
-    _profilePlugins[profile] << pluginName;
+  // Always update the path to the current directory
+  hash->insert("profile/path", dirName);
 
-  }
-  conf.endArray(); /* profile */
-  conf.endGroup(); /* config  */
+  // Add the hash to profileSettings
+  _profileSettings.insert(profileName, hash);
 
-  qDebug() << "* read config file" << file;
+  qDebug() << "* read in profile" << profileName << "settings";
   return true;
 }
 
 
-bool ConfigManager::writePluginSettings(const QString &pluginName) {
-  QString file = QString("%1/%2.xml").arg(_configPath, pluginName);
-  QSettings conf(file, XmlFormat);
+bool ConfigManager::writeProfileSettings(const QString &profileName) {
+  // Get the hash
+  QHash<QString, QString> *hash = _profileSettings[profileName];
 
+  // Figure out which directory we are writing to
+  QString dirName = hash->value("profile/path", profileName);
+
+  QString file = QString("%1/%2/profile.xml").arg(_configPath, dirName);
+  QSettings conf(file, XmlFormat);
+  
+  hash->insert("profile/version", "1.0");
+  hash->insert("profile/path", dirName);
+  
   // Place the hash values back into the settings
-  QHash<QString, QString>::const_iterator i =
-    _pluginSettings[pluginName]->constBegin();
-  while (i != _pluginSettings[pluginName]->constEnd()) {
+  QHash<QString, QString>::const_iterator i = hash->constBegin();
+  while (i != hash->constEnd()) {
     conf.setValue(i.key(), i.value());
     ++i;
   }
   
-  qDebug() << "* wrote config file" << file;
+  qDebug() << "* wrote out profile" << profileName << "settings" << hash->keys();
   return true;
 }
 
 
-bool ConfigManager::duplicateProfile(const QString &oldProfile, const QString &newProfile) {
-  if (!_profilePlugins.contains(oldProfile)) {
-    qDebug() << "Unable to duplicate session" << oldProfile
+bool ConfigManager::readPluginSettings(const QString &profileName,
+				       const QString &pluginName) {
+  qDebug() << "* reading plugin settings" << pluginName;
+  // Figure out which directory we are writing to
+  QString dirName
+    = _profileSettings[profileName]->value("profile/path", profileName);
+  
+  // Read the plugin settings from this profile directory
+  QString file = QString("%1/%2/%3.xml").arg(_configPath, dirName, pluginName);
+  QSettings conf(file, XmlFormat);
+  
+  // Transfer the results to the settings hash
+  QHash<QString, QString> *hash = new QHash<QString, QString>;
+  foreach(QString s, conf.allKeys())
+    hash->insert(s, conf.value(s).toString());
+
+  // See if the plugin hash exists
+  QHash<QString, QHash<QString, QString>* > *pluginHash;
+  if (_pluginSettings.contains(profileName)) {
+    pluginHash = _pluginSettings[profileName];
+  }
+  else {
+    pluginHash = new QHash<QString, QHash<QString, QString>* >;
+    _pluginSettings.insert(profileName, pluginHash);
+  }
+
+  // Transfer the settings hash to the plugin hash
+  pluginHash->insert(pluginName, hash);
+    
+  qDebug() << "* read plugin config file" << file;
+  return true;
+}
+
+
+bool ConfigManager::writePluginSettings(const QString &profileName,
+					const QString &pluginName) {
+  // Figure out which directory we are writing to
+  QString dirName
+    = _profileSettings[profileName]->value("profile/path", profileName);
+  
+  // Write to the plugin settings in this profile directory
+  QString file = QString("%1/%2/%3.xml").arg(_configPath, dirName, pluginName);
+  QSettings conf(file, XmlFormat);
+
+  // Get the hash
+  QHash<QString, QString> *hash
+    = _pluginSettings[profileName]->value(pluginName);
+
+  // Place the hash values back into the settings
+  QHash<QString, QString>::const_iterator i = hash->constBegin();
+  while (i != hash->constEnd()) {
+    conf.setValue(i.key(), i.value());
+    ++i;
+  }
+  
+  qDebug() << "* wrote plugin config file" << file;
+  return true;
+}
+
+
+bool ConfigManager::duplicateProfile(const QString &oldProfile,
+				     const QString &newProfile) {
+  if (!_profileSettings.contains(oldProfile)) {
+    qDebug() << "Unable to duplicate profile" << oldProfile
 	     << "because it does not exist";
     return false;
     
   }
-  else if (_profilePlugins.contains(newProfile)) {
-    qDebug() << "Unable to duplicate session" << oldProfile
+  else if (_profileSettings.contains(newProfile)) {
+    qDebug() << "Unable to duplicate profile" << oldProfile
 	     << "because" << newProfile << "already exists";
     return false;
   }
 
-  QString oldProfilePrefix = QString("config/%1/").arg(oldProfile);
-  QString newProfilePrefix = QString("config/%1/").arg(newProfile);
+//   QString oldProfilePrefix = QString("config/%1/").arg(oldProfile);
+//   QString newProfilePrefix = QString("config/%1/").arg(newProfile);
 
-  // Go through each plugin within the profile
-  foreach(QString pluginName, profilePlugins(oldProfile)) {
+//   // Go through each plugin within the profile
+//   foreach(QString pluginName, profilePlugins(oldProfile)) {
 
-    // Grab the current plugin's settings hash
-    QHash<QString, QString> *hash = _pluginSettings[pluginName];
+//     // Grab the current plugin's settings hash
+//     QHash<QString, QString> *hash = _pluginSettings[oldProfile];
 
-    // Iterate through each key, looking for a certain profile
-    QHash<QString, QString>::iterator i;
-    for (i = hash->begin(); i != hash->end(); ++i) {
-      if (i.key().startsWith(oldProfilePrefix)) {
+//     // Iterate through each key, looking for a certain profile
+//     QHash<QString, QString>::iterator i;
+//     for (i = hash->begin(); i != hash->end(); ++i) {
+//       if (i.key().startsWith(oldProfilePrefix)) {
 	
-	// Replace the name, and insert into the hash
-	QString key = i.key();
-	key.replace(0, oldProfilePrefix.size(), newProfilePrefix);
-	hash->insert(key, i.value());
+// 	// Replace the name, and insert into the hash
+// 	QString key = i.key();
+// 	key.replace(0, oldProfilePrefix.size(), newProfilePrefix);
+// 	hash->insert(key, i.value());
 	
-      }
-    }
+//       }
+//     }
     
-  }
+//   }
   return true;
 }
 
 
-bool ConfigManager::deleteProfile(const QString &profile) {
-  if (!_profilePlugins.contains(profile)) {
-    qDebug() << "Unable to delete profile" << profile
-	     << "because it does not exist";
-    return false;
+bool ConfigManager::deleteProfile(const QString &/*profile*/) {
+//   if (!_profilePlugins.contains(profile)) {
+//     qDebug() << "Unable to delete profile" << profile
+// 	     << "because it does not exist";
+//     return false;
     
-  }
+//   }
 
-  QString profilePrefix = QString("config/%1/").arg(profile);
+//   QString profilePrefix = QString("config/%1/").arg(profile);
 
-  // Go through each plugin within the profile
-  foreach(QString pluginName, profilePlugins(profile)) {
+//   // Go through each plugin within the profile
+//   foreach(QString pluginName, profilePlugins(profile)) {
     
-    // Grab the current plugin's settings hash
-    QHash<QString, QString> *hash = _pluginSettings[pluginName];
+//     // Grab the current plugin's settings hash
+//     QHash<QString, QString> *hash = _pluginSettings[pluginName];
 
-    // Iterate through each key, looking for a certain profile
-    QHash<QString, QString>::iterator i;
-    for (i = hash->begin(); i != hash->end(); ++i) {
+//     // Iterate through each key, looking for a certain profile
+//     QHash<QString, QString>::iterator i;
+//     for (i = hash->begin(); i != hash->end(); ++i) {
 
-      // Remove keys that are within this profile
-      if (i.key().startsWith(profilePrefix))
-	hash->remove(i.key());
+//       // Remove keys that are within this profile
+//       if (i.key().startsWith(profilePrefix))
+// 	hash->remove(i.key());
       
-    }
-  }
+//     }
+//   }
   return true;
 }

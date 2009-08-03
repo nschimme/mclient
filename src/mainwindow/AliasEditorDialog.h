@@ -15,6 +15,8 @@ class AliasEditorDialog : public QDialog, public Ui::AliasEditorDialog
     AliasEditorDialog(AliasManager *mgr, QWidget *parent=0);
     virtual ~AliasEditorDialog();
 
+    QSize sizeHint() const;
+
    private:
     AliasManager *_mgr;
 };

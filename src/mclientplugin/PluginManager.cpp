@@ -44,11 +44,10 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
     QHash<QString, QString> *hash = getConfig()->applicationSettings();
     
     QDateTime indexMod = QDateTime::fromString(hash->value("mClient/plugins/indexed"));
-    _pluginDir = hash->value("mClient/plugins/path", "plugins");
 
     // Move into the plugins directory
     QDir pluginsDir = QDir(qApp->applicationDirPath());
-    pluginsDir.cd(_pluginDir);
+    pluginsDir.cd(getConfig()->getPluginPath());
 
     // Identify if there is something newer in the directory than the
     // index's generation date
@@ -70,7 +69,8 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
       readPluginIndex();
     }
 
-    qDebug() << "* Found profiles" << _configManager->profileNames();
+    // Figure out which profiles we have
+    _configManager->discoverProfiles();
 
     qDebug() << "PluginManager created with thread:" << this->thread();
     emit doneLoading();
@@ -130,7 +130,7 @@ void PluginManager::configure() {
 
 bool PluginManager::indexPlugins() {
   QDir pluginsDir = QDir(qApp->applicationDirPath());
-  pluginsDir.cd(_pluginDir);
+  pluginsDir.cd(getConfig()->getPluginPath());
   
   //qDebug() << "Files: " << pluginsDir.entryList(QDir::Files);
   
@@ -171,9 +171,8 @@ bool PluginManager::indexPlugins() {
       e->addAPI(it.key(), it.value());
     }
     
-    // Insert the plugin, and read its settings
+    // Insert the plugin as one of the available plugins
     _availablePlugins.insert(e->shortName(), e);
-    getConfig()->readPluginSettings(e->shortName());
     
     loader->unload();
   }
@@ -189,7 +188,7 @@ bool PluginManager::writePluginIndex() {
     groups << "mClient" << "plugins";
     QList<PluginEntry*> plugins = _availablePlugins.values();
     hash->insert(groups.join("/")+"/size", QString::number(plugins.size()));
-    hash->insert(groups.join("/")+"/path", _pluginDir);
+    hash->insert(groups.join("/")+"/path", getConfig()->getPluginPath());
     hash->insert(groups.join("/")+"/indexed",
 		QDateTime(QDateTime::currentDateTime()).toString());
     for (int i = 0; i < plugins.size(); ++i) {
@@ -252,9 +251,8 @@ bool PluginManager::readPluginIndex() {
       groups.removeLast(); /* api */
       groups.removeLast(); /* plugins/index */
 
-      // Insert the plugin, and read its settings
+      // Insert the plugin
       _availablePlugins.insert(e->shortName(), e);
-      getConfig()->readPluginSettings(e->shortName());
     }
     groups.removeLast(); /* plugins */
     groups.removeLast(); /* mClient */

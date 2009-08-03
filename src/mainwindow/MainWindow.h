@@ -66,7 +66,6 @@ private slots:
   private:
     QString _currentProfile;
     QTabWidget *_tabWidget;
-    QBoxLayout *_layout;
     QHash<QString, QDockWidget*> _dockWidgets;
     PluginManager *_pluginManager;
 

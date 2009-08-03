@@ -140,9 +140,9 @@ void MainWindow::startProfile(const QString &profile) {
 
 void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList) {
   // Create the layout
-  QVBoxLayout *_layout = new QVBoxLayout();
-  _layout->setSpacing(0);
-  _layout->setContentsMargins(0, 0, 0, 0);
+  QVBoxLayout *layout = new QVBoxLayout();
+  layout->setSpacing(0);
+  layout->setContentsMargins(0, 0, 0, 0);
 
   // Create the splitter
   // TODO: Make it smart and resizable upon request of the widget!
@@ -187,13 +187,12 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
   }
 
   // Add the widgets
-  _layout->addWidget(_splitter);
-  _tabWidget->setLayout(_layout);
-
-  // TODO: add tabs?
-//   QWidget *widget = new QWidget();
-//   widget->setLayout(_layout);
-//   _tabWidget->addTab(widget, _currentProfile);
+  layout->addWidget(_splitter);
+  //_tabWidget->setLayout(layout);
+  
+  QWidget *widget = new QWidget();
+  widget->setLayout(layout);
+  _tabWidget->addTab(widget, _currentProfile);
 
   // Connect the signals/slots
   if (displaySet && inputSet) {
@@ -277,6 +276,11 @@ void MainWindow::changeConfiguration() {
 void MainWindow::manageProfiles() {
   ProfileManagerDialog *profileManager
     = new ProfileManagerDialog(getPluginManager()->getConfig(), 0, this);
+
+  // Connect the load signal
+  connect(profileManager, SIGNAL(loadProfile(const QString&)),
+	  this, SLOT(startProfile(const QString&)));
+
   profileManager->exec();
   delete profileManager;
 }

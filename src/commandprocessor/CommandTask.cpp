@@ -151,11 +151,7 @@ bool CommandTask::parseCommand(QString command,
 	  displayData("#you have to write '#quit' - no less, to quit!\n");
 	  
 	} else if (command == "quit") {
-	  if (arguments.isEmpty()) {
-	    //emit quit();
-	  }
-	  else
-	    displayData("#you have to write '#quit' - no more, to quit!\n");
+	  _commandProcessor->emitQuit();
 
 	} else if (command == "version") {
 	  QString output = QString("mClient %1, \251 2009 by Jahara\n"

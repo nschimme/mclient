@@ -54,7 +54,7 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
 
 
 PluginSession::~PluginSession() {
-  /**
+  /*
   // Unload all plugins 
   foreach(QPluginLoader *pm, _loadedPlugins) {
     //delete pm->instance();
@@ -85,13 +85,28 @@ void PluginSession::run() {
 
 
 void PluginSession::loadAllPlugins() {
-  // Get the available plugins for this profile
-  QStringList pluginsToLoad
-    = _pluginManager->getConfig()->profilePlugins(_session);
+  // Get the needed plugins for this profile
+  QHash<QString, QString> *hash
+    = getManager()->getConfig()->profileSettings(_session);  
 
+  QStringList pluginsToLoad;
+  int pluginsSize = hash->value("profile/plugins/size", 0).toInt();
+  for (int i = 0; i < pluginsSize; ++i) {
+    // Add the plugin to the list of those to be loaded
+    QString pluginName(hash->value("profile/plugins/"+
+				   QString::number(i+1)+
+				   "/name"));    
+    pluginsToLoad << pluginName;
+  }
+  
   // Get a hash of the available plugins
   const QHash<QString, PluginEntry*> availablePlugins
     = _pluginManager->getAvailablePlugins();
+
+  if (pluginsToLoad.isEmpty()) {
+    pluginsToLoad = availablePlugins.keys();
+    qDebug() << "! Profile config was blank; all plugins will be loaded!";
+  }
 
   qDebug() << "* PluginSession" << _session
 	   << "needs plugins" << pluginsToLoad;
@@ -104,6 +119,9 @@ void PluginSession::loadAllPlugins() {
       // Make sure the plugin wasn't already loaded as a dependency
       if (!_loadedPlugins.contains(s)) {
 
+	// Load the plugin's configuration
+	getManager()->getConfig()->readPluginSettings(_session, s);
+	
 	PluginEntry *pe = availablePlugins.value(s);
 	if (!loadPlugin(pe->libName())) {
 	  qCritical() << "! Could not load plugin" << pe->shortName();
@@ -127,7 +145,8 @@ bool PluginSession::loadPlugin(const QString& libName) {
   qDebug() << "loadPlugin call for" << libName
 	   << "for session" << _session;
   
-  QString fileName = _pluginManager->getPluginDir() + "/" + libName;
+  QString fileName = _pluginManager->getConfig()->
+    getPluginPath() + "/" + libName;
   
   // Try to load plugin from file
   QPluginLoader* loader = new QPluginLoader(fileName);
@@ -277,11 +296,18 @@ void PluginSession::initDisplay() {
 
 
 void PluginSession::stopSession() {
+  // Save profile settings
+  getManager()->getConfig()->writeProfileSettings(_session);
+
   foreach(QPluginLoader *pl, _loadedPlugins) {
     MClientPluginInterface *pi
       = qobject_cast<MClientPluginInterface*>(pl->instance());
-    if (pi) pi->stopSession(_session);
+    if (pi) {
+      pi->saveSettings();
+      pi->stopSession(_session);
+    }
   }
+
   qDebug() << "* All" << _session << "sessions have been stopped.";
 }
 

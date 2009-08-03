@@ -26,6 +26,8 @@ SimpleDisplay::SimpleDisplay(QWidget* parent)
 
     // Allowable Display Locations
     SET(_displayLocations, DL_DISPLAY);
+
+    qDebug() << "### created a new instance of simple display" << this;
 }
 
 
@@ -68,14 +70,15 @@ bool SimpleDisplay::saveSettings() const {
 }
 
 
-bool SimpleDisplay::startSession(QString) {
+bool SimpleDisplay::startSession(QString s) {
+  qDebug() << "* starting SimpleDisplay for session" << s;
   return true;
 }
 
 
 bool SimpleDisplay::stopSession(QString s) {
   if (_widget->close())
-    qDebug() << "* removed Simple DisplayWidget for session" << s;
+    qDebug() << "* removed Simple DisplayWidget for session" << s << this;
   return true;
 }
 

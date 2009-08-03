@@ -35,7 +35,6 @@ class PluginManager : public QObject {
 	QHash<QString, PluginEntry*> getAvailablePlugins() {
 	  return _availablePlugins;
 	}
-	QString getPluginDir() { return _pluginDir; }
 
         void customEvent(QEvent* e);
         void configure();
@@ -62,9 +61,6 @@ public slots:
         
         // short name -> other info
         QHash<QString, PluginEntry*> _availablePlugins; 
-
-        // In what directory are plugins located?  ConfigManager knows.
-        QString _pluginDir;
 
         QPointer<PluginConfigWidget> _configWidget;
 

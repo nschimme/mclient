@@ -115,3 +115,8 @@ bool CommandProcessor::loadSettings() {
 bool CommandProcessor::saveSettings() const {
     return true;
 }
+
+
+void CommandProcessor::emitQuit() {
+  emit quit();
+}

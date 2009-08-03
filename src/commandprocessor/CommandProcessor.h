@@ -35,6 +35,7 @@ class CommandProcessor : public QThread {
 	QChar getCommandSymbol() { return _symbol; };
 	QChar getDelimSymbol() { return _delim; };
 	PluginSession* getPluginSession() { return _pluginSession; };
+	void emitQuit();
 
  protected:
 	void run();

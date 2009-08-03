@@ -37,8 +37,8 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
 
 
 SocketManagerIO::~SocketManagerIO() {
-    // Clean up the QHash of sockets.
-    //saveSettings();
+  // Clean up the QHash of sockets.
+  // saveSettings();
 }
 
 
@@ -83,7 +83,9 @@ void SocketManagerIO::configure() {
 
 bool SocketManagerIO::loadSettings() {
   _settings =
-    _pluginSession->getManager()->getConfig()->pluginSettings(_shortName);
+    _pluginSession->getManager()->
+    getConfig()->pluginSettings(_pluginSession->session(),
+				_shortName);
   
   // register commands
   QStringList commands;
@@ -98,7 +100,9 @@ bool SocketManagerIO::loadSettings() {
 
 
 bool SocketManagerIO::saveSettings() const {
-  _pluginSession->getManager()->getConfig()->writePluginSettings(_shortName);
+  _pluginSession->getManager()->
+    getConfig()->writePluginSettings(_pluginSession->session(),
+				     _shortName);
   return true;
 }
 

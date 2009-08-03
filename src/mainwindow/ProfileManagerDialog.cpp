@@ -202,8 +202,10 @@ ProfileManagerDialog::ProfileManagerDialog(ConfigManager *mgr, QItemSelectionMod
     profileView->setSelectionModel(sel);
     selectionChanged(profileView->selectionModel()->selection());
   }
+  /*
   else
     loadButton->hide();
+  */
 
   connect (addButton, SIGNAL(clicked()), this, SLOT(addClicked()));
   connect (modifyButton, SIGNAL(clicked()), this, SLOT(modifyClicked()));
