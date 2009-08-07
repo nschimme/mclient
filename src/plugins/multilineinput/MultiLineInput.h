@@ -7,6 +7,7 @@
 #include <QPointer>
 
 class InputWidget;
+class EventHandler;
 class QEvent;
 
 class MultiLineInput : public MClientDisplayPlugin {
@@ -17,26 +18,21 @@ class MultiLineInput : public MClientDisplayPlugin {
         ~MultiLineInput();
 
         // Plugin members
-        void customEvent(QEvent* e);
         void configure();
         bool loadSettings();
         bool saveSettings() const;
         bool startSession(QString s);
         bool stopSession(QString s);
 
+	MClientEventHandler* getEventHandler(QString s);
+
         // Display members
         bool initDisplay(QString s);
         QWidget* getWidget(QString s);
 
-public slots:
-        void sendUserInput(const QString&, bool);
-
     private:
-	QString _settingsFile;
-	QPointer<InputWidget> _widget;
-
- signals:
-	void setEchoMode(bool);
+	QHash<QString, QPointer<InputWidget> > _widgets;
+	QHash<QString, QPointer<EventHandler> > _eventHandlers;
 };
 
 

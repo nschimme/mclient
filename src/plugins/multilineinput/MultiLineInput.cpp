@@ -1,15 +1,9 @@
 #include <QApplication>
 #include <QDebug>
-#include <QVariant>
 
 #include "MultiLineInput.h"
+#include "EventHandler.h"
 #include "InputWidget.h"
-
-#include "PluginManager.h"
-#include "PluginSession.h"
-//#include "MainWindow.h"
-#include "CommandProcessor.h"
-#include "MClientEvent.h"
 
 Q_EXPORT_PLUGIN2(multilineinput, MultiLineInput)
 
@@ -27,49 +21,14 @@ MultiLineInput::MultiLineInput(QWidget* parent)
     _configurable = false;
     _configVersion = "2.0";
 
-    // SocketManager members
-    _settingsFile = "config/"+_shortName+".xml";
-
     // Allowable Display Locations
     SET(_displayLocations, DL_INPUT);
 }
 
 
 MultiLineInput::~MultiLineInput() {
-    saveSettings();
 }
 
-void MultiLineInput::customEvent(QEvent* e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-  else if (e->type() == 10001) {
-    MClientEvent *me = static_cast<MClientEvent*>(e);
-    
-    if(me->dataTypes().contains("ChangeUserInput")) {
-      // TODO: History, tab-completion
-
-    }
-    else if (me->dataTypes().contains("EchoMode")) {
-      emit setEchoMode(me->payload()->toBool());
-
-    }
-    else if (me->dataTypes().contains("SocketDisconnected")) {
-      emit setEchoMode(true);
-
-    }
-
-  }
-}
-
-void MultiLineInput::sendUserInput(const QString &input, bool echo) {
-  if (echo) {
-    QVariant* qv = new QVariant(input + "\n");
-    QStringList sl("UserInput");
-    postSession(qv, sl);
-  }
-
-  _pluginSession->getCommand()->parseInput(input);
-}
 
 void MultiLineInput::configure() {
 }
@@ -86,26 +45,39 @@ bool MultiLineInput::saveSettings() const {
 }
 
 
-bool MultiLineInput::startSession(QString) {
-    return true;
+bool MultiLineInput::startSession(QString s) {
+  _eventHandlers[s] = new EventHandler;
+  return true;
 }
 
 
 bool MultiLineInput::stopSession(QString s) {
-  if (_widget->close())
+  if (_widgets[s]->close()) {
     qDebug() << "* removed MultiLineInput InputWidget for session" << s;
+    delete _eventHandlers[s];
+  }
   return true;
+}
+
+
+MClientEventHandler* MultiLineInput::getEventHandler(QString s) {
+  return _eventHandlers[s].data();
 }
 
 
 // Display plugin members
 bool MultiLineInput::initDisplay(QString s) {
-  //MainWindow *mw = _pluginSession->getManager()->getMainWindow();
-  _widget = new InputWidget(s, this);
-  
+  _widgets[s] = new InputWidget(s, this);  
+
+  // Connect Signals/Slots
+  connect(_widgets[s], SIGNAL(sendUserInput(const QString&, bool)),
+	  _eventHandlers[s], SLOT(sendUserInput(const QString&, bool)));
+  connect(_eventHandlers[s], SIGNAL(setEchoMode(bool)),
+	  _widgets[s], SLOT(toggleEchoMode(bool)));
+
   return true;
 }
 
-QWidget* MultiLineInput::getWidget(QString) {
-    return _widget;
+QWidget* MultiLineInput::getWidget(QString s) {
+  return _widgets[s];
 }

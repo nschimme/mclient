@@ -6,6 +6,7 @@
 #include <QPointer>
 
 class ClientTextEdit;
+class EventHandler;
 class QEvent;
 
 class SimpleDisplay : public MClientDisplayPlugin {
@@ -16,12 +17,13 @@ class SimpleDisplay : public MClientDisplayPlugin {
         ~SimpleDisplay();
 
         // Plugin members
-        void customEvent(QEvent* e);
         void configure();
         bool loadSettings();
         bool saveSettings() const;
         bool startSession(QString s);
         bool stopSession(QString s);
+
+	MClientEventHandler* getEventHandler(QString s);
 
         // Display members
         bool initDisplay(QString s);
@@ -31,11 +33,8 @@ class SimpleDisplay : public MClientDisplayPlugin {
 	void run();
 
     private:
-	QPointer<ClientTextEdit> _widget;
-
- signals:
-	void displayText(const QString&);
-	void userInput(const QString&);
+	QHash<QString, QPointer<ClientTextEdit> > _widgets;
+	QHash<QString, QPointer<EventHandler> > _eventHandlers;
 };
 
 

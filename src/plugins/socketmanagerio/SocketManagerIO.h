@@ -1,23 +1,21 @@
 #ifndef SOCKETMANAGERIO_H
 #define SOCKETMANAGERIO_H
 
-#include "MClientIOPlugin.h"
+#include "MClientPlugin.h"
 
 #include <QDialog>
-#include <QMultiHash>
-#include <QPair>
+#include <QHash>
 #include <QSettings>
 
 class SocketManagerIOConfig;
 class SocketReader;
+class EventHandler;
 
 class QByteArray;
 class QEvent;
 class QString;
-class QVariant;
 
-
-class SocketManagerIO : public MClientIOPlugin {
+class SocketManagerIO : public MClientPlugin {
     Q_OBJECT
 
     public:
@@ -25,35 +23,20 @@ class SocketManagerIO : public MClientIOPlugin {
         ~SocketManagerIO();
 
         // Plugin members
-        void customEvent(QEvent* e);
         void configure();
         bool loadSettings();
         bool saveSettings() const;
         bool startSession(QString s);
         bool stopSession(QString s);
 
-        // IO members
-        void connectDevice();
-        void disconnectDevice();
-        void sendData(const QByteArray&);
-        void socketReadData(const QByteArray&);
-
-	void displayMessage(const QString&);
-	void socketOpened();
-	void socketClosed();
-
+	MClientEventHandler* getEventHandler(QString s);
 
     private:
-	bool _openSocket;
-        QPointer<SocketReader> _socketReader;
+        QHash<QString, QPointer<SocketReader> > _socketReaders;
+	QHash<QString, QPointer<EventHandler> > _eventHandlers;
 
 	QHash<QString, QString> *_settings;
         QPointer<SocketManagerIOConfig> _configWidget;
-
- signals:
-	void connectToHost();
-        void sendToSocket(const QByteArray &);
-        void closeSocket();        
 
 };
 

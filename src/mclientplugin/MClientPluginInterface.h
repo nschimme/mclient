@@ -4,7 +4,8 @@
 #include <QtPlugin>
 #include <QHash>
 
-class PluginSession;
+class PluginManager;
+class MClientEventHandler;
 
 class MClientPluginInterface {
     
@@ -35,9 +36,6 @@ class MClientPluginInterface {
         // Returns a QStringList of data types it delivers
         virtual const QStringList& deliversDataTypes() const=0;
 
-        // Consider putting this here and leaving it virtual.
-        virtual void customEvent(QEvent* e)=0;
-
         // Can this be configured manually?
         virtual bool configurable() const=0;
 
@@ -56,8 +54,11 @@ class MClientPluginInterface {
         // Destroy objects local to one session
         virtual bool stopSession(QString s)=0;
 
-	// Receive the PluginSession reference upon load
-	virtual void setPluginSession(PluginSession *ps)=0;
+	// Post the plugin manager
+	virtual void setPluginManager(PluginManager *pm)=0;
+
+	// Grab the event handler
+	virtual MClientEventHandler* getEventHandler(QString s)=0;
 
 };
 

@@ -14,6 +14,8 @@ class InputWidget : public QPlainTextEdit {
 
 	QSize sizeHint() const;
 
+	//void customEvent(QEvent *e);
+
  protected:
 	void keyPressEvent(QKeyEvent *event);
 

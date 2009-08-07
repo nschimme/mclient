@@ -14,6 +14,8 @@
 #include "MClientPluginInterface.h"
 #include "PluginEntry.h"
 
+#include "MClientEventHandler.h"
+
 #include "MClientEngineEvent.h"
 #include "MClientEvent.h"
 
@@ -74,7 +76,7 @@ PluginSession::~PluginSession() {
 void PluginSession::run() {
   loadAllPlugins();
   // Send the receiving plugins to each plugin which delivers
-  postReceivingPlugins();
+  //postReceivingPlugins();
   startSession();
 
   qDebug() << "* PluginSession" << _session
@@ -174,10 +176,7 @@ bool PluginSession::loadPlugin(const QString& libName) {
       // Check dependencies
       if (!checkDependencies(iPlugin))
 	return false;
-      
-      // Insert shortname for this plugin into hash
-      _loadedPlugins.insert(iPlugin->shortName(),loader);
-      
+
       // insert APIs for this plugin into hash
       QHash<QString, int> apis = iPlugin->implemented();
       QHash<QString, int>::iterator jt = apis.begin();
@@ -185,33 +184,10 @@ bool PluginSession::loadPlugin(const QString& libName) {
 	_pluginAPIs.insert(jt.key(), loader);
       }
       
-      // Insert datatypes this plugin wants into hash
-      if(!iPlugin->receivesDataTypes().isEmpty()) {
-	/*
-	qDebug() << ">> receiving for " << iPlugin->shortName()
-		 << "types" << iPlugin->receivesDataTypes();
-	*/
-	foreach(QString s, iPlugin->receivesDataTypes())
-	  _receivesTypes.insert(s, loader);
-      }
-
-      // Insert datatypes this plugin wants into hash
-      if(!iPlugin->deliversDataTypes().isEmpty()) {
-	/*
-	qDebug() << "<< delivering for" << iPlugin->shortName()
-		 << "types" << iPlugin->deliversDataTypes();
-	*/
-	foreach(QString s, iPlugin->deliversDataTypes())
-	  _deliversTypes.insert(loader, s);
-      }
-
-      // The plugin will need PluginSession's reference to send events
-      iPlugin->setPluginSession(this);
-      
-      // Each plugin takes care of its own settings
-      iPlugin->loadSettings();
+      // Insert shortname for this plugin into hash
+      _loadedPlugins.insert(iPlugin->shortName(), loader);
       qDebug() << "Successfully loaded plugin" << iPlugin->shortName();
-      
+
     } // casted
   } // loaded
   
@@ -251,7 +227,7 @@ bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
 
 	    qWarning() << "! Could not load deps for" << it.key();
 	    return false;
-
+	    
 	  }
 	}
       }
@@ -262,15 +238,47 @@ bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
 
 
 void PluginSession::startSession() {
-  // Start the sessions within the thread
-  foreach(QPluginLoader *pl, _loadedPlugins) {
-    MClientPluginInterface* pi
-      = qobject_cast<MClientPluginInterface*>(pl->instance());
-    if (pi)
-      pi->startSession(_session);
+  // Go through each loaded plugin and start it
+  foreach(QPluginLoader *loader, _loadedPlugins) {
+    MClientPluginInterface* iPlugin
+      = qobject_cast<MClientPluginInterface*>(loader->instance());
+    
+    if (iPlugin) {      
+      // Start the sessions within the thread
+      iPlugin->startSession(_session);
+      
+      // Receive the event handler
+      MClientEventHandler* eventHandler = iPlugin->getEventHandler(_session);
+
+      // The plugin will need PluginSession's reference to send events
+      eventHandler->setPluginSession(this);
+
+      // Each plugin takes care of its own settings
+      iPlugin->loadSettings();
+      
+      // Insert datatypes this plugin wants into hash
+      if(!iPlugin->receivesDataTypes().isEmpty()) {
+	/*
+	qDebug() << ">> receiving for " << iPlugin->shortName()
+		 << "types" << iPlugin->receivesDataTypes();
+	*/
+	foreach(QString s, iPlugin->receivesDataTypes())
+	  _receivesTypes.insert(s, eventHandler);
+      }
+
+      // Insert datatypes this plugin wants into hash
+      if(!iPlugin->deliversDataTypes().isEmpty()) {
+	/*
+	qDebug() << "<< delivering for" << iPlugin->shortName()
+		 << "types" << iPlugin->deliversDataTypes();
+	*/
+	foreach(QString s, iPlugin->deliversDataTypes())
+	  _deliversTypes.insert(loader, s);
+      }
+
+    }
   }
 }
-
 
 void PluginSession::initDisplay() {
   // Create the widgets outside of the threads
@@ -338,7 +346,7 @@ void PluginSession::customEvent(QEvent* e) {
       // Iterate through all the data types
       //qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
       
-      QMultiHash<QString, QPluginLoader*>::iterator it
+      QMultiHash<QString, MClientEventHandler*>::iterator it
 	= _receivesTypes.find(s);
       while (it != _receivesTypes.end() && it.key() == s) {
 	MClientEvent* nme = new MClientEvent(*me);
@@ -346,70 +354,79 @@ void PluginSession::customEvent(QEvent* e) {
 	// Need to make a copy, since the original event
 	// will be deleted when this function returns
 	qDebug() << "* posting" << nme->dataTypes() << "to" 
-		 << it.value()->instance() << "with" << me->payload();
+		 << it.value() << "with" << me->payload();
 	
 	// Post the event
-	QCoreApplication::postEvent(it.value()->instance(), nme);
+	QCoreApplication::postEvent(it.value(), nme);
 	found = true;
 	
 	++it; // Iterate
       }
     }
-    if (!found)
+    if (!found) {
+      if (me->dataTypes().contains("XMLAll")) {
+	MClientEvent* nme = new MClientEvent(*me);
+	QCoreApplication::postEvent(_commandProcessor, nme);
+	qDebug() << "* posting to CommandProcessor";
+      }
+    } else {
       qWarning() << "! No plugins accepted data types" << me->dataTypes();
+
+    }
     
   }
 }
 
 
 void PluginSession::postReceivingPlugins() {
-  // Go through each unique plugin in this hash
-  QList<QPluginLoader*> list = _deliversTypes.uniqueKeys();
+//   // Go through each unique plugin in this hash
+//   QList<QPluginLoader*> list = _deliversTypes.uniqueKeys();
 
-  for (int i = 0; i < list.size(); ++i) {
-    QPluginLoader *pl = list.at(i); // the current plugin
+//   for (int i = 0; i < list.size(); ++i) {
+//     QPluginLoader *pl = list.at(i); // the current plugin
 
-    // Hash to be delivered to the current plugin
-    QMultiHash<QString, QVariant> hash;
+//     // Hash to be delivered to the current plugin
+//     QMultiHash<QString, QVariant> hash;
     
-    // Iterate through each type that this plugin delivers
-    QMultiHash<QPluginLoader*, QString>::iterator j
-      = _deliversTypes.find(pl);
-    for (; j != _deliversTypes.end() && j.key() == pl; ++j) {
-      QString dataType = j.value(); // the dataType
-      QList<QPluginLoader*> receivesTypes = _receivesTypes.values(dataType);
+//     // Iterate through each type that this plugin delivers
+//     QMultiHash<QPluginLoader*, QString>::iterator j
+//       = _deliversTypes.find(pl);
+//     for (; j != _deliversTypes.end() && j.key() == pl; ++j) {
+//       QString dataType = j.value(); // the dataType
+//       QList<MClientEventHandler*> receivesTypes
+// 	= _receivesTypes.values(dataType);
 
-      foreach(QPluginLoader *rpl, receivesTypes)
-	hash.insert(dataType,
-		    qVariantFromValue(rpl->instance()));
+//       foreach(MClientEventHandler *rpl, receivesTypes)
+// 	hash.insert(dataType, qVariantFromValue(rpl));
 
-      // Hack to deliver output to CommandProcessor
-      if (dataType == "XMLAll") {
-	hash.insert(dataType,
-		    qVariantFromValue(static_cast<QObject*>
-				      (_commandProcessor)));
-      }
+//       // Hack to deliver output to CommandProcessor
+//       if (dataType == "XMLAll") {
+// 	hash.insert(dataType,
+// 		    qVariantFromValue(static_cast<QObject*>
+// 				      (_commandProcessor)));
+//       }
       
-    }
+//     }
 
-    if (!hash.isEmpty()) {
-      // Create the engineEvent
-      QVariant *payload = new QVariant(hash);
-      MClientEngineEvent *ee
-	= new MClientEngineEvent(new MClientEventData(payload, QStringList(),
-						      _session),
-				 EE_DATATYPE_UPDATE,
-				 _session);
+//     if (!hash.isEmpty()) {
+//       // Create the engineEvent
+//       QVariant *payload = new QVariant(hash);
+//       MClientEngineEvent *ee
+// 	= new MClientEngineEvent(new MClientEventData(payload, QStringList(),
+// 						      _session),
+// 				 EE_DATATYPE_UPDATE,
+// 				 _session);
 
-      // Post the event to the current plugin
-      QCoreApplication::postEvent(pl->instance(), ee);
+//       // Post the event to the current plugin
+//       QCoreApplication::postEvent(pl->instance(), ee);
 
-      /*
-      MClientPluginInterface *pi
-	= qobject_cast<MClientPluginInterface*>(pl->instance());
-      qDebug() << ">> delivering receiving types to" << pi->shortName()
-	       << hash.uniqueKeys();
-      */
-    }
-  }
+//       /*
+//       MClientPluginInterface *pi
+// 	= qobject_cast<MClientPluginInterface*>(pl->instance());
+//       qDebug() << ">> delivering receiving types to" << pi->shortName()
+// 	       << hash.uniqueKeys();
+//       */
+//     }
+//   }
+
 }

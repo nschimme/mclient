@@ -11,7 +11,7 @@ add_subdirectory(mumexml)
 
 
 # Feature Plugins
-add_subdirectory(qtscriptplugin)
+#add_subdirectory(qtscriptplugin)
 #add_subdirectory(mmapperplugin)
 
 

@@ -32,12 +32,6 @@ InputWidget::InputWidget(QString s, MultiLineInput* mli, QWidget* parent)
     // Line Wrapping
     setLineWrapMode(QPlainTextEdit::NoWrap);
 
-    // Connect Signals/Slots
-    connect(this, SIGNAL(sendUserInput(const QString&, bool)),
-	    _mli, SLOT(sendUserInput(const QString&, bool)));
-    connect(_mli, SIGNAL(setEchoMode(bool)),
-	    this, SLOT(toggleEchoMode(bool)));
-
     // Debugging Information
     qDebug() << "* MultiLineInput thread:" << _mli->thread();
     qDebug() << "* InputWidget thread:" << this->thread();

@@ -13,18 +13,13 @@ SocketReader::SocketReader(const QString &s, SocketManagerIO *sm,
 
     _session = s;
     _sm = sm;
-
-    connect(_sm, SIGNAL(connectToHost()), SLOT(connectToHost()));
-    connect(_sm, SIGNAL(closeSocket()), SLOT(closeSocket()));
-    connect(_sm, SIGNAL(sendToSocket(const QByteArray &)),
-	    SLOT(sendToSocket(const QByteArray &)));
     
     _proxy.setType(QNetworkProxy::NoProxy);
 }
 
 
 void SocketReader::connectToHost() {
-  _sm->displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port));
+  emit displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port));
   
   if (!isRunning()) start(LowPriority);
 }
@@ -73,14 +68,15 @@ void SocketReader::run() {
     connect(_socket, SIGNAL(disconnected()), SLOT(onDisconnect())); 
     connect(_socket, SIGNAL(readyRead()), SLOT(onReadyRead())); 
     connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
-	    this, SLOT(onError(QAbstractSocket::SocketError))); 
-
+	    SLOT(onError(QAbstractSocket::SocketError))); 
+    
     
     qDebug() << "* SocketManagerIO thread:" << _sm->thread();
     qDebug() << "* SocketReader thread:" << this->thread();
     qDebug() << "* Socket thread:" << _socket->thread();
    
     _socket->connectToHost(_host, _port);
+    qDebug() << "* SocketReader entering event loop!";
     exec();
     qDebug() << "* SocketReader thread quit";
 }
@@ -88,20 +84,20 @@ void SocketReader::run() {
 
 void SocketReader::onReadyRead() {
     QByteArray ba = _socket->readAll(); 
-    _sm->socketReadData(ba);
+    emit socketReadData(ba);
 }
 
 
 void SocketReader::onConnect() {
-    _sm->displayMessage(QString("connected!\n"));
-    _sm->socketOpened();
+  emit displayMessage(QString("connected!\n"));
+  emit socketOpened();
 }
 
 
 void SocketReader::onDisconnect() {
-    _sm->displayMessage(QString("#connection on \"%1\" closed.\n")
+    emit displayMessage(QString("#connection on \"%1\" closed.\n")
 			.arg(_session));
-    _sm->socketClosed();
+    emit socketClosed();
 }
 
 
@@ -119,7 +115,7 @@ void SocketReader::onError(QAbstractSocket::SocketError error) {
       errorMessage.prepend("#");
       break;
     };
-    _sm->displayMessage(errorMessage);
+    emit displayMessage(errorMessage);
     if (isRunning()) {
       exit();
       wait();

@@ -38,6 +38,7 @@ public slots:
     void about();
     void clientHelp();
     void alwaysOnTop();
+    void fullScreen();
 
     void connectSession();
     void disconnectSession();
@@ -77,6 +78,7 @@ public slots:
     QAction *reconnectAct;
 
     QAction *alwaysOnTopAct;
+    QAction *fullScreenAct;
 
     QMenu *fileMenu;
     QMenu *viewMenu;

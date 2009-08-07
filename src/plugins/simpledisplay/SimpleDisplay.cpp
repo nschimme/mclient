@@ -1,5 +1,6 @@
 #include "SimpleDisplay.h"
 #include "ClientTextEdit.h"
+#include "EventHandler.h"
 
 #include "PluginManager.h"
 #include "PluginSession.h"
@@ -36,21 +37,6 @@ SimpleDisplay::~SimpleDisplay() {
 }
 
 
-void SimpleDisplay::customEvent(QEvent* e) {
-  if(!e->type() == 10001) return;
-  
-  MClientEvent* me = static_cast<MClientEvent*>(e);
-  if (me->dataTypes().contains("DisplayData")) {
-    emit displayText(me->payload()->toString());
-
-  }
-  else if (me->dataTypes().contains("UserInput")) {
-    emit displayText(me->payload()->toString());
-
-  }
-}
-
-
 void SimpleDisplay::run() {
   exec();
 }
@@ -72,27 +58,35 @@ bool SimpleDisplay::saveSettings() const {
 
 bool SimpleDisplay::startSession(QString s) {
   qDebug() << "* starting SimpleDisplay for session" << s;
+  _eventHandlers[s] = new EventHandler;
   return true;
 }
 
 
 bool SimpleDisplay::stopSession(QString s) {
-  if (_widget->close())
+  if (_widgets[s]->close()) {
     qDebug() << "* removed Simple DisplayWidget for session" << s << this;
+    delete _eventHandlers[s];
+  }
   return true;
+}
+
+
+MClientEventHandler* SimpleDisplay::getEventHandler(QString s) {
+  return _eventHandlers[s].data();
 }
 
 
 // Display plugin members
-bool SimpleDisplay::initDisplay(QString) {
-  _widget = new ClientTextEdit;
+bool SimpleDisplay::initDisplay(QString s) {
+  _widgets[s] = new ClientTextEdit;
 
-  connect(this, SIGNAL(displayText(const QString&)),
-	  _widget, SLOT(displayText(const QString&)));
+  connect(_eventHandlers[s], SIGNAL(displayText(const QString&)),
+	  _widgets[s], SLOT(displayText(const QString&)));
   
   return true;
 }
 
-QWidget* SimpleDisplay::getWidget(QString) {
-    return _widget;
+QWidget* SimpleDisplay::getWidget(QString s) {
+  return _widgets[s];
 }

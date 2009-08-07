@@ -1,24 +1,20 @@
 #include "SocketManagerIO.h"
 #include "SocketManagerIOConfig.h"
 #include "SocketReader.h"
+#include "EventHandler.h"
 
-#include "MClientEvent.h"
-#include "MClientEngineEvent.h"
 #include "PluginManager.h"
 #include "PluginSession.h"
 #include "CommandProcessor.h"
 #include "ConfigManager.h"
 
-#include <QApplication>
 #include <QDebug>
-#include <QFile>
-#include <QtXml>
 
 Q_EXPORT_PLUGIN2(socketmanagerio, SocketManagerIO)
 
 
 SocketManagerIO::SocketManagerIO(QObject* parent) 
-        : MClientIOPlugin(parent) {
+        : MClientPlugin(parent) {
     
     _shortName = "socketmanagerio";
     _longName = "SocketManager";
@@ -31,8 +27,6 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
 		       << "SocketDisconnected" << "DisplayData";
     _configurable = true;
     _configVersion = "2.0";
-
-    _openSocket = false;
 }
 
 
@@ -41,31 +35,6 @@ SocketManagerIO::~SocketManagerIO() {
   // saveSettings();
 }
 
-
-// MClientPlugin members
-void SocketManagerIO::customEvent(QEvent* e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-  else if (e->type() == 10001) {
-    
-    MClientEvent* me = static_cast<MClientEvent*>(e);
-    
-    if(me->dataTypes().contains("SendToSocketData")) {
-      QByteArray ba = me->payload()->toByteArray();
-      sendData(ba);
-      
-    } else if (me->dataTypes().contains("ConnectToHost")) {
-      //QString arg = me->payload()->toString();
-      connectDevice();
-      
-    } else if (me->dataTypes().contains("DisconnectFromHost")) {
-      //QString arg = me->payload()->toString();
-      disconnectDevice();
-    }
-  }
-  else 
-    qDebug() << "SocketManagerIO got a customEvent of type" << e->type();
-}
 
 void SocketManagerIO::configure() {
     // Need to display a table of (identifier, host, port)
@@ -82,10 +51,10 @@ void SocketManagerIO::configure() {
 
 
 bool SocketManagerIO::loadSettings() {
+  /*
   _settings =
-    _pluginSession->getManager()->
-    getConfig()->pluginSettings(_pluginSession->session(),
-				_shortName);
+    _pluginManager->getConfig()->pluginSettings(_pluginSession->session(),
+						_shortName);
   
   // register commands
   QStringList commands;
@@ -93,21 +62,25 @@ bool SocketManagerIO::loadSettings() {
 	   << "connect" << "ConnectToHost"
 	   << "zap" << "DisconnectFromHost";
   
-  _pluginSession->getCommand()->registerCommand(commands);
+  _pluginManager->getCommand()->registerCommand(commands);
+  */
   
   return true;
 }
 
 
 bool SocketManagerIO::saveSettings() const {
-  _pluginSession->getManager()->
-    getConfig()->writePluginSettings(_pluginSession->session(),
+  /*
+  _plugiManager->getConfig()->writePluginSettings(_pluginSession->session(),
 				     _shortName);
+  */
   return true;
 }
 
 
 bool SocketManagerIO::startSession(QString s) {
+  _settings = new QHash<QString, QString>;
+
     QString cfg = QString("config/%1/").arg(s);
 
     // Host settings
@@ -120,7 +93,8 @@ bool SocketManagerIO::startSession(QString s) {
     QString proxy_user = _settings->value(cfg+"proxy/proxy_user", "");
     QString proxy_pass = _settings->value(cfg+"proxy/proxy_pass", "");
 
-    _socketReader = new SocketReader(s, this);
+
+    _socketReaders[s] = new SocketReader(s, this);
     if(proxy_port != 0 && !proxy_host.isEmpty()) {
         QNetworkProxy* proxy = new QNetworkProxy();
         //proxy->setType(QNetworkProxy::Socks5Proxy);
@@ -128,88 +102,44 @@ bool SocketManagerIO::startSession(QString s) {
         proxy->setPort(proxy_port);
         proxy->setUser(proxy_user);
         proxy->setPassword(proxy_pass);
-        _socketReader->proxy(proxy);
+
+        _socketReaders[s]->proxy(proxy);
         qDebug() << "* added proxy" << proxy_host << proxy_port
 		 << "to SocketReader in session" << s;
     }
-    _socketReader->host(host);
-    _socketReader->port(port);
+    _socketReaders[s]->host(host);
+    _socketReaders[s]->port(port);
 
-    return true;
+  _eventHandlers[s] = new EventHandler;
+
+  connect(_eventHandlers[s], SIGNAL(connectToHost()),
+	  _socketReaders[s], SLOT(connectToHost()));
+  connect(_eventHandlers[s], SIGNAL(closeSocket()),
+	  _socketReaders[s], SLOT(closeSocket()));
+  connect(_eventHandlers[s], SIGNAL(sendToSocket(const QByteArray &)),
+	  _socketReaders[s], SLOT(sendToSocket(const QByteArray &)));
+
+  connect(_socketReaders[s], SIGNAL(socketReadData(const QByteArray &)),
+	  _eventHandlers[s], SLOT(socketReadData(const QByteArray &)));
+  connect(_socketReaders[s], SIGNAL(displayMessage(const QString &)),
+	  _eventHandlers[s], SLOT(displayMessage(const QString &)));
+  connect(_socketReaders[s], SIGNAL(socketOpened()),
+	  _eventHandlers[s], SLOT(socketOpened()));
+  connect(_socketReaders[s], SIGNAL(socketClosed()),
+	  _eventHandlers[s], SLOT(socketClosed()));
+
+  return true;
 }
 
 
 bool SocketManagerIO::stopSession(QString s) {
-  delete _socketReader;
+  delete _socketReaders[s];
+  delete _eventHandlers[s];
   qDebug() << "* removed SocketReader for session" << s;
   return true;
 }
 
 
-// IO members
-void SocketManagerIO::connectDevice() {
-    if (_openSocket) {
-      displayMessage("#connection is already open. "
-		     "Use '#zap' to disconnect it.\n");
-
-    } else {
-      // Connect a particular session's sockets.
-      emit connectToHost();
-
-    }
-}
-
-
-void SocketManagerIO::disconnectDevice() {
-    if (!_openSocket) {
-      displayMessage("#no open connections to zap.\n");
-
-    } else {
-      // Disconnect a particular session's sockets.
-      emit closeSocket();
-    }
-}
-
-
-void SocketManagerIO::sendData(const QByteArray& ba) {
-  // Send data to the sockets.
-  if (!_openSocket) {
-    displayMessage("#no open connections. Use '#connect' to open a "
-		   "connection.\n");
-    
-  }
-  else {
-    // TODO: Why doesn't this work?
-    //emit sendToSocket(ba);
-    _socketReader->sendToSocket(ba);
-  }
-}
-
-
-void SocketManagerIO::socketReadData(const QByteArray& data) {
-  QVariant* qv = new QVariant(data);
-  QStringList tags("SocketReadData");
-  postSession(qv, tags);
-}
-
-// Implementation-specific details: slots for successful operations
-void SocketManagerIO::displayMessage(const QString& message) {
-  QVariant* qv = new QVariant(message);
-  QStringList sl("DisplayData");
-  postSession(qv, sl);
-}
-
-
-void SocketManagerIO::socketOpened() {
-  _openSocket = true;
-  QVariant* qv = new QVariant();
-  QStringList sl("SocketConnected");
-  postSession(qv, sl);
-}
-
-void SocketManagerIO::socketClosed() {
-  _openSocket = false;
-  QVariant* qv = new QVariant();
-  QStringList sl("SocketDisconnected");
-  postSession(qv, sl);
+MClientEventHandler* SocketManagerIO::getEventHandler(QString s) {
+  return _eventHandlers[s].data();
 }

@@ -32,6 +32,11 @@ public slots:
         void sendToSocket(const QByteArray &);
         void closeSocket();        
 
+ signals:
+	void socketReadData(const QByteArray &);
+	void displayMessage(const QString &);
+	void socketOpened();
+	void socketClosed();
 
  protected:
         void run();

@@ -85,6 +85,13 @@ void WindowActionManager::createActions() {
   alwaysOnTopAct->setStatusTip(tr("Toggle the window to always stay on the top"));
   connect(alwaysOnTopAct, SIGNAL(triggered()), this, SLOT(alwaysOnTop()));
 
+  fullScreenAct = new QAction(tr("&Full Screen"), this);
+  fullScreenAct->setCheckable(true);
+  fullScreenAct->setShortcut(tr("F11"));
+  fullScreenAct->setStatusTip(tr("Toggle full screen mode"));
+  connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(fullScreen()));
+
+
   profileAct = new QAction(QIcon(":/mainwindow/profile.png"), tr("Profile &Manager..."), this);
   profileAct->setStatusTip(tr("Manage mClient profile settings"));
   connect(profileAct, SIGNAL(triggered()), _mainWindow, SLOT(manageProfiles()));
@@ -142,6 +149,7 @@ void WindowActionManager::disableActions(bool value)
   aboutAct->setDisabled(value);
   aboutQtAct->setDisabled(value);
   alwaysOnTopAct->setDisabled(value);
+  fullScreenAct->setDisabled(value);
 }
 
 
@@ -162,6 +170,7 @@ void WindowActionManager::createMenus() {
 
   viewMenu = menuBar->addMenu(tr("&View"));
   viewMenu->addAction(alwaysOnTopAct);
+  viewMenu->addAction(fullScreenAct);
 
   settingsMenu = menuBar->addMenu(tr("&Settings"));
   settingsMenu->addAction(settingsAct);
@@ -209,6 +218,12 @@ void WindowActionManager::createStatusBar()
 void WindowActionManager::alwaysOnTop() {
   _mainWindow->setWindowFlags(_mainWindow->windowFlags() ^ Qt::WindowStaysOnTopHint);
   _mainWindow->show();
+}
+
+
+void WindowActionManager::fullScreen() {
+  if (_mainWindow->isFullScreen()) _mainWindow->showNormal();
+  else _mainWindow->showFullScreen();
 }
 
 

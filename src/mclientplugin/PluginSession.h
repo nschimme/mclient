@@ -10,6 +10,8 @@ class PluginManager;
 class PluginLoader;
 class PluginEntry;
 
+class MClientEventHandler;
+
 class CommandProcessor;
 class ActionManager;
 class AliasManager;
@@ -71,7 +73,7 @@ class PluginSession : public QThread {
     // NOTE: this is used to keep track of what data types each plugin
     // wants for easy event handling.  This one also may have multiple
     // entries for a given plugin.
-    QMultiHash<QString, QPluginLoader*> _receivesTypes;
+    QMultiHash<QString, MClientEventHandler*> _receivesTypes;
     
     // A hash of plugin object pointers, pointer -> data type
     QMultiHash<QPluginLoader*, QString> _deliversTypes;
