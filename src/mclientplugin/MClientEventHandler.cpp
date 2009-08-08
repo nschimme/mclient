@@ -24,7 +24,6 @@ MClientEventHandler::~MClientEventHandler() {
 // Post an event
 void MClientEventHandler::postSession(QVariant* payload, QStringList tags) {
   bool found = false;
-  /*
   foreach (QString s, tags) {
     // Iterate through all the data types
     //qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
@@ -46,7 +45,7 @@ void MClientEventHandler::postSession(QVariant* payload, QStringList tags) {
       ++it; // Iterate
     }
   }
-  */
+
   if (!found) {
     qWarning() << "! No EventHandlers accepted data types" << tags;
 

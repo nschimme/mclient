@@ -1,16 +1,13 @@
 #include "CommandProcessor.h"
 
-#include "MClientEvent.h"
 #include "PluginSession.h"
 #include "CommandTask.h"
 
 #include <QDebug>
 #include <QApplication>
 
-#include <QThreadPool>
-
 CommandProcessor::CommandProcessor(PluginSession *ps, QObject* parent)
-  : QThread(parent), _pluginSession(ps) {
+  : QObject(parent), _pluginSession(ps) {
   _delim = QChar(';');  // Command delimeter symbol
   _symbol = QChar('#'); // Command prefix symbol
 
@@ -27,6 +24,12 @@ CommandProcessor::CommandProcessor(PluginSession *ps, QObject* parent)
   _mapping.insert("action", QString());
   _mapping.insert("split", QString());
 
+  // Start the command task threads
+  _actionTask = new CommandTask(COMMAND_ACTION, this);
+  _userInputTask = new CommandTask(COMMAND_ALIAS, this);
+  _actionTask->start();
+  _userInputTask->start();
+
   qDebug() << "CommandProcessor created with thread:" << this->thread();
 }
 
@@ -36,12 +39,8 @@ CommandProcessor::~CommandProcessor() {
   qDebug() << "* CommandProcessor destroyed";
 }
 
-void CommandProcessor::run() {
-  qDebug() << "CommandProcessor running in thread:" << this->thread();
-  exec();
-}
 
-
+/*
 void CommandProcessor::customEvent(QEvent* e) {
   if (e->type() == 10000) {
     // EngineEvent
@@ -59,6 +58,24 @@ void CommandProcessor::customEvent(QEvent* e) {
     }
   }
 }
+
+
+void CommandProcessor::parseInput(const QString &input) {
+  CommandTask *task = new CommandTask(input, this);
+  QThreadPool::globalInstance()->start(task);
+}
+*/
+
+
+QObject* CommandProcessor::getUserInput() const {
+  return _userInputTask;
+}
+
+
+QObject* CommandProcessor::getAction() const {
+  return _actionTask;
+}
+
 
 bool CommandProcessor::unregisterCommand(const Source& source) {
   if (!_registry.contains(source)) {
@@ -95,11 +112,6 @@ void CommandProcessor::registerCommand(const QStringList& sl) {
       _registry.insertMulti(source, command);
     }
   }
-}
-
-void CommandProcessor::parseInput(const QString &input) {
-  CommandTask *task = new CommandTask(input, this);
-  QThreadPool::globalInstance()->start(task);
 }
 
 

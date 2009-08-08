@@ -1,7 +1,7 @@
 #ifndef COMMANDPROCESSOR_H
 #define COMMANDPROCESSOR_H
 
-#include <QThread>
+#include <QObject>
 #include <QMap>
 #include <QMultiHash>
 #include <QStringList>
@@ -11,9 +11,10 @@ typedef QString Source;
 typedef QString DataType;
 typedef QString Command;
 
+class CommandTask;
 class PluginSession;
 
-class CommandProcessor : public QThread {
+class CommandProcessor : public QObject {
     Q_OBJECT
     
     public:
@@ -21,13 +22,17 @@ class CommandProcessor : public QThread {
         ~CommandProcessor();
 
 	// For receiving events
-	void customEvent(QEvent* e);
+	//void customEvent(QEvent* e);
 
         void configure();
         bool loadSettings();
         bool saveSettings() const;
 
-	void parseInput(const QString&);
+	// For sending messages to
+	QObject* getUserInput() const;
+	QObject* getAction() const;
+
+	//void parseInput(const QString&);
 	bool unregisterCommand(const QString &source);
 	void registerCommand(const QStringList &sl);
 
@@ -37,9 +42,6 @@ class CommandProcessor : public QThread {
 	PluginSession* getPluginSession() { return _pluginSession; };
 	void emitQuit();
 
- protected:
-	void run();
-
    private:
 	/** Commands Section */
         QChar _symbol, _delim;
@@ -47,6 +49,7 @@ class CommandProcessor : public QThread {
 	QMultiHash<Source, Command> _registry;
 
 	PluginSession *_pluginSession;
+	CommandTask *_actionTask, *_userInputTask;
 
  signals:
 	void quit();

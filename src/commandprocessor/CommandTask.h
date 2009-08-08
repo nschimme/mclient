@@ -1,26 +1,28 @@
 #ifndef COMMANDTASK_H
 #define COMMANDTASK_H
 
-#include <QRunnable>
+#include <QThread>
 #include <QStringList>
 
 enum CommandProcessorType { COMMAND_ALIAS = 0, COMMAND_ACTION };
 
 class CommandProcessor;
 
-class CommandTask : public QRunnable {
+class CommandTask : public QThread {
     
     public:
-        CommandTask(const QString&, CommandProcessor*);
-        CommandTask(const QString&, const QStringList&, CommandProcessor*);
+        CommandTask(const CommandProcessorType&, CommandProcessor*,
+		    QObject *parent=0);
         ~CommandTask();
 
+	void customEvent(QEvent *e);
+
+ protected:
 	void run();
 
    private:
 	CommandProcessorType _type;
-	QString _input;
-	QStringList _queue, _tags;
+	QStringList _queue;
 	uint _stack;
 	CommandProcessor *_commandProcessor;
 

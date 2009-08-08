@@ -76,7 +76,7 @@ PluginSession::~PluginSession() {
 void PluginSession::run() {
   loadAllPlugins();
   // Send the receiving plugins to each plugin which delivers
-  //postReceivingPlugins();
+  postReceivingPlugins();
   startSession();
 
   qDebug() << "* PluginSession" << _session
@@ -366,7 +366,7 @@ void PluginSession::customEvent(QEvent* e) {
     if (!found) {
       if (me->dataTypes().contains("XMLAll")) {
 	MClientEvent* nme = new MClientEvent(*me);
-	QCoreApplication::postEvent(_commandProcessor, nme);
+	QCoreApplication::postEvent(_commandProcessor->getAction(), nme);
 	qDebug() << "* posting to CommandProcessor";
       }
     } else {
@@ -379,54 +379,54 @@ void PluginSession::customEvent(QEvent* e) {
 
 
 void PluginSession::postReceivingPlugins() {
-//   // Go through each unique plugin in this hash
-//   QList<QPluginLoader*> list = _deliversTypes.uniqueKeys();
+  /*
+  // Go through each unique plugin in this hash
+  QList<QPluginLoader*> list = _deliversTypes.uniqueKeys();
 
-//   for (int i = 0; i < list.size(); ++i) {
-//     QPluginLoader *pl = list.at(i); // the current plugin
+  for (int i = 0; i < list.size(); ++i) {
+    QPluginLoader *pl = list.at(i); // the current plugin
 
-//     // Hash to be delivered to the current plugin
-//     QMultiHash<QString, QVariant> hash;
+    // Hash to be delivered to the current plugin
+    QMultiHash<QString, QVariant> hash;
     
-//     // Iterate through each type that this plugin delivers
-//     QMultiHash<QPluginLoader*, QString>::iterator j
-//       = _deliversTypes.find(pl);
-//     for (; j != _deliversTypes.end() && j.key() == pl; ++j) {
-//       QString dataType = j.value(); // the dataType
-//       QList<MClientEventHandler*> receivesTypes
-// 	= _receivesTypes.values(dataType);
+    // Iterate through each type that this plugin delivers
+    QMultiHash<QPluginLoader*, QString>::iterator j
+      = _deliversTypes.find(pl);
+    for (; j != _deliversTypes.end() && j.key() == pl; ++j) {
+      QString dataType = j.value(); // the dataType
+      QList<MClientEventHandler*> receivesTypes
+	= _receivesTypes.values(dataType);
 
-//       foreach(MClientEventHandler *rpl, receivesTypes)
-// 	hash.insert(dataType, qVariantFromValue(rpl));
+      foreach(MClientEventHandler *rpl, receivesTypes)
+	hash.insert(dataType, qVariantFromValue(rpl));
 
-//       // Hack to deliver output to CommandProcessor
-//       if (dataType == "XMLAll") {
-// 	hash.insert(dataType,
-// 		    qVariantFromValue(static_cast<QObject*>
-// 				      (_commandProcessor)));
-//       }
+      // Hack to deliver output to CommandProcessor
+      if (dataType == "XMLAll") {
+	hash.insert(dataType,
+		    qVariantFromValue(static_cast<QObject*>
+				      (_commandProcessor)));
+      }
       
-//     }
+    }
 
-//     if (!hash.isEmpty()) {
-//       // Create the engineEvent
-//       QVariant *payload = new QVariant(hash);
-//       MClientEngineEvent *ee
-// 	= new MClientEngineEvent(new MClientEventData(payload, QStringList(),
-// 						      _session),
-// 				 EE_DATATYPE_UPDATE,
-// 				 _session);
+    if (!hash.isEmpty()) {
+      // Create the engineEvent
+      QVariant *payload = new QVariant(hash);
+      MClientEngineEvent *ee
+	= new MClientEngineEvent(new MClientEventData(payload, QStringList(),
+						      _session),
+				 EE_DATATYPE_UPDATE,
+				 _session);
 
-//       // Post the event to the current plugin
-//       QCoreApplication::postEvent(pl->instance(), ee);
+      // Post the event to the current plugin
+      QCoreApplication::postEvent(pl->instance(), ee);
 
-//       /*
-//       MClientPluginInterface *pi
-// 	= qobject_cast<MClientPluginInterface*>(pl->instance());
-//       qDebug() << ">> delivering receiving types to" << pi->shortName()
-// 	       << hash.uniqueKeys();
-//       */
-//     }
-//   }
+      MClientPluginInterface *pi
+	= qobject_cast<MClientPluginInterface*>(pl->instance());
+      qDebug() << ">> delivering receiving types to" << pi->shortName()
+	       << hash.uniqueKeys();
+    }
+  }
+  */
 
 }

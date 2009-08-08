@@ -11,43 +11,51 @@
 #include <QDebug>
 #include <QVariant>
 
-CommandTask::CommandTask(const QString &input, CommandProcessor *ps)
-  : QRunnable(), _input(input), _commandProcessor(ps) {
+CommandTask::CommandTask(const CommandProcessorType &type,
+			 CommandProcessor *ps,
+			 QObject *parent)
+  : QThread(parent), _type(type), _commandProcessor(ps) {
 
-  _type = COMMAND_ALIAS;
   _queue = QStringList();
   _stack = 0;
 }
 
-CommandTask::CommandTask(const QString &input, const QStringList &tags,
-			     CommandProcessor *ps)
-  : QRunnable(), _input(input), _tags(tags), _commandProcessor(ps) {
-
-  _type = COMMAND_ACTION;
-  _queue = QStringList();
-  _stack = 0;
-}
 
 CommandTask::~CommandTask() {
 }
 
 
+void CommandTask::customEvent(QEvent *e) {
+  if (e->type() == 10000) {
+    // EngineEvent
+    return ;
+
+  }
+  else if (e->type() == 10001) {
+    MClientEvent* me = static_cast<MClientEvent*>(e);
+    
+    if(me->dataTypes().contains("XMLAll")) {
+      findAction(me->payload()->toString(),
+		 me->dataTypes());
+      processStack();
+
+    }
+    else if (me->dataTypes().contains("UserInput")) {
+      parseInput(me->payload()->toString());
+      processStack();
+     
+    }
+  }
+  else {
+    qDebug() << "CommandTask" << QThread::currentThread()
+	     << "received unknown event type:" << e->type();
+  }
+}
+
+
 void CommandTask::run() {
-  qDebug() << "CommandTask run" << QThread::currentThread() << ":" << _input;
-  
-  switch (_type) {
-  case COMMAND_ALIAS:
-    parseInput(_input);
-    break;
-  case COMMAND_ACTION:
-    findAction(_input, _tags);
-    break;
-  default:
-    qDebug() << "Error, unknown command type";
-  };
-
-  processStack();
-
+  qDebug() << "CommandTask run" << QThread::currentThread();
+  exec();
   qDebug() << "CommandTask" << QThread::currentThread() << "done";
 }
 

@@ -2,6 +2,7 @@
 
 #include <QEvent>
 #include <QVariant>
+#include <QCoreApplication> // for sending command
 
 #include "MClientEvent.h"
 
@@ -48,5 +49,13 @@ void EventHandler::sendUserInput(const QString &input,
     postSession(qv, sl);
   }
 
-  _pluginSession->getCommand()->parseInput(input);
+  // Post to command processor
+  QVariant *payload = new QVariant(input);
+  QStringList tags("UserInput");
+  MClientEventData *med = new MClientEventData(payload, tags,
+					       _pluginSession->session());
+  MClientEvent* me = new MClientEvent(med);
+  QCoreApplication::postEvent(_pluginSession->getCommand()->getUserInput(),
+			      me);
+  
 }
