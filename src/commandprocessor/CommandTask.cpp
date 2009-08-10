@@ -122,7 +122,7 @@ bool CommandTask::parseCommand(QString command,
   if (command.isEmpty()) command = "help";
     
   // Identify Command
-  QMapIterator<Command, DataType> i(_commandProcessor->getCommandMapping());
+  QMapIterator<QString, QString> i(_commandProcessor->getCommandMapping());
   while (i.hasNext()) {
     if (i.next().key().startsWith(command)) {
       // Command was identified
@@ -187,7 +187,7 @@ bool CommandTask::parseCommand(QString command,
 	  
 	} else if (command == "help") {
 	  QString output = "#commands available:\n";
-	  QMapIterator<Command, DataType>
+	  QMapIterator<QString, QString>
 	    i(_commandProcessor->getCommandMapping());
 	  while (i.hasNext())
 	    output += QString("#%1\n").arg(i.next().key());

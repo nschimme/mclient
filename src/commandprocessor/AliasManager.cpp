@@ -237,3 +237,27 @@ bool AliasManager::add(const QString& name, const QString &command,
   _mutex.unlock();
   return true;
 }
+
+
+bool AliasManager::loadAliases(const QHash<QString, QString> &hash) {
+
+  qDebug() << "* AliasManager loading " << hash.value("aliases/size")
+	   << "aliases";
+
+  int size = hash.value("aliases/size", 0).toInt();
+  for (int i = 0; i < size; i++) {
+    QString prefix = "aliases/" + QString::number(i);
+
+    // Valid only if it contains these parts
+    if (hash.contains(prefix+"/command")) {
+      // Add the alias
+      add(hash.value(prefix+"/name", QString::number(i)),
+	  hash.value(prefix+"/command"),
+	  hash.value(prefix+"/group", 0));
+    }
+    else qDebug() << "* AliasManager unable to parse alias" << i;
+    
+  }
+  
+  return true;
+}

@@ -71,10 +71,12 @@ class MClientPlugin : public QThread, public MClientPluginInterface {
         // Needed for Qt 4.3, but not for 4.4
         virtual void run();
 #endif
-
-public slots:
-        virtual MClientEventHandler* getEventHandler(QString s)=0;
 	
+	// Grab the event handler
+        virtual MClientEventHandler* getEventHandler(QString s)=0;
+        
+	// List of commands
+	const QList<CommandEntry* > commandEntries() const;
 
     protected:
         QString _shortName, _longName, _description, _version;
@@ -83,6 +85,8 @@ public slots:
         QString _configVersion;
 
         QHash<QString, int> _implemented, _dependencies;
+
+	QList<CommandEntry* > _commandEntries;
 
         QStringList _receivesDataTypes, _deliversDataTypes;
 

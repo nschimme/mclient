@@ -82,3 +82,8 @@ void MClientPlugin::run() {
 void MClientPlugin::setPluginManager(PluginManager *pm) {
   _pluginManager = pm;
 }
+
+
+const QList<CommandEntry* > MClientPlugin::commandEntries() const {
+  return _commandEntries;
+}

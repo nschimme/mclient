@@ -6,6 +6,7 @@
 
 class PluginManager;
 class MClientEventHandler;
+class CommandEntry;
 
 class MClientPluginInterface {
     
@@ -59,6 +60,9 @@ class MClientPluginInterface {
 
 	// Grab the event handler
 	virtual MClientEventHandler* getEventHandler(QString s)=0;
+
+	// List of commands
+	virtual const QList<CommandEntry* > commandEntries() const=0;
 
 };
 

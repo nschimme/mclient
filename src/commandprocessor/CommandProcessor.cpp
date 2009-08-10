@@ -2,6 +2,7 @@
 
 #include "PluginSession.h"
 #include "CommandTask.h"
+#include "CommandEntry.h"
 
 #include <QDebug>
 #include <QApplication>
@@ -77,13 +78,13 @@ QObject* CommandProcessor::getAction() const {
 }
 
 
-bool CommandProcessor::unregisterCommand(const Source& source) {
+bool CommandProcessor::unregisterCommand(const QString &source) {
   if (!_registry.contains(source)) {
     qDebug() << source << "was not registered! Unable to remove.";
     return false;
   }
 
-  QMultiHash<Source, Command>::iterator i = _registry.find(source);
+  QMultiHash<QString, QString>::iterator i = _registry.find(source);
   while (i != _registry.end() && i.key() == source) {
     if (_mapping.remove(i.value()) == 0)
       qDebug() << "Unable to remove command" << i.value()
@@ -95,21 +96,16 @@ bool CommandProcessor::unregisterCommand(const Source& source) {
 }
 
 
-void CommandProcessor::registerCommand(const QStringList& sl) {
-  // First Element is Registering Source
-  Source source = sl.at(0);
-
-  // All Other Elements should be in pairs (command, dataType)
-  // TODO: Rewrite this as a QHash rather than a QStringList
-  for (int i = 2; i < sl.size(); i += 2) {
-    Command command = sl.at(i-1);
-    DataType dataType = sl.at(i);
-    if (_mapping.contains(command)) {
-      qDebug() << "Error, command" << command << "was already added";
+void CommandProcessor::registerCommand(const QString &pluginName,
+				       const QList<CommandEntry* > &list) {
+  foreach(CommandEntry *ce, list) {
+    if (_mapping.contains(ce->command())) {
+      qDebug() << "Error, command" << ce->command() << "was already added";
     } else {
-      qDebug() << "Registering command " << command << " " << dataType;
-      _mapping.insert(command, dataType);
-      _registry.insertMulti(source, command);
+      qDebug() << "Registering command " << ce->command() << " "
+	       << ce->dataType();
+      _mapping.insert(ce->command(), ce->dataType());
+      _registry.insertMulti(pluginName, ce->command());
     }
   }
 }

@@ -31,6 +31,8 @@ class AliasManager : public QObject {
     int count() { return _aliases->size(); };
     QHash<QString, Alias*> getHash() const { return *_aliases; };
 
+    bool loadAliases(const QHash<QString, QString> &);
+
     QAbstractItemModel *model () const;
     
  private:

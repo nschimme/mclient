@@ -276,6 +276,10 @@ void PluginSession::startSession() {
 	  _deliversTypes.insert(loader, s);
       }
 
+      // Register the commands
+      _commandProcessor->registerCommand(iPlugin->shortName(),
+					 iPlugin->commandEntries());
+
     }
   }
 }

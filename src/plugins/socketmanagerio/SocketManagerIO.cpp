@@ -6,6 +6,7 @@
 #include "PluginManager.h"
 #include "PluginSession.h"
 #include "CommandProcessor.h"
+#include "CommandEntry.h"
 #include "ConfigManager.h"
 
 #include <QDebug>
@@ -27,6 +28,23 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
 		       << "SocketDisconnected" << "DisplayData";
     _configurable = true;
     _configVersion = "2.0";
+
+    // Command: connect
+    CommandEntry *connect = new CommandEntry();
+    connect->pluginName(shortName());
+    connect->command("connect");
+    connect->help("connect to the host");
+    connect->dataType("ConnectToHost");
+
+    // Command: zap
+    CommandEntry *zap = new CommandEntry();
+    zap->pluginName(shortName());
+    zap->command("zap");
+    zap->help("disconnect from the host");
+    zap->dataType("DisconnectFromHost");
+
+    // For registering commands
+    _commandEntries << connect << zap;
 }
 
 
@@ -55,14 +73,6 @@ bool SocketManagerIO::loadSettings() {
   _settings =
     _pluginManager->getConfig()->pluginSettings(_pluginSession->session(),
 						_shortName);
-  
-  // register commands
-  QStringList commands;
-  commands << _shortName
-	   << "connect" << "ConnectToHost"
-	   << "zap" << "DisconnectFromHost";
-  
-  _pluginManager->getCommand()->registerCommand(commands);
   */
   
   return true;
