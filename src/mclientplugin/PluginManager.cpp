@@ -41,9 +41,11 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
 	    this, SLOT(stopSession(const QString&)));
 
     qDebug() << "* PluginManager is reading settings...";
-    QHash<QString, QString> *hash = getConfig()->applicationSettings();
+    QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
     
-    QDateTime indexMod = QDateTime::fromString(hash->value("mClient/plugins/indexed"));
+    QDateTime indexMod
+      = QDateTime::fromString(hash->value("mClient/plugins/indexed")
+			      .toString());
 
     // Move into the plugins directory
     QDir pluginsDir = QDir(qApp->applicationDirPath());
@@ -182,32 +184,35 @@ bool PluginManager::indexPlugins() {
 
 
 bool PluginManager::writePluginIndex() {
-    QHash<QString, QString> *hash = getConfig()->applicationSettings();
+    QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
     
     QStringList groups;
     groups << "mClient" << "plugins";
     QList<PluginEntry*> plugins = _availablePlugins.values();
-    hash->insert(groups.join("/")+"/size", QString::number(plugins.size()));
-    hash->insert(groups.join("/")+"/path", getConfig()->getPluginPath());
+    hash->insert(groups.join("/")+"/size",
+		 QVariant(QString::number(plugins.size())));
+    hash->insert(groups.join("/")+"/path",
+		 QVariant(getConfig()->getPluginPath()));
     hash->insert(groups.join("/")+"/indexed",
-		QDateTime(QDateTime::currentDateTime()).toString());
+		QVariant(QDateTime(QDateTime::currentDateTime()).toString()));
     for (int i = 0; i < plugins.size(); ++i) {
       PluginEntry *e = plugins.at(i);
       groups << QString::number(i+1); /* plugins/index */
       
-      hash->insert(groups.join("/")+"/shortname", e->shortName());
-      hash->insert(groups.join("/")+"/libname", e->libName());
-      hash->insert(groups.join("/")+"/longname", e->longName());
+      hash->insert(groups.join("/")+"/shortname", QVariant(e->shortName()));
+      hash->insert(groups.join("/")+"/libname", QVariant(e->libName()));
+      hash->insert(groups.join("/")+"/longname", QVariant(e->longName()));
       
       if (!e->apiList().isEmpty()) {
 	groups << "api";
 	QStringList api = e->apiList();
-	hash->insert(groups.join("/")+"/size", QString::number(api.size()));
+	hash->insert(groups.join("/")+"/size",
+		     QVariant(QString::number(api.size())));
 	for(int j = 0; j < api.size(); ++j) {
 	  groups << QString::number(j); /* api/index */
-	  hash->insert(groups.join("/")+"/name", api.at(j));
+	  hash->insert(groups.join("/")+"/name", QVariant(api.at(j)));
 	  hash->insert(groups.join("/")+"/version",
-		       QString::number(e->version(api.at(j))));
+		       QVariant(QString::number(e->version(api.at(j)))));
 	  groups.removeLast(); /* api/index */
 	}
 	groups.removeLast(); /* api */
@@ -224,26 +229,27 @@ bool PluginManager::writePluginIndex() {
 
 bool PluginManager::readPluginIndex() {
     // Read in the plugin db xml into PluginEntrys
-    QHash<QString, QString> *hash = getConfig()->applicationSettings();
+    QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
     
     QStringList groups;
     groups << "mClient" << "plugins";
     QDateTime generated =
-      QDateTime::fromString(hash->value(groups.join("/")+"/generated"));
+      QDateTime::fromString(hash->value(groups.join("/")+"/generated")
+			    .toString());
 
     int pluginsSize = hash->value(groups.join("/")+"/size", 0).toInt();
     for (int i = 0; i < pluginsSize; ++i) {
       PluginEntry* e = new PluginEntry();
       groups << QString::number(i+1); /* plugins/index */
-      e->libName(hash->value(groups.join("/")+"/libname"));
-      e->longName(hash->value(groups.join("/")+"/longname"));
-      e->shortName(hash->value(groups.join("/")+"/shortname"));
+      e->libName(hash->value(groups.join("/")+"/libname").toString());
+      e->longName(hash->value(groups.join("/")+"/longname").toString());
+      e->shortName(hash->value(groups.join("/")+"/shortname").toString());
 
       groups << "api";
       int apiSize = hash->value(groups.join("/")+"/size", 0).toInt();
       for (int j = 0; j < apiSize; ++j) {
 	groups << QString::number(j+1); /* api/index */
-	QString name = hash->value(groups.join("/")+"/name");
+	QString name = hash->value(groups.join("/")+"/name").toString();
 	int version = hash->value(groups.join("/")+"/version").toInt();
 	e->addAPI(name, version);
 	groups.removeLast(); /* api/index */

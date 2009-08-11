@@ -239,25 +239,28 @@ bool AliasManager::add(const QString& name, const QString &command,
 }
 
 
-bool AliasManager::loadAliases(const QHash<QString, QString> &hash) {
+bool AliasManager::loadSettings(const QHash<QString, QVariant> &hash) {
 
-  qDebug() << "* AliasManager loading " << hash.value("aliases/size")
-	   << "aliases";
+  qDebug() << "* AliasManager loading"
+	   << hash.value("aliases/size", 0).toInt() << "aliases";
+
+  qDebug() << hash;
 
   int size = hash.value("aliases/size", 0).toInt();
-  for (int i = 0; i < size; i++) {
+  for (int i = 1; i <= size; i++) {
     QString prefix = "aliases/" + QString::number(i);
 
     // Valid only if it contains these parts
     if (hash.contains(prefix+"/command")) {
       // Add the alias
-      add(hash.value(prefix+"/name", QString::number(i)),
-	  hash.value(prefix+"/command"),
-	  hash.value(prefix+"/group", 0));
+      add(hash.value(prefix+"/name", QString::number(i)).toString(),
+	  hash.value(prefix+"/command").toString(),
+	  hash.value(prefix+"/group", "Default").toString());
     }
     else qDebug() << "* AliasManager unable to parse alias" << i;
     
   }
-  
+
+  qDebug() << "* Done loading" << count() << "aliases";
   return true;
 }

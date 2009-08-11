@@ -25,22 +25,22 @@ class ConfigManager : public QObject {
         // General app-level settings
         bool readApplicationSettings();
         bool writeApplicationSettings();
-	QHash<QString, QString>* applicationSettings() {
+	QHash<QString, QVariant>* applicationSettings() {
 	  return _appSettings;
 	}
 
 	// Profile settings
 	bool readProfileSettings(const QString &dirName);
 	bool writeProfileSettings(const QString &profileName);
-	QHash<QString, QString>* profileSettings(const QString &profileName) {
+	QHash<QString, QVariant>* profileSettings(const QString &profileName) {
 	  return _profileSettings[profileName];
 	}
 
         // Take care of plugin settings that are stored in xml
 	bool readPluginSettings(const QString&, const QString&);
 	bool writePluginSettings(const QString&, const QString&);
-	QHash<QString, QString>* pluginSettings(const QString &profileName,
-						const QString &pluginName) {
+	QHash<QString, QVariant>* pluginSettings(const QString &profileName,
+						 const QString &pluginName) {
 	  return _pluginSettings[profileName]->value(pluginName);
 	}
 
@@ -81,17 +81,17 @@ class ConfigManager : public QObject {
         QString _pluginPath;
 
 	// Application's settings
-	QHash<QString, QString> *_appSettings;
+	QHash<QString, QVariant> *_appSettings;
 
 	// Profile's settings
 	QHash<QString, // profile
-	  QHash<QString, QString>* // settings
+	  QHash<QString, QVariant>* // settings
 	  > _profileSettings;
 	
 	// Hash of each profile's plugin settings
 	QHash<QString, // profile
 	  QHash<QString, // plugin
-	    QHash<QString, QString>* // settings
+	    QHash<QString, QVariant>* // settings
 	  >*
 	> _pluginSettings;
 

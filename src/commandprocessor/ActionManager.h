@@ -7,7 +7,7 @@
 #include <QMultiMap>
 #include <QRegExp>
 #include <QMutex>
-
+#include <QVariant>
 
 typedef struct Action {
   QString label;
@@ -38,6 +38,8 @@ class ActionManager : public QObject {
     QMultiMap<int, QMultiHash<QString, Action*>* > getHash() const {
       return _actions;
     };
+
+    bool loadSettings(const QHash<QString, QVariant> &);
     
  private:
     mutable QMutex _mutex;

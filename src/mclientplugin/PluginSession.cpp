@@ -24,6 +24,7 @@
 #include <QDir>
 #include <QPluginLoader>
 #include <QDebug>
+#include <QVariant>
 
 PluginSession::PluginSession(const QString &s, PluginManager *pm,
 			     QObject *parent)
@@ -32,6 +33,15 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
   // Create alias and action managers
   _aliasManager = new AliasManager;
   _actionManager = new ActionManager;
+
+  // Load aliases and actions (temporarily uses plugin code)
+  getManager()->getConfig()->readPluginSettings(_session, "alias");
+  getManager()->getConfig()->readPluginSettings(_session, "action");
+  _aliasManager->loadSettings(*getManager()->
+			      getConfig()->pluginSettings(_session, "alias"));
+  _actionManager->loadSettings(*getManager()->
+			       getConfig()->
+			       pluginSettings(_session, "action"));
 
   // Create the command processor
   _commandProcessor = new CommandProcessor(this);
@@ -88,8 +98,8 @@ void PluginSession::run() {
 
 void PluginSession::loadAllPlugins() {
   // Get the needed plugins for this profile
-  QHash<QString, QString> *hash
-    = getManager()->getConfig()->profileSettings(_session);  
+  QHash<QString, QVariant> *hash
+    = getManager()->getConfig()->profileSettings(_session);
 
   QStringList pluginsToLoad;
   int pluginsSize = hash->value("profile/plugins/size", 0).toInt();
@@ -97,7 +107,7 @@ void PluginSession::loadAllPlugins() {
     // Add the plugin to the list of those to be loaded
     QString pluginName(hash->value("profile/plugins/"+
 				   QString::number(i+1)+
-				   "/name"));    
+				   "/name").toString());    
     pluginsToLoad << pluginName;
   }
   

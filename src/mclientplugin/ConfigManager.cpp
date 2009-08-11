@@ -261,9 +261,9 @@ bool ConfigManager::readApplicationSettings() {
   _pluginPath = conf.value("mClient/plugins/path", "plugins").toString();
 
   // Transfer results to settings hash
-  _appSettings = new QHash<QString, QString>;
+  _appSettings = new QHash<QString, QVariant>;
   foreach(QString s, conf.allKeys())
-    _appSettings->insert(s, conf.value(s).toString());
+    _appSettings->insert(s, conf.value(s));
 
   qDebug() << "* read in application settings";
   return true;
@@ -277,7 +277,7 @@ bool ConfigManager::writeApplicationSettings() {
   _appSettings->insert("mClient/config/path", _configPath);
   
   // Place the hash values back into the settings
-  QHash<QString, QString>::const_iterator i = _appSettings->constBegin();
+  QHash<QString, QVariant>::const_iterator i = _appSettings->constBegin();
   while (i != _appSettings->constEnd()) {
     conf.setValue(i.key(), i.value());
     ++i;
@@ -313,7 +313,7 @@ bool ConfigManager::discoverProfiles() {
 
   // If there are no profiles, add the "Default" one
   if (_pluginSettings.isEmpty()) {
-    _profileSettings["Default"] = new QHash<QString, QString>;
+    _profileSettings["Default"] = new QHash<QString, QVariant>;
 
     qDebug() << "! No profiles found, creating default profile.";
 
@@ -332,9 +332,9 @@ bool ConfigManager::readProfileSettings(const QString &dirName) {
   QString profileName = conf.value("profile/name", dirName).toString();
 
   // Transfer the results to the settings hash
-  QHash<QString, QString> *hash = new QHash<QString, QString>;
+  QHash<QString, QVariant> *hash = new QHash<QString, QVariant>;
   foreach(QString s, conf.allKeys())
-    hash->insert(s, conf.value(s).toString());
+    hash->insert(s, conf.value(s));
 
   // Always update the path to the current directory
   hash->insert("profile/path", dirName);
@@ -349,10 +349,10 @@ bool ConfigManager::readProfileSettings(const QString &dirName) {
 
 bool ConfigManager::writeProfileSettings(const QString &profileName) {
   // Get the hash
-  QHash<QString, QString> *hash = _profileSettings[profileName];
+  QHash<QString, QVariant> *hash = _profileSettings[profileName];
 
   // Figure out which directory we are writing to
-  QString dirName = hash->value("profile/path", profileName);
+  QString dirName = hash->value("profile/path", profileName).toString();
 
   QString file = QString("%1/%2/profile.xml").arg(_configPath, dirName);
   QSettings conf(file, XmlFormat);
@@ -361,7 +361,7 @@ bool ConfigManager::writeProfileSettings(const QString &profileName) {
   hash->insert("profile/path", dirName);
   
   // Place the hash values back into the settings
-  QHash<QString, QString>::const_iterator i = hash->constBegin();
+  QHash<QString, QVariant>::const_iterator i = hash->constBegin();
   while (i != hash->constEnd()) {
     conf.setValue(i.key(), i.value());
     ++i;
@@ -377,24 +377,25 @@ bool ConfigManager::readPluginSettings(const QString &profileName,
   qDebug() << "* reading plugin settings" << pluginName;
   // Figure out which directory we are writing to
   QString dirName
-    = _profileSettings[profileName]->value("profile/path", profileName);
+    = _profileSettings[profileName]->value("profile/path",
+					   profileName).toString();
   
   // Read the plugin settings from this profile directory
   QString file = QString("%1/%2/%3.xml").arg(_configPath, dirName, pluginName);
   QSettings conf(file, XmlFormat);
   
   // Transfer the results to the settings hash
-  QHash<QString, QString> *hash = new QHash<QString, QString>;
+  QHash<QString, QVariant> *hash = new QHash<QString, QVariant>;
   foreach(QString s, conf.allKeys())
-    hash->insert(s, conf.value(s).toString());
+    hash->insert(s, conf.value(s));
 
   // See if the plugin hash exists
-  QHash<QString, QHash<QString, QString>* > *pluginHash;
+  QHash<QString, QHash<QString, QVariant>* > *pluginHash;
   if (_pluginSettings.contains(profileName)) {
     pluginHash = _pluginSettings[profileName];
   }
   else {
-    pluginHash = new QHash<QString, QHash<QString, QString>* >;
+    pluginHash = new QHash<QString, QHash<QString, QVariant>* >;
     _pluginSettings.insert(profileName, pluginHash);
   }
 
@@ -410,18 +411,19 @@ bool ConfigManager::writePluginSettings(const QString &profileName,
 					const QString &pluginName) {
   // Figure out which directory we are writing to
   QString dirName
-    = _profileSettings[profileName]->value("profile/path", profileName);
+    = _profileSettings[profileName]->value("profile/path",
+					   profileName).toString();
   
   // Write to the plugin settings in this profile directory
   QString file = QString("%1/%2/%3.xml").arg(_configPath, dirName, pluginName);
   QSettings conf(file, XmlFormat);
 
   // Get the hash
-  QHash<QString, QString> *hash
+  QHash<QString, QVariant> *hash
     = _pluginSettings[profileName]->value(pluginName);
 
   // Place the hash values back into the settings
-  QHash<QString, QString>::const_iterator i = hash->constBegin();
+  QHash<QString, QVariant>::const_iterator i = hash->constBegin();
   while (i != hash->constEnd()) {
     conf.setValue(i.key(), i.value());
     ++i;

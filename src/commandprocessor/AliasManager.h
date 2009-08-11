@@ -5,6 +5,7 @@
 #include <QStringList>
 #include <QHash>
 #include <QMutex>
+#include <QVariant>
 
 typedef struct Alias {
   QString name;
@@ -31,7 +32,7 @@ class AliasManager : public QObject {
     int count() { return _aliases->size(); };
     QHash<QString, Alias*> getHash() const { return *_aliases; };
 
-    bool loadAliases(const QHash<QString, QString> &);
+    bool loadSettings(const QHash<QString, QVariant> &);
 
     QAbstractItemModel *model () const;
     

@@ -62,7 +62,7 @@ void CommandTask::run() {
 
 void CommandTask::parseInput(const QString &input, const QChar &splitChar) {
   // Add current input to the top of the stack
-  QListIterator<QString> i(input.split(splitChar));
+  QListIterator<QString> i(input.split(splitChar); // QString::SkipEmptyParts
   for (i.toBack(); i.hasPrevious();) {
     _queue.append(i.previous());
     qDebug() << "* adding" << _queue.last() << "to stack";
@@ -313,7 +313,7 @@ bool CommandTask::handleAliasCommand(const QString &arguments) {
 
 
 QString CommandTask::findAlias(const QString &name,
-				 const QString &arguments) {
+			       const QString &arguments) {
   qDebug() << "* Alias received an event: " << name << arguments << ".";
 
   AliasManager *aliases = _commandProcessor->getPluginSession()->getAlias();
@@ -365,9 +365,9 @@ bool CommandTask::handleActionCommand(const QString &arguments) {
       for (j = i.value()->constBegin(); j != i.value()->constEnd(); ++j) {
 	QString out = QString("#action >%1@%2=%3 {%4} {%5}\n")
 	  .arg(j.value()->label,
-	       j.value()->group,
+	       j.value()->pattern.pattern(),
 	       j.value()->command,
-	       j.key(),
+	       j.value()->group,
 	       QString("%1").arg(j.value()->priority));
 	
 	output << out;

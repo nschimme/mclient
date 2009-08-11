@@ -23,13 +23,18 @@ Action* ActionManager::match(const QString &pattern,
     
     QStringList::const_iterator tag = tags.constBegin();
     while (tag != tags.constEnd()) {
+
       qDebug() << "looking at tag" << *tag;
       QMultiHash<QString, Action*>::const_iterator j
 	= i.value()->constFind(*tag);
       while (j != i.value()->constEnd() && j.key() == *tag) {
-	
+
 	// Only match active actions
-	if (!j.value()->active) continue;
+	if (!j.value()->active) {
+	  qDebug() << "action not active" << j.value()->label;
+	  ++j;
+	  continue;
+	}
 	else qDebug() << "matching against action" << j.value()->label;
 	
 	if (j.value()->pattern.indexIn(pattern) >= 0) {
@@ -90,5 +95,47 @@ bool ActionManager::add(const QString &label, const QRegExp &pattern,
   }
   
   _mutex.unlock();
+  return true;
+}
+
+
+bool ActionManager::loadSettings(const QHash<QString, QVariant> &hash) {
+
+  qDebug() << "* ActionManager loading"
+	   << hash.value("actions/size", 0).toInt() << "actions";
+
+  qDebug() << hash;
+
+  int count = 0;
+  int size = hash.value("actions/size", 0).toInt();
+  for (int i = 1; i <= size; i++) {
+    QString prefix = "actions/" + QString::number(i);
+
+    // Valid only if it contains these parts
+    if (hash.contains(prefix+"/label") &&
+	hash.contains(prefix+"/pattern") &&
+	hash.contains(prefix+"/command")) {
+      
+      qDebug() << i << ":"
+	       << hash.value(prefix+"/pattern").toString()
+	       << "-->"
+	       << QRegExp(hash.value(prefix+"/pattern").toString()).pattern();
+      
+      // Add the alias
+      add(hash.value(prefix+"/label", QString::number(i)).toString(),
+	  QRegExp(hash.value(prefix+"/pattern").toString()),
+	  hash.value(prefix+"/command").toString(),
+	  hash.value(prefix+"/tags", "XMLNone").toStringList(),
+	  hash.value(prefix+"/group", "Default").toString(),
+	  hash.value(prefix+"/active", true).toBool(),
+	  hash.value(prefix+"/priority", 0).toInt()
+	  );
+      count++;
+    }
+    else qDebug() << "* ActionManager unable to parse alias" << i;
+    
+  }
+
+  qDebug() << "* Done loading" << count << "actions";
   return true;
 }
