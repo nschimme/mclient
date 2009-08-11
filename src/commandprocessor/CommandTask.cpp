@@ -62,7 +62,7 @@ void CommandTask::run() {
 
 void CommandTask::parseInput(const QString &input, const QChar &splitChar) {
   // Add current input to the top of the stack
-  QListIterator<QString> i(input.split(splitChar); // QString::SkipEmptyParts
+  QListIterator<QString> i(input.split(splitChar)); // QString::SkipEmptyParts
   for (i.toBack(); i.hasPrevious();) {
     _queue.append(i.previous());
     qDebug() << "* adding" << _queue.last() << "to stack";

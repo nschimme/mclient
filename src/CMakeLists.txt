@@ -53,7 +53,7 @@ QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
 QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
 QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
-add_executable(mclient #WIN32
+add_executable(mclient MACOSX_BUNDLE #WIN32
     ${mclient_SRCS}
     ${mclient_MOC_SRCS}
     ${mclient_UIS_H}
@@ -77,9 +77,11 @@ add_subdirectory(commandprocessor)
 add_subdirectory(plugins)
 
 # Installation Location
-install(TARGETS mclient
-        RUNTIME DESTINATION .
-        COMPONENT applications)
+if (NOT APPLE)
+   install(TARGETS mclient
+           RUNTIME DESTINATION .
+	   COMPONENT applications)
+endif (NOT APPLE)
 
 # Windows Install Settings
 if (WIN32)
@@ -122,6 +124,44 @@ if (WIN32)
 	)
     endif (MINGW)
 endif (WIN32)
+
+# Apple Install Settings
+if (APPLE)
+    # Bundle the libraries with the binary (requires Qt 4.5)
+    add_custom_command(
+        TARGET mclient
+	POST_BUILD
+        COMMAND macdeployqt ${CMAKE_CURRENT_BINARY_DIR}/mclient.app
+	WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+	COMMENT "Deploying the Qt Framework onto the bundle"
+    )
+    
+    # Install Executables
+    install(
+        TARGETS mclient
+	BUNDLE DESTINATION .
+	COMPONENT applications
+    )
+
+    # If we are supporting older machines, use the following
+    #set(CPACK_OSX_PACKAGE_VERSION 10.4)
+
+    # Package Settings
+    set(CPACK_GENERATOR "PackageMaker")
+    set(CPACK_SOURCE_GENERATOR "TGZ")
+
+    # Libraries are bundled directly
+    set(CPACK_COMPONENT_LIBRARIES_HIDDEN TRUE)
+
+    # Bundle Properties
+    #SET(MACOSX_BUNDLE_ICON_FILE icon.icns)
+    SET(MACOSX_BUNDLE_BUNDLE_NAME mClient)
+    SET(MACOSX_BUNDLE_BUNDLE_VERSION ${VERSION})
+    SET(MACOSX_BUNDLE_SHORT_VERSION_STRING ${VERSION})
+    SET(MACOSX_BUNDLE_LONG_VERSION_STRING "Version ${VERSION}")
+
+endif (APPLE)
+
 
 # Installer
 set(CPACK_RESOURCE_FILE_LICENSE )
