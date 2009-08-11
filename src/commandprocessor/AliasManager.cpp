@@ -252,9 +252,17 @@ bool AliasManager::loadSettings(const QHash<QString, QVariant> &hash) {
 
     // Valid only if it contains these parts
     if (hash.contains(prefix+"/command")) {
+
+      // Clean up the command (remove indentation, etc)
+      QStringList commandList;
+      foreach(QString line, hash.value(prefix+"/command").toString()
+	      .split("\n", QString::SkipEmptyParts)) {
+	commandList << line.trimmed();
+      }
+
       // Add the alias
       add(hash.value(prefix+"/name", QString::number(i)).toString(),
-	  hash.value(prefix+"/command").toString(),
+	  commandList.join("\n"),
 	  hash.value(prefix+"/group", "Default").toString());
     }
     else qDebug() << "* AliasManager unable to parse alias" << i;

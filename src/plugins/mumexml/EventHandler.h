@@ -23,14 +23,14 @@ class EventHandler : public MClientEventHandler {
 	static const QByteArray lessThanChar;
 	static const QByteArray greaterThanTemplate;
 	static const QByteArray lessThanTemplate;
+	static const QChar escChar;
 
     private:
 	void parse(const QByteArray&);
 	bool element(const QByteArray&);
 	bool characters(QByteArray&);
 
-	QString _singleBuffer;
-	QString _multiBuffer;
+	QString _buffer;
 
 	QByteArray _tempCharacters;
 	QByteArray _tempTag;

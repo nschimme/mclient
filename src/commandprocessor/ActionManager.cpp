@@ -120,11 +120,18 @@ bool ActionManager::loadSettings(const QHash<QString, QVariant> &hash) {
 	       << hash.value(prefix+"/pattern").toString()
 	       << "-->"
 	       << QRegExp(hash.value(prefix+"/pattern").toString()).pattern();
+
+      // Clean up the command (remove indentation, etc)
+      QStringList commandList;
+      foreach(QString line, hash.value(prefix+"/command").toString()
+	      .split("\n", QString::SkipEmptyParts)) {
+	commandList << line.trimmed();
+      }
       
       // Add the alias
       add(hash.value(prefix+"/label", QString::number(i)).toString(),
 	  QRegExp(hash.value(prefix+"/pattern").toString()),
-	  hash.value(prefix+"/command").toString(),
+	  commandList.join("\n"),
 	  hash.value(prefix+"/tags", "XMLNone").toStringList(),
 	  hash.value(prefix+"/group", "Default").toString(),
 	  hash.value(prefix+"/active", true).toBool(),

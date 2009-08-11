@@ -35,7 +35,8 @@ class ClientTextEdit : public QTextEdit {
 	void updateFormat(QTextCharFormat& format, int ansiCode);
 	void updateFormatBoldColor(QTextCharFormat& format);
 
-
+ signals:
+	void resizeSplitter(QWidget*); // unused
 };
 
 #endif /* CLIENTTEXTEDIT_H */
