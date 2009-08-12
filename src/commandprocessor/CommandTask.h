@@ -25,8 +25,11 @@ class CommandTask : public QThread {
 	QStringList _queue;
 	uint _stack;
 	CommandProcessor *_commandProcessor;
+	QString _actionBuffer;
+	bool _verbose;
 
-        void parseInput(const QString&, const QChar& =QChar('\n'));
+	void parseMudOutput(const QString&, const QStringList&);
+        void parseUserInput(const QString&, const QChar& =QChar('\n'));
 	void processStack();
 	
         bool parseCommand(QString, const QString&);

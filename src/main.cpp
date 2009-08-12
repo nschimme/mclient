@@ -23,10 +23,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    // Create Singletons
-    PluginManager *pm = new PluginManager;
-    
-    int ret = app.exec();
+    new PluginManager;
 
-    return ret;
+    return app.exec();
 }

@@ -23,6 +23,8 @@ void SmartSplitter::addWidget(QWidget *widget) {
 
   connect(widget, SIGNAL(resizeSplitter(QWidget*)),
 	  SLOT(resizeWidget(QWidget*)));
+  connect(this, SIGNAL(resizedWidget()),
+	  widget, SLOT(splitterResized()));
 
 }
 
@@ -34,6 +36,8 @@ void SmartSplitter::insertWidget(int index, QWidget *widget) {
   
   connect(widget, SIGNAL(resizeSplitter(QWidget*)),
 	  SLOT(resizeWidget(QWidget*)));
+  connect(this, SIGNAL(resizedWidget()),
+	  widget, SLOT(splitterResized()));
 }
 
 void SmartSplitter::resizeWidget(QWidget *widget) {
@@ -46,4 +50,5 @@ void SmartSplitter::resizeWidget(QWidget *widget) {
 				 indexOf(widget));
   qDebug() << "* SmartSplitter is moving to" << pos;
   moveSplitter(pos, indexOf(widget));
+  emit resizedWidget();
 }

@@ -18,8 +18,7 @@ class ConfigManager : public QObject {
     Q_OBJECT
 
     public:
-        // Singleton methods
-        static ConfigManager* instance();
+        ConfigManager(QObject* parent=0);
         ~ConfigManager();
 
         // General app-level settings
@@ -64,14 +63,6 @@ class ConfigManager : public QObject {
 
 	// Where are profiles located?
 	QString getPluginPath() { return _pluginPath; }
-
-
-    protected:
-        // It's a singleton, so these go here
-        ConfigManager(QObject* parent=0);
-
-        static ConfigManager* _pinstance;
-
 
     private:
         // Where should xml files be read from?

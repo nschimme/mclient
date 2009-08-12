@@ -30,16 +30,14 @@ class QMenu;
 class PluginManager;
 class QuickConnectDialog;
 
-class MainWindow:public QMainWindow
-{
+class MainWindow : public QMainWindow {
   Q_OBJECT
 
-  public:
-  // Singleton methods
-  static MainWindow* instance(PluginManager *pm=0);
-    ~MainWindow();
-
-  const QString& session() const { return _currentProfile; }
+    public:
+  MainWindow(PluginManager *pm);
+  ~MainWindow();
+  
+  const QString currentSession() const;
 
   PluginManager* getPluginManager() { return _pluginManager; }
 
@@ -55,12 +53,7 @@ private slots:
 
     void setCurrentProfile(const QString &profile);
 
-  protected:
-    // It's a singleton, so these go here
-    MainWindow(PluginManager *pm);
-    
-    static MainWindow* _pinstance;
-    
+  protected:   
     void closeEvent(QCloseEvent *event);
 
   private:

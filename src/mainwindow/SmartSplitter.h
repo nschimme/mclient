@@ -17,6 +17,9 @@ class SmartSplitter : public QSplitter {
 
 public slots:
     void resizeWidget(QWidget *widget);
+
+ signals:
+    void resizedWidget(); 
 };
 
 #endif /* _SMARTSPLITTER_H */

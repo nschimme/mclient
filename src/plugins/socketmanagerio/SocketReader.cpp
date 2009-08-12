@@ -19,8 +19,13 @@ SocketReader::SocketReader(const QString &s, SocketManagerIO *sm,
 
 
 void SocketReader::connectToHost() {
-  emit displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port));
-  run();
+  if (!_socket) {
+    emit displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port));
+    run();
+  }
+  else if (_socket->state() < 3) {
+    emit displayMessage("#already connecting... ");
+  }
   /** Old threaded code
   if (!isRunning()) start(LowPriority);
   */
@@ -32,33 +37,38 @@ SocketReader::~SocketReader() {
     exit();
     wait();
   }
-  delete _socket;
+  if (_socket) _socket->deleteLater();
   qDebug() << "~SocketReader";
 }
 
 
 void SocketReader::sendToSocket(const QByteArray &ba) {
+  if (_socket) {
     if(_socket->state() != QAbstractSocket::ConnectedState) {
       qDebug() << "Socket not connected!";
       return;
     }
-
-//     for( int i = 0; i < ba.size(); i++)
-//       qDebug() << i << (unsigned char)ba.at(i) << ba.at(i);
-
+    
+    //     for( int i = 0; i < ba.size(); i++)
+    //       qDebug() << i << (unsigned char)ba.at(i) << ba.at(i);
+    
     // this shouldn't be ba.data() !!
     _socket->write(ba);
     //qDebug() << "socket" << ba.size() << "bytes written";
+  }
 }
 
 
 void SocketReader::closeSocket() {
-  _socket->close();
+  if (_socket) {
+    _socket->close();
+    _socket->deleteLater();
+  }
+
   if (isRunning()) {
     exit();
     wait();
   }
-  delete _socket;
 }
 
 
@@ -87,8 +97,10 @@ void SocketReader::run() {
 
 
 void SocketReader::onReadyRead() {
+  if (_socket) {
     QByteArray ba = _socket->readAll(); 
     emit socketReadData(ba);
+  }
 }
 
 
@@ -99,32 +111,34 @@ void SocketReader::onConnect() {
 
 
 void SocketReader::onDisconnect() {
-    emit displayMessage(QString("#connection on \"%1\" closed.\n")
-			.arg(_session));
-    emit socketClosed();
+  qDebug() << "Socket disconnected";
+  emit displayMessage(QString("#connection on \"%1\" closed.\n")
+		      .arg(_session));
+  emit socketClosed();
+  closeSocket();
 }
 
 
 void SocketReader::onError(QAbstractSocket::SocketError error) {
-    qWarning() << "Error involving" 
-	       << _host << _port << _socket->errorString();
-
-    QString errorMessage = _socket->errorString().append(".\n");
-    errorMessage.replace(0, 1, errorMessage.at(0).toLower());
-    switch (error) {
-    case QAbstractSocket::ConnectionRefusedError:
-    case QAbstractSocket::HostNotFoundError:
-      break;
-    default:
-      errorMessage.prepend("#");
-      break;
+  qWarning() << "Error involving" 
+	     << _host << _port << _socket->errorString();
+  
+  QString errorMessage = _socket->errorString().append(".\n");
+  errorMessage.replace(0, 1, errorMessage.at(0).toLower());
+  switch (error) {
+  case QAbstractSocket::ConnectionRefusedError:
+  case QAbstractSocket::HostNotFoundError:
+    break;
+  default:
+    errorMessage.prepend("#");
+    break;
     };
-    emit displayMessage(errorMessage);
-    if (isRunning()) {
-      exit();
-      wait();
-    }
-    delete _socket;
+  emit displayMessage(errorMessage);
+  if (isRunning()) {
+    exit();
+    wait();
+  }
+  closeSocket();
 }
 
 

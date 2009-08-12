@@ -5,18 +5,6 @@
 #include <QSettings>
 #include <QtXml>
 
-
-ConfigManager* ConfigManager::_pinstance = 0;
-
-ConfigManager* ConfigManager::instance() {
-    if(!_pinstance) {
-        _pinstance = new ConfigManager();
-    }
-
-    return _pinstance;
-}
-
-
 class ConfigModel : public QAbstractTableModel {
   public:
   ConfigModel (ConfigManager *manager)
@@ -245,7 +233,6 @@ ConfigManager::ConfigManager(QObject* parent) : QObject(parent) {
 
 ConfigManager::~ConfigManager() {
   delete _model;
-  _pinstance = 0;
   qDebug() << "* ConfigManager destroyed";
 }
 

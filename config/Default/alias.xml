@@ -1,9 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<aliases size="1" version="1.0">
-   <array1 name="lol">
-       <command>
-       #print rofl!\n
-       #print lmfao!\n
-       </command>
-   </array1>
+<aliases size="16" version="1.0">
+<array1 name="/belt"><command>#split rem belt;put belt backpack;get 2.belt backpack;wear belt;wear all belt</command></array1>
+<array2 name="/leather"><command>#split rem all.metal;wear shield;get all.leather backpack;wear all.leather;put all.metal backpack</command></array2>
+<array3 name="/metal"><command>#split rem all.leather;get all.metal backpack;wear all.metal;put all.leather backpack</command></array3>
+<array4 name="/forest"><command>#split rem fur;put fur backpack;get cloak pack;wear cloak</command></array4>
+<array5 name="/cloak"><command>#split rem cloak;put cloak backpack;get 2.cloak backpack;wear cloak</command></array5>
+<array6 name="/fur"><command>#split rem cloak;put cloak backpack;get fur backpack;wear fur</command></array6>
+<array7 name="/boots"><command>#split rem boots;put boots backpack;get 2.boots backpack;wear boots</command></array7>
+<array8 name="/shield"><command>#split rem shield;put shield backpack;get 2,shield backpack;wear shield</command></array8>
+<array9 name="/%j"><command>#split change editor line;/room description;%j;%e;change editor mume;look</command></array9>
+<array10 name="/pipe"><command>#split get pipe backpack;sheath;hold pipe;rest;smoke;stand;draw;put pipe backpack</command></array10>
+<array11 name="/sring"><command>#split remove rubyring;put rubyring backpack;get sapphire backpack;wear sapphire</command></array11>
+<array12 name="/rring"><command>#split remove sapphire;put sapphire backpack;get rubyring backpack;wear rubyring</command></array12>
+<array13 name="/t"><command>#split remove shield;get tweapon backpack;sheath;wield tweapon;put shield backpack</command></array13>
+<array14 name="/s"><command>#split remove tweapon;get shield backpack;wear shield;draw;put tweapon backpack</command></array14>
+<array15 name="/crush"><command>#split wield plant;crush plant</command></array15>
+<array16 name="/draught"><command>#split get blood-vial all;get tarragon all;get bat-fur all;get salamander all;put blood-vial kit;put tarragon kit;put bat-fur kit;put salamander kit;mix kit</command></array16>
 </aliases>

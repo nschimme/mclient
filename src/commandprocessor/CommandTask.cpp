@@ -18,6 +18,10 @@ CommandTask::CommandTask(const CommandProcessorType &type,
 
   _queue = QStringList();
   _stack = 0;
+
+  // Only be noisy if you are user input
+  if (_type == COMMAND_ALIAS) _verbose = true;
+  else _verbose = false;
 }
 
 
@@ -35,13 +39,13 @@ void CommandTask::customEvent(QEvent *e) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
     if(me->dataTypes().contains("XMLAll")) {
-      findAction(me->payload()->toString(),
-		 me->dataTypes());
+      parseMudOutput(me->payload()->toString(),
+		     me->dataTypes());
       processStack();
-
+      
     }
     else if (me->dataTypes().contains("UserInput")) {
-      parseInput(me->payload()->toString());
+      parseUserInput(me->payload()->toString());
       processStack();
      
     }
@@ -60,7 +64,8 @@ void CommandTask::run() {
 }
 
 
-void CommandTask::parseInput(const QString &input, const QChar &splitChar) {
+void CommandTask::parseUserInput(const QString &input,
+				 const QChar &splitChar) {
   // Add current input to the top of the stack
   QListIterator<QString> i(input.split(splitChar)); // QString::SkipEmptyParts
   for (i.toBack(); i.hasPrevious();) {
@@ -70,6 +75,9 @@ void CommandTask::parseInput(const QString &input, const QChar &splitChar) {
 }
 
 void CommandTask::processStack() {
+  // Reinitialize the stack
+  _stack = 0;
+
   while (!_queue.isEmpty()) {
     qDebug() << "* Command queue:" << _stack << _queue;
 
@@ -96,7 +104,8 @@ void CommandTask::processStack() {
     QString newCommand = findAlias(command, arguments);
     if (!newCommand.isEmpty()) {
       // Alias should be handled in findAlias
-      parseInput(newCommand);
+      displayData("[" + newCommand + "]\n");
+      parseUserInput(newCommand);
       
     } else if (command.startsWith(_commandProcessor->getCommandSymbol())) {
       // Parse as a Plugin's Command
@@ -203,7 +212,7 @@ bool CommandTask::parseCommand(QString command,
 	  handleActionCommand(arguments);
 
 	} else if (command == "split") {
-	  parseInput(arguments, _commandProcessor->getDelimSymbol());
+	  parseUserInput(arguments, _commandProcessor->getDelimSymbol());
 
 	}
 
@@ -218,7 +227,7 @@ bool CommandTask::parseCommand(QString command,
   int repeat = command.toInt(&ok);
   if (ok) {
     for (int i = 0; i < repeat; i++) {
-      parseInput(arguments);
+      parseUserInput(arguments);
     }
     return true;
   }
@@ -303,8 +312,9 @@ bool CommandTask::handleAliasCommand(const QString &arguments) {
     // Create alias
     QString group = QString(); // Null is the default group
     aliases->add(name, command, group);
-    displayData("#new alias in group '"
-		+(group.isEmpty()?"*":group)+"': "+name+"="+command+"\n");
+    if (_verbose)
+      displayData("#new alias in group '"
+		  +(group.isEmpty()?"*":group)+"': "+name+"="+command+"\n");
 
   }
 
@@ -426,8 +436,6 @@ bool CommandTask::handleActionCommand(const QString &arguments) {
 
 
 bool CommandTask::findAction(const QString &pattern, QStringList tags) {
-  qDebug() << "* Action received event: " << pattern << tags << ".";
-
   if (tags.size() > 1) tags.removeAll("XMLAll");
 
   ActionManager *actions = _commandProcessor->getPluginSession()->getAction();
@@ -460,13 +468,79 @@ bool CommandTask::findAction(const QString &pattern, QStringList tags) {
     newCommand.replace(QRegExp("\\\\\\$(\\d+)"), "$\\1");
 
     qDebug() << "* action command is" << newCommand;
-    parseInput(newCommand);
+
+    // Display text
+    displayData(pattern);
+
+    parseUserInput(newCommand);
     return true;
   }
   
   // No action found, display the text
   displayData(pattern);
   return false;
+}
+
+
+void CommandTask::parseMudOutput(const QString &output,
+				 const QStringList &tags) {
+  qDebug() << "* Mud output: " << output << tags << ".";
+
+  if (tags.contains("XMLNone")) {
+    // Parse Lines
+    QRegExp rx("([^\n]*\n)");
+    int pos = 0, valid = 0;
+    QStringList list;
+    while ((pos = rx.indexIn(output, pos)) != -1) {
+      list << rx.cap(1);
+      valid = pos;
+      pos += rx.matchedLength();
+    }
+
+    // Action Buffer
+    if (list.isEmpty()) {
+      list << _actionBuffer.append(output);
+      _actionBuffer.clear();
+    }
+    else {
+      list[0].prepend(_actionBuffer);
+      // if valid is 0 then there were no newlines
+      if (valid != 0) _actionBuffer = output.mid(valid + 1);
+    }
+
+    qDebug() << "lines" << list;
+    qDebug() << "action buffer" << _actionBuffer;
+    
+    // Match
+    foreach(QString line, list) {
+      if (line.size() == 1) displayData(line);
+      else findAction(line, tags);
+    }
+
+    // Some buffer fixes
+    switch (_actionBuffer.size()) {
+    case 0:
+      break;
+    case 1:
+      displayData(_actionBuffer);
+      _actionBuffer.clear();
+      break;
+    default:
+      /*
+      if (_actionBuffer.at(_actionBuffer.size()-1) == ' ') {
+         findAction(_actionBuffer, tags);
+         _actionBuffer.clear();
+      }
+      */
+      break;
+    };
+
+  }
+  else {
+    // match tag blocks
+    findAction(output, tags);
+
+  }
 }
 
 

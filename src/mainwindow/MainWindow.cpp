@@ -33,16 +33,6 @@
 #include "ProfileManagerDialog.h"
 #include "AliasEditorDialog.h"
 
-MainWindow* MainWindow::_pinstance = 0;
-
-MainWindow* MainWindow::instance(PluginManager *pm) {
-    if(!_pinstance) {
-        _pinstance = new MainWindow(pm);
-    }
-    return _pinstance;
-}
-
-
 MainWindow::MainWindow(PluginManager *pm) {
   _pluginManager = pm;
   setWindowIcon(QIcon(":/mainwindow/m.png"));
@@ -74,10 +64,8 @@ MainWindow::MainWindow(PluginManager *pm) {
 
 
 MainWindow::~MainWindow() {
-  //getPluginManager()->getCommand()->~CommandManager();
   getPluginManager()->getConfig()->~ConfigManager();
   getPluginManager()->~PluginManager();
-  _pinstance = 0;
   qDebug() << "* MainWindow destroyed";
 }
 
@@ -88,9 +76,9 @@ void MainWindow::start() {
   // Profile Command Line support
   QStringList args = QCoreApplication::arguments();
   if (args.contains("-profile")) {
-    int pos = args.indexOf("-profile");
-    if ((pos + 1) < args.size()) {
-      QString profile = args.at(pos + 1);
+    int pos = args.indexOf("-profile") + 1;
+    if (pos < args.size()) {
+      QString profile = args.at(pos);
       QStringList profileNames
 	= getPluginManager()->getConfig()->profileNames();
       if (profileNames.contains(profile)) {
@@ -215,7 +203,7 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
   qDebug() << "MainWindow received closeEvent";
   if (maybeSave()) {
-    emit stopSession(_currentProfile);
+    emit stopSession(currentSession());
     writeSettings();
     deleteLater();
     event->accept();
@@ -299,4 +287,8 @@ void MainWindow::aliasEditor() {
 			    getAlias(), this);
   aliasEditor->exec();
   delete aliasEditor;
+}
+
+const QString MainWindow::currentSession() const {
+  return _tabWidget->tabText(_tabWidget->currentIndex());
 }

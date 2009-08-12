@@ -17,10 +17,10 @@
 #include <QWidget>
 
 PluginManager::PluginManager(QObject *parent) : QObject(parent) {
-    _configManager = ConfigManager::instance();
-    _mainWindow = MainWindow::instance(this);
+    _configManager = new ConfigManager;
+    _mainWindow = new MainWindow(this);
 
-    qDebug() << "* All singletons created!";
+    qDebug() << "* All major objects created!";
 
     /** Connect Other Necessary Objects */
     connect(this, SIGNAL(doneLoading()), _mainWindow, SLOT(start()));

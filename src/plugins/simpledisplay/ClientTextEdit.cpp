@@ -373,3 +373,8 @@ void ClientTextEdit::updateFormatBoldColor(QTextCharFormat& format) {
   else if (format.foreground() == _grayColor)
     format.setForeground(_whiteColor);
 }
+
+
+void ClientTextEdit::splitterResized() {
+  ensureCursorVisible();
+}

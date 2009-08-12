@@ -272,7 +272,7 @@ void WindowActionManager::reconnectSession() {
 
 void WindowActionManager::postEvent(QVariant *payload, const QStringList& tags) {
   // TODO: Replace with EngineEvents
-  QString session = _mainWindow->session();
+  QString session = _mainWindow->currentSession();
   PluginSession *ps
     = _mainWindow->getPluginManager()->getPluginSession(session);
   

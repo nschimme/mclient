@@ -61,7 +61,7 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
 	  _pluginManager, SLOT(initDisplay(PluginSession*)));
 
   qDebug() << "* PluginSession" << _session
-	   << "created with thread:" << this->thread();
+	   << "created with thread:" << QThread::currentThread();
 }
 
 
@@ -90,7 +90,7 @@ void PluginSession::run() {
   startSession();
 
   qDebug() << "* PluginSession" << _session
-	   << "is running with thread:" << this->thread();
+	   << "is running with thread:" << QThread::currentThread();
   emit doneLoading(this);
   exec();
 }
