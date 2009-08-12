@@ -16,17 +16,6 @@
 #include <QPluginLoader>
 #include <QWidget>
 
-PluginManager* PluginManager::_pinstance = 0;
-
-PluginManager* PluginManager::instance() {
-    if(!_pinstance) {
-        _pinstance = new PluginManager();
-    }
-    
-    return _pinstance;
-}
-
-
 PluginManager::PluginManager(QObject *parent) : QObject(parent) {
     _configManager = ConfigManager::instance();
     _mainWindow = MainWindow::instance(this);
@@ -86,7 +75,6 @@ PluginManager::~PluginManager() {
     delete pe;
   }
 
-  _pinstance = 0;
   qDebug() << "* PluginManager destroyed";
 }
 
@@ -283,6 +271,7 @@ void PluginManager::initSession(const QString &s) {
 
 
 void PluginManager::initDisplay(PluginSession *ps) {
+  qDebug() << "* Initializing display widgets from thread" << this->thread();
   // We now start/create the widgets (this is a slot from
   // PluginSession) in the main thread.
   ps->initDisplay();

@@ -138,27 +138,30 @@ void MainWindow::startProfile(const QString &profile) {
 }
 
 
-void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList) {
+void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> >
+				&widgetList) {
+  qDebug() << "* receiving widgets!" << widgetList;
+
   // Create the layout
   QVBoxLayout *layout = new QVBoxLayout();
   layout->setSpacing(0);
   layout->setContentsMargins(0, 0, 0, 0);
 
-  QWidget *display, *input;
+  QPointer<QWidget> display, input;
   bool displaySet, inputSet = false;
   for (int i = 0; i < widgetList.size(); ++i) {
     int position = widgetList.at(i).first;
-    QWidget *widget = widgetList.at(i).second;
-    
+
+    qDebug() << "* looking at" << widgetList.at(i).second;
     // Differentiate between the types
     if (ISSET(position, DL_DISPLAY) && !displaySet) {
       // Primary Display Widget
-      display = widget;
+      display = widgetList.at(i).second;
       displaySet = true;
 
     } else if (ISSET(position, DL_INPUT) && !inputSet) {
       // Primary Input Widget
-      input = widget;
+      input = widgetList.at(i).second;
       inputSet = true;
 
     } else {
@@ -168,7 +171,7 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
       dockWidget->setFeatures(QDockWidget::DockWidgetMovable |
 			      QDockWidget::DockWidgetFloatable |
 			      QDockWidget::DockWidgetClosable);
-      dockWidget->setWidget(widget);
+      dockWidget->setWidget(widgetList.at(i).second);
       dockWidget->setFloating(false);
       addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
       _dockWidgets.insert("test", dockWidget);
@@ -181,18 +184,24 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
 
   // Add the primary widgets to the smart splitter
   // TODO: Make it smart and resizable upon request of the widget!
-  SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical, this);
-  layout->addWidget(_splitter);
+  SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical);
+  _tabWidget->addTab(_splitter, _currentProfile);
 
   // Add the widgets
-  _splitter->addWidget(display);
-  _splitter->setCollapsible(_splitter->indexOf(display), false);
-  _splitter->addWidget(input);
-  _splitter->setCollapsible(_splitter->indexOf(input), false);
+  if (displaySet) {
+    qDebug() << "* display is" << display;
+    _splitter->addWidget(display);
+    _splitter->setCollapsible(_splitter->indexOf(display), false);
+  }
+  if (inputSet) {
+    qDebug() << "* input is" << input;
+    _splitter->addWidget(input);
+    _splitter->setCollapsible(_splitter->indexOf(input), false);
+  }
 
-  QWidget *widget = new QWidget();
-  widget->setLayout(layout);
-  _tabWidget->addTab(widget, _currentProfile);
+  // Display Main Window
+  qDebug() << "* Displaying Main Window";
+  show();
 
   // Connect the signals/slots
   if (displaySet && inputSet) {
@@ -200,8 +209,6 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
     input->setFocus();
   }
 
-  // Display Main Window
-  show();
 }
 
 void MainWindow::closeEvent(QCloseEvent *event)

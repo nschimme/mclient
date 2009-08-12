@@ -20,8 +20,10 @@ SocketReader::SocketReader(const QString &s, SocketManagerIO *sm,
 
 void SocketReader::connectToHost() {
   emit displayMessage(QString("#trying %1:%2... ").arg(_host).arg(_port));
-  
+  run();
+  /** Old threaded code
   if (!isRunning()) start(LowPriority);
+  */
 }
 
 
@@ -76,9 +78,11 @@ void SocketReader::run() {
     qDebug() << "* Socket thread:" << _socket->thread();
    
     _socket->connectToHost(_host, _port);
+    /*
     qDebug() << "* SocketReader entering event loop!";
     exec();
     qDebug() << "* SocketReader thread quit";
+    */
 }
 
 

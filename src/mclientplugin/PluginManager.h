@@ -22,7 +22,7 @@ class PluginManager : public QObject {
     Q_OBJECT
 
     public:
-        static PluginManager* instance();
+        PluginManager(QObject *parent=0);
         ~PluginManager();
 
 	MainWindow* getMainWindow() { return _mainWindow; }
@@ -43,10 +43,6 @@ public slots:
         void initSession(const QString &s);
         void stopSession(const QString &s);
         void initDisplay(PluginSession *ps);
-
-    protected:
-        PluginManager(QObject *parent=0);
-        static PluginManager* _pinstance;
 
     private:
         bool indexPlugins();

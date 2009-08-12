@@ -53,7 +53,7 @@ QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
 QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
 QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
-add_executable(mclient MACOSX_BUNDLE #WIN32
+add_executable(mclient #MACOSX_BUNDLE #WIN32
     ${mclient_SRCS}
     ${mclient_MOC_SRCS}
     ${mclient_UIS_H}
@@ -139,7 +139,8 @@ if (APPLE)
     # Install Executables
     install(
         TARGETS mclient
-	BUNDLE DESTINATION .
+	#BUNDLE DESTINATION .
+	RUNTIME DESTINATION .
 	COMPONENT applications
     )
 

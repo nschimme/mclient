@@ -310,8 +310,10 @@ void PluginSession::initDisplay() {
     }
   }
 
-  if (!widgetList.isEmpty())
+  if (!widgetList.isEmpty()) {
+    qDebug() << "* posting widgets to the display" << widgetList;
     emit sendWidgets(widgetList);
+  }
   else
     qCritical() << "! No widgets to use as a display!";
 }
