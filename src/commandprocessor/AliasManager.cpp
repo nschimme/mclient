@@ -255,11 +255,11 @@ bool AliasManager::loadSettings(const QHash<QString, QVariant> &hash) {
 
       // Clean up the command (remove indentation, etc)
       QStringList commandList;
-      foreach(QString line, hash.value(prefix+"/command").toString()
+      foreach(QString line, hash.value(prefix+"/command").toString().trimmed()
 	      .split("\n", QString::SkipEmptyParts)) {
 	commandList << line.trimmed();
       }
-
+      
       // Add the alias
       add(hash.value(prefix+"/name", QString::number(i)).toString(),
 	  commandList.join("\n"),

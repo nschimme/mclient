@@ -331,7 +331,13 @@ QString CommandTask::findAlias(const QString &name,
       QRegExp rx(QString("^(\\$%1)|([^\\\\])(\\$%2)").arg(i).arg(i));
       switch (i) {
       case 0:
-	newCommand.replace(rx, "\\2"+arguments);
+	if (arguments.contains("\n")) {
+	  QString temp = arguments;
+	  newCommand.replace(rx, "\\2"+temp.replace(QString("\n"),
+						    QString(" ")));
+	} else {
+	  newCommand.replace(rx, "\\2"+arguments);
+	}
 	break;
       default:
 	newCommand.replace(rx, "\\2"+tokens.at(i-1));
@@ -432,16 +438,27 @@ bool CommandTask::findAction(const QString &pattern, QStringList tags) {
     QString newCommand = action->command;
     QStringList tokens = action->pattern.capturedTexts();
     for (int i = 0; i < tokens.size()+1; ++i) {
+      // Match against non-escaped $ variables
       QRegExp rx(QString("^(\\$%1)|([^\\\\])(\\$%2)").arg(i).arg(i));
       switch (i) {
       case 0:
-	newCommand.replace(rx, "\\2"+pattern);
+	if (pattern.contains("\n")) {
+	  QString temp = pattern;
+	  newCommand.replace(rx, "\\2"+temp.replace(QString("\n"),
+						    QString(" ")));
+	} else {
+	  newCommand.replace(rx, "\\2"+pattern);
+	}
 	break;
       default:
 	newCommand.replace(rx, "\\2"+tokens.at(i-1));
 	break;
       };
     }
+
+    // Unescape $s
+    newCommand.replace(QRegExp("\\\\\\$(\\d+)"), "$\\1");
+
     qDebug() << "* action command is" << newCommand;
     parseInput(newCommand);
     return true;

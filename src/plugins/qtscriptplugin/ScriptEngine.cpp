@@ -1,10 +1,9 @@
 #include "ScriptEngine.h"
 
-#include "QtScriptPlugin.h"
-
 #include <QApplication>
 #include <QDebug>
 #include <QScriptValueIterator>
+#include <QStringList>
 
 QScriptValue print(QScriptContext *context, QScriptEngine *engine) {
   QScriptValue a = context->argument(0);
@@ -46,23 +45,7 @@ QScriptValue emulate(QScriptContext *context, QScriptEngine *engine) {
   return a;
 }
 
-ScriptEngine::ScriptEngine(QString s, QtScriptPlugin* qsp, QObject* parent) 
-  : QScriptEngine(parent) {
-  _session = s;
-  _qsp = qsp;
-  
-  // Connect Signals/Slots
-  connect(_qsp, SIGNAL(evaluate(const QString&)),
-	  this, SLOT(evaluateExpression(const QString&)));
-  connect(_qsp, SIGNAL(variable(const QString&)),
-	  this, SLOT(variableCommand(const QString&)));
-  connect(this, SIGNAL(signalHandlerException(const QScriptValue&)),
-	  this, SLOT(handleException(const QScriptValue&)));
-  connect(this, SIGNAL(emitParseInput(const QString&)),
-	  _qsp, SLOT(parseInput(const QString&)));
-  connect(this, SIGNAL(postSession(QVariant*, const QStringList&)),
-	  _qsp, SLOT(postSession(QVariant*, const QStringList&)));
-  
+ScriptEngine::ScriptEngine(QObject* parent) : QScriptEngine(parent) {  
   
   // Add C++ functions to QtScript
   QFlags<QScriptValue::PropertyFlag> functionFlags(QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration);
@@ -76,7 +59,6 @@ ScriptEngine::ScriptEngine(QString s, QtScriptPlugin* qsp, QObject* parent)
   globalObject().setProperty("emulate", emulateFunction, functionFlags);
   
   // Debugging Information
-  qDebug() << "* QtScriptPlugin thread:" << _qsp->thread();
   qDebug() << "* ScriptEngine thread:" << this->thread();
 }
 

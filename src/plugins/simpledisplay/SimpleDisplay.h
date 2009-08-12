@@ -29,9 +29,6 @@ class SimpleDisplay : public MClientDisplayPlugin {
         bool initDisplay(QString s);
         QWidget* getWidget(QString s);
 
-  protected:
-	void run();
-
     private:
 	QHash<QString, QPointer<ClientTextEdit> > _widgets;
 	QHash<QString, QPointer<EventHandler> > _eventHandlers;

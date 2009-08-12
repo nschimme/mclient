@@ -33,12 +33,6 @@ SimpleDisplay::SimpleDisplay(QWidget* parent)
 
 
 SimpleDisplay::~SimpleDisplay() {
-  exit();
-}
-
-
-void SimpleDisplay::run() {
-  exec();
 }
 
 

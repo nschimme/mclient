@@ -1,13 +1,10 @@
 #include <QDebug>
 #include <QVariant>
-#include <QtScript>
 
-#include "PluginManager.h"
-#include "PluginSession.h"
-#include "CommandProcessor.h"
 #include "QtScriptPlugin.h"
+#include "EventHandler.h"
+#include "CommandEntry.h"
 #include "ScriptEngine.h"
-#include "MClientEvent.h"
 
 Q_EXPORT_PLUGIN2(qtscriptplugin, QtScriptPlugin)
 
@@ -22,34 +19,28 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
     _deliversDataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";
+
+    // Command: connect
+    CommandEntry *script = new CommandEntry();
+    script->pluginName(shortName());
+    script->command("script");
+    script->help("evaluate a script");
+    script->dataType("QtScriptEvaluate");
+
+    // Command: var
+    CommandEntry *var = new CommandEntry();
+    var->pluginName(shortName());
+    var->command("var");
+    var->help("list or set a variable");
+    var->dataType("QtScriptVariable");
+
+    // For registering commands
+    _commandEntries << script << var;
+
 }
 
 
 QtScriptPlugin::~QtScriptPlugin() {
-    saveSettings();
-    exit();
-}
-
-void QtScriptPlugin::customEvent(QEvent* e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-  else {
-    
-    MClientEvent* me = static_cast<MClientEvent*>(e);
-    
-    if(me->dataTypes().contains("QtScriptEvaluate")) {
-      emit evaluate(me->payload()->toString());
-      
-    } else if (me->dataTypes().contains("QtScriptVariable")) {
-      emit variable(me->payload()->toString());
-
-    }
-  }
-}
-
-void QtScriptPlugin::run() {
-  _engine = new ScriptEngine(_session, this);
-  exec();
 }
 
 void QtScriptPlugin::configure() {
@@ -57,13 +48,6 @@ void QtScriptPlugin::configure() {
 
 
 bool QtScriptPlugin::loadSettings() {
-  // register commands
-  QStringList commands;
-  commands << _shortName
-	   << "script" << "QtScriptEvaluate"
-	   << "var" << "QtScriptVariable";
-  _pluginSession->getCommand()->registerCommand(commands);
-
   return true;
 }
 
@@ -73,18 +57,33 @@ bool QtScriptPlugin::saveSettings() const {
 }
 
 
-bool QtScriptPlugin::startSession(QString /* s */) {
-  if (!isRunning()) start(LowPriority);
+bool QtScriptPlugin::startSession(QString s) {
+  _eventHandlers[s] = new EventHandler;
+  _scriptEngines[s] = new ScriptEngine;
+
+  // Connect Signals/Slots
+  connect(_eventHandlers[s], SIGNAL(evaluate(const QString&)),
+	  _scriptEngines[s], SLOT(evaluateExpression(const QString&)));
+  connect(_eventHandlers[s], SIGNAL(variable(const QString&)),
+	  _scriptEngines[s], SLOT(variableCommand(const QString&)));
+  connect(_scriptEngines[s], SIGNAL(signalHandlerException(const QScriptValue&)),
+	  _scriptEngines[s], SLOT(handleException(const QScriptValue&)));
+  connect(_scriptEngines[s], SIGNAL(emitParseInput(const QString&)),
+	  _eventHandlers[s], SLOT(parseInput(const QString&)));
+  connect(_scriptEngines[s], SIGNAL(postSession(QVariant*, const QStringList&)),
+	  _eventHandlers[s], SLOT(postSession(QVariant*, const QStringList&)));
+
   return true;
 }
+
 
 bool QtScriptPlugin::stopSession(QString s) {
-  _engine->deleteLater();
-  exit();
-  qDebug() << "* removed QtScriptPlugin for session" << s;
+  _eventHandlers[s]->deleteLater();
+  _scriptEngines[s]->deleteLater();
   return true;
 }
 
-void QtScriptPlugin::parseInput(const QString &input) {
-  _pluginSession->getCommand()->parseInput(input);
+
+MClientEventHandler* QtScriptPlugin::getEventHandler(QString s) {
+  return _eventHandlers[s].data();
 }

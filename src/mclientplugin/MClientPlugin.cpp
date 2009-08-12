@@ -15,7 +15,7 @@
 
 #include <QPluginLoader>
 
-MClientPlugin::MClientPlugin(QObject* parent) : QThread(parent) {
+MClientPlugin::MClientPlugin(QObject* parent) : QObject(parent) {
     _shortName = "mclientplugin";
     _longName = "The Original MClientPlugin";
     _description = "If you see this text, the plugin author did not replace the default description.";
@@ -72,12 +72,6 @@ bool MClientPlugin::configurable() const {
     return _configurable;
 }
 
-
-#if QT_VERSION < 0x0040400
-// This is needed in Qt 4.3 because run is pure virtual -- not in 4.4
-void MClientPlugin::run() {
-}
-#endif
 
 void MClientPlugin::setPluginManager(PluginManager *pm) {
   _pluginManager = pm;

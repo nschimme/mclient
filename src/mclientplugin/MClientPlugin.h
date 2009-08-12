@@ -3,7 +3,7 @@
 
 #include "MClientPluginInterface.h"
 
-#include <QThread>
+#include <QObject>
 #include <QtPlugin>
 #include <QHash>
 #include <QStringList>
@@ -12,7 +12,7 @@ class PluginManager;
 class MClientEventData;
 class MClientEventHandler;
 
-class MClientPlugin : public QThread, public MClientPluginInterface {
+class MClientPlugin : public QObject, public MClientPluginInterface {
     Q_OBJECT
     Q_INTERFACES(MClientPluginInterface)
     
@@ -67,11 +67,6 @@ class MClientPlugin : public QThread, public MClientPluginInterface {
 	// Set the plugin manager
 	void setPluginManager(PluginManager *pm);
 
-#if QT_VERSION < 0x0040400
-        // Needed for Qt 4.3, but not for 4.4
-        virtual void run();
-#endif
-	
 	// Grab the event handler
         virtual MClientEventHandler* getEventHandler(QString s)=0;
         

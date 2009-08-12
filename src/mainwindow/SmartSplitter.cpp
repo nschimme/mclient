@@ -4,10 +4,13 @@
 
 SmartSplitter::SmartSplitter(QWidget *parent)
   : QSplitter(parent) {
+  qDebug() << "* SmartSplitter created";
 }
 
 SmartSplitter::SmartSplitter(Qt::Orientation orientation, QWidget *parent)
   : QSplitter(orientation, parent) {
+  qDebug() << "* SmartSplitter created with orientation"
+	   << orientation;
 }
 
 SmartSplitter::~SmartSplitter() {

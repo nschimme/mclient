@@ -144,10 +144,6 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
   layout->setSpacing(0);
   layout->setContentsMargins(0, 0, 0, 0);
 
-  // Create the splitter
-  // TODO: Make it smart and resizable upon request of the widget!
-  SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical);
-
   QWidget *display, *input;
   bool displaySet, inputSet = false;
   for (int i = 0; i < widgetList.size(); ++i) {
@@ -159,15 +155,11 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
       // Primary Display Widget
       display = widget;
       displaySet = true;
-      _splitter->addWidget(widget);
-      _splitter->setCollapsible(_splitter->indexOf(widget), false);
 
     } else if (ISSET(position, DL_INPUT) && !inputSet) {
       // Primary Input Widget
       input = widget;
       inputSet = true;
-      _splitter->insertWidget(-1, widget); // insert to the bottom
-      _splitter->setCollapsible(_splitter->indexOf(widget), false);
 
     } else {
       // Display the widget if it floats (or is unsupported)
@@ -185,11 +177,19 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> > &widgetList)
     }
 
   }
+  qDebug() << "* MainWindow has collected all widgets, displaying them...";
+
+  // Add the primary widgets to the smart splitter
+  // TODO: Make it smart and resizable upon request of the widget!
+  SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical, this);
+  layout->addWidget(_splitter);
 
   // Add the widgets
-  layout->addWidget(_splitter);
-  //_tabWidget->setLayout(layout);
-  
+  _splitter->addWidget(display);
+  _splitter->setCollapsible(_splitter->indexOf(display), false);
+  _splitter->addWidget(input);
+  _splitter->setCollapsible(_splitter->indexOf(input), false);
+
   QWidget *widget = new QWidget();
   widget->setLayout(layout);
   _tabWidget->addTab(widget, _currentProfile);

@@ -393,7 +393,6 @@ void PluginSession::customEvent(QEvent* e) {
 
 
 void PluginSession::postReceivingPlugins() {
-  /*
   // Go through each unique plugin in this hash
   QList<QPluginLoader*> list = _deliversTypes.uniqueKeys();
 
@@ -412,7 +411,8 @@ void PluginSession::postReceivingPlugins() {
 	= _receivesTypes.values(dataType);
 
       foreach(MClientEventHandler *rpl, receivesTypes)
-	hash.insert(dataType, qVariantFromValue(rpl));
+	hash.insert(dataType, qVariantFromValue(static_cast<QObject*>
+						(rpl)));
 
       // Hack to deliver output to CommandProcessor
       if (dataType == "XMLAll") {
@@ -441,6 +441,5 @@ void PluginSession::postReceivingPlugins() {
 	       << hash.uniqueKeys();
     }
   }
-  */
 
 }
