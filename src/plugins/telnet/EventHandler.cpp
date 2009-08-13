@@ -251,7 +251,7 @@ void EventHandler::windowSizeChanged (int x, int y)
   d->curX = x;
   d->curY = y;
   if (d->myOptionState[OPT_NAWS])   //only if we have negotiated this option
-  {
+    {
     string s;
     s = TN_IAC;
     s += TN_SB;
@@ -472,7 +472,7 @@ void EventHandler::processTelnetCommand (const string &command)
 
 void EventHandler::socketRead (const QByteArray &data) {
   
-  int datalen = data.size();
+  unsigned int datalen = data.size();
   QList<QByteArray> cleanData;
   cleanData << "";
   
@@ -496,7 +496,7 @@ void EventHandler::socketRead (const QByteArray &data) {
       //2. seq. of two IACs
       else if (d->iac && (ch == TN_IAC) && (!d->insb)) {
 	d->iac = false;
-	cleanData.last().append(ch);
+	cleanData.back().append(ch);
 	d->command = "";
       }
       //3. IAC DO/DONT/WILL/WONT
@@ -551,7 +551,7 @@ void EventHandler::socketRead (const QByteArray &data) {
     }
     else {  //plaintext
       //everything except CRLF is okay; CRLF is replaced by LF(\n) (CR ignored)
-      
+        
       switch (ch) {
       case '\n':
 	cleanData.back().append(ch);
@@ -568,7 +568,6 @@ void EventHandler::socketRead (const QByteArray &data) {
     
     //we've just received the GA signal - higher layers shall be informed about it
     if (d->recvdGA) {
-      
       //prepend a newline, if needed
       if (d->prependGANewLine) {
 	cleanData[0].prepend("\n");
@@ -576,17 +575,21 @@ void EventHandler::socketRead (const QByteArray &data) {
       }
 
       //forward data for further processing
-      for (int j = 0; j < cleanData.size() - j; j++) {
-	QString unicodeData = d->inCoder->toUnicode(cleanData.at(j));	
-	QVariant* qv = new QVariant(unicodeData);
-	QStringList sl("TelnetData");
-	postSession(qv, sl);
+      QString unicodeData;
+      for (int j = 0; j < cleanData.size() - 1; j++) {
+	unicodeData += d->inCoder->toUnicode(cleanData.at(j));	
       }
-
-      QString unicodeData = d->inCoder->toUnicode(cleanData.takeLast());
       QVariant* qv = new QVariant(unicodeData);
-      QStringList sl("TelnetGA");
+      QStringList sl("TelnetData");
       postSession(qv, sl);
+      qDebug() << "TelnetData:" << unicodeData;
+
+      unicodeData = d->inCoder->toUnicode(cleanData.takeLast());
+      qv = new QVariant(unicodeData);
+      sl.clear();
+      sl << "TelnetGA";
+      postSession(qv, sl);
+      qDebug() << "TelnetGA:" << unicodeData;
       
       //we'll need to prepend a new-line in next data sending
       d->prependGANewLine = true;
@@ -594,24 +597,25 @@ void EventHandler::socketRead (const QByteArray &data) {
       
       //clean the flag, and the data (so that we don't send it multiple times)
       cleanData.clear();
+      cleanData << "";
       d->recvdGA = false;
     }
   }
 
-  qDebug() << cleanData;
-  
   //some data left to send - do it now!
   if (!cleanData.isEmpty()) {
     d->prependGANewLine = false;
     
-    //forward data for further processing
+    //we send each line separately because we can't assure that this
+    //is a prompt or a fragment
     for (int j = 0; j < cleanData.size(); j++) {
-      QString unicodeData = d->inCoder->toUnicode(cleanData.at(j));
-      QVariant* qv = new QVariant(unicodeData);
+      QString unicodeData = d->inCoder->toUnicode(cleanData.at(j));	
+      QVariant *qv = new QVariant(unicodeData);
       QStringList sl("TelnetData");
       postSession(qv, sl);
-      qDebug() << "posting" << unicodeData;
     }
 
+    qDebug() << "Telnet(SUPPRESSED-GA):" << cleanData;
+    
   }
 }
