@@ -19,12 +19,12 @@ Action* ActionManager::match(const QString &pattern,
   QMultiMap<int,
     QMultiHash<QString, Action*>* >::const_iterator i = _actions.constBegin();
   while (i != _actions.constEnd()) {
-    qDebug() << "* Looking through actions of priority" << i.key();
+    //qDebug() << "* Looking through actions of priority" << i.key();
     
     QStringList::const_iterator tag = tags.constBegin();
     while (tag != tags.constEnd()) {
 
-      qDebug() << "looking at tag" << *tag;
+      //qDebug() << "looking at tag" << *tag;
       QMultiHash<QString, Action*>::const_iterator j
 	= i.value()->constFind(*tag);
       while (j != i.value()->constEnd() && j.key() == *tag) {
@@ -35,7 +35,7 @@ Action* ActionManager::match(const QString &pattern,
 	  ++j;
 	  continue;
 	}
-	else qDebug() << "matching against action" << j.value()->label;
+	//else qDebug() << "matching against action" << j.value()->label;
 	
 	if (j.value()->pattern.indexIn(pattern) >= 0) {
 	  // Pattern matched
@@ -48,7 +48,7 @@ Action* ActionManager::match(const QString &pattern,
 	  return j.value();
 	  
 	} else {
-	  qDebug() << j.value()->pattern.errorString();
+	  //qDebug() << j.value()->pattern.errorString();
 	  
 	}
 	++j;

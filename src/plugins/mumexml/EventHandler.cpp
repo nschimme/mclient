@@ -45,10 +45,10 @@ void EventHandler::customEvent(QEvent *e) {
 
       }
       else if (s.startsWith("TelnetGA")) {
-	parse("<prompt>" + me->payload()->toByteArray() + "</prompt>");
+	parse(me->payload()->toByteArray());
 	
       }
-
+      
     }
   }
   else {

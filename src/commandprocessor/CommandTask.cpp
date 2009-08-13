@@ -500,12 +500,14 @@ void CommandTask::parseMudOutput(const QString &output,
 
     // Action Buffer
     if (list.isEmpty()) {
+      // If no newlines were detected, output buffer + everything
       list << _actionBuffer.append(output);
       _actionBuffer.clear();
     }
     else {
+      // Otherwise prepend buffer onto first line
       list[0].prepend(_actionBuffer);
-      // if valid is 0 then there were no newlines
+      // if valid is 0 then there were no newlines, update buffer
       if (valid != 0) _actionBuffer = output.mid(valid + 1);
     }
 
@@ -518,6 +520,7 @@ void CommandTask::parseMudOutput(const QString &output,
       else findAction(line, tags);
     }
 
+    /*
     // Some buffer fixes
     switch (_actionBuffer.size()) {
     case 0:
@@ -529,6 +532,7 @@ void CommandTask::parseMudOutput(const QString &output,
     default:
       break;
     };
+    */
   }
   else {
     // match tag blocks

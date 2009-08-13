@@ -609,13 +609,14 @@ void EventHandler::socketRead (const QByteArray &data) {
     //we send each line separately because we can't assure that this
     //is a prompt or a fragment
     for (int j = 0; j < cleanData.size(); j++) {
-      QString unicodeData = d->inCoder->toUnicode(cleanData.at(j));	
-      QVariant *qv = new QVariant(unicodeData);
-      QStringList sl("TelnetData");
-      postSession(qv, sl);
+      QString unicodeData = d->inCoder->toUnicode(cleanData.at(j));
+      if (!unicodeData.isEmpty()) {
+	QVariant *qv = new QVariant(unicodeData);
+	QStringList sl("TelnetData");
+	postSession(qv, sl);
+      }
     }
-
     qDebug() << "Telnet(SUPPRESSED-GA):" << cleanData;
-    
+      
   }
 }
