@@ -385,9 +385,8 @@ void PluginSession::customEvent(QEvent* e) {
 	QCoreApplication::postEvent(_commandProcessor->getAction(), nme);
 	qDebug() << "* posting to CommandProcessor";
       }
-    } else {
-      qWarning() << "! No plugins accepted data types" << me->dataTypes();
-
+      else
+	qWarning() << "! No plugins accepted data types" << me->dataTypes();
     }
     
   }

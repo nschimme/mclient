@@ -34,7 +34,14 @@ void EventHandler::customEvent(QEvent *e) {
     } else if (me->dataTypes().contains("DisconnectFromHost")) {
       //QString arg = me->payload()->toString();
       disconnectDevice();
+      
+    } else if (me->dataTypes().contains("MUMEPromptGARequest")) {
+      //do not allow server to suppress go-aheads (MUME is backwards)
+      sendData(QByteArray("~$#EP2\nG\n"));
+      
     }
+
+    
   }
   else 
     qDebug() << "SocketManagerIO got a customEvent of type" << e->type();

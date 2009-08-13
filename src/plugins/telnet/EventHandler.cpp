@@ -66,8 +66,6 @@ struct cTelnetPrivate {
   bool startupneg;
   /** current dimensions */
   int curX, curY;
-  /** offline connection */
-  bool offlineConnection;
 
   QString termType;
 };
@@ -90,7 +88,6 @@ EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
   d->command = "";
   
   d->sentbytes = 0;
-  d->offlineConnection = true;
   d->curX = 125;
   d->curY = 39;
   d->startupneg = false;
@@ -129,7 +126,6 @@ void EventHandler::customEvent(QEvent *e) {
       }
       else if(s.startsWith("SocketConnected")) {
 	qDebug() << "Telnet detected socket connect!";
-	d->offlineConnection = false;
 	
 	reset ();	
 	d->sentbytes = 0;
@@ -146,7 +142,6 @@ void EventHandler::customEvent(QEvent *e) {
 	
       }
       else if(s.startsWith("SocketDisconnected")) {
-	d->offlineConnection = true;
 
       }
       else if(s.startsWith("DimensionsChanged")) {
@@ -288,7 +283,7 @@ void EventHandler::windowSizeChanged (int x, int y)
 
 void EventHandler::sendTelnetOption (unsigned char type, unsigned char option)
 {
-  qDebug() << "Sending Telnet Option: " << type << " " << option;
+  qDebug() << "* Sending Telnet Command: " << type << " " << option;
   string s;
   s = TN_IAC;
   s += (unsigned char) type;
@@ -300,8 +295,7 @@ void EventHandler::processTelnetCommand (const string &command)
 {
   unsigned char ch = command[1];
   unsigned char option;
-  QByteArray a(command.c_str());
-  qDebug() << "Processing Telnet Command: " << (unsigned char)a.at(1) << (unsigned char)a.at(2);
+  qDebug() << "* Processing Telnet Command: " << command[1] << command[2];
 
   switch (ch) {
     case TN_AYT:
@@ -476,178 +470,148 @@ void EventHandler::processTelnetCommand (const string &command)
   };
 }
 
-void EventHandler::socketRead (const QByteArray &ba)
-{
-  char data[32769]; //clean data after decompression
-  int amount = ba.size();
-
-  int datalen;
-  strncpy(data, ba.data(), amount);
-  datalen = amount;
-  {
-    data[datalen] = '\0';
-    string cleandata;
-
-    //clear the GO-AHEAD flag
-    d->recvdGA = false;
+void EventHandler::socketRead (const QByteArray &data) {
+  
+  int datalen = data.size();
+  QList<QByteArray> cleanData;
+  cleanData << "";
+  
+  //clear the GO-AHEAD flag
+  d->recvdGA = false;
     
-    //now we have the data, but we cannot forward it to next stage of processing,
-    //because the data contains telnet commands
-    //so we parse the text and process all telnet commands:
-
-    for (unsigned int i = 0; i < (unsigned int) datalen; i++)
-    {
-      unsigned char ch = data[i];
-      if (d->iac || d->iac2 || d->insb || (ch == TN_IAC))
-      {
-        //there are many possibilities here:
-        //1. this is IAC, previous character was regular data
-        if (! (d->iac || d->iac2 || d->insb) && (ch == TN_IAC))
-        {
-          d->iac = true;
-          d->command += ch;
-        }
-        else
-        //2. seq. of two IACs
-          if (d->iac && (ch == TN_IAC) && (!d->insb))
-        {
-          d->iac = false;
-          cleandata += ch;
-          d->command = "";
-        }
-        else
-        //3. IAC DO/DONT/WILL/WONT
-          if (d->iac && (!d->insb) &&
-            ((ch == TN_WILL) || (ch == TN_WONT) || (ch == TN_DO) || (ch == TN_DONT)))
-        {
-          d->iac = false;
-          d->iac2 = true;
-          d->command += ch;
-        }
-        else
-        //4. IAC DO/DONT/WILL/WONT <command code>
-          if (d->iac2)
-        {
-          d->iac2 = false;
-          d->command += ch;
-          processTelnetCommand (d->command);
-          d->command = "";
-        }
-        else
-        //5. IAC SB
-          if (d->iac && (!d->insb) && (ch == TN_SB))
-        {
-          d->iac = false;
-          d->insb = true;
-          d->command += ch;
-        }
-        else
-        //6. IAC SE without IAC SB - error - ignored
-          if (d->iac && (!d->insb) && (ch == TN_SE))
-        {
-          d->command = "";
-          d->iac = false;
-        }
-        else
-        //7. inside IAC SB
-          if (d->insb)
-        {
-          d->command += ch;
-          if (d->iac && (ch == TN_SE))  //IAC SE - end of subcommand
-          {
-            processTelnetCommand (d->command);
-            d->command = "";
-            d->iac = false;
-            d->insb = false;
-          }
-          if (d->iac)
-            d->iac = false;
-          else
-          if (ch == TN_IAC)
-              d->iac = true;
-        }
-        else
-        //8. IAC fol. by something else than IAC, SB, SE, DO, DONT, WILL, WONT
-        {
-          d->iac = false;
-          d->command += ch;
-          processTelnetCommand (d->command);
-          //this could have set receivedGA to true; we'll handle that later
-          // (at the end of this function)
-          d->command = "";
-        }
+  //now we have the data, but we cannot forward it to next stage of processing,
+  //because the data contains telnet commands
+  //so we parse the text and process all telnet commands:
+  
+  for (unsigned int i = 0; i < (unsigned int) datalen; i++) {
+    unsigned char ch = data[i];
+    
+    if (d->iac || d->iac2 || d->insb || (ch == TN_IAC)) {
+      //there are many possibilities here:
+      //1. this is IAC, previous character was regular data
+      if (! (d->iac || d->iac2 || d->insb) && (ch == TN_IAC)) {
+	d->iac = true;
+	d->command += ch;
       }
-//       else
-// 	// Check for MUME MPI commands
-// 	if (d->mpi_n || d->mpi-r || ch == '\n')
-//       {
-// 	if (! (d->mpi_r || d->mpi_n) && (ch == '\n'))
-// 	{
-// 	  // 1. We have received a newline
-// 	  d->mpi_n = true;
-// 	else
-// 	  if (!d->mpi_r && d->mpi_n && ch == '\r')
-// 	  // 2. We have received a carriage return
-// 	{
-// 	  d->mpi_n = true;
-// 	}
-// 	else 
-// 	  // 3. Check if there is a MPI message here
-// 	{
-
-// 	}
-//       }
-      else   //plaintext
-      {
-        //everything except CRLF is okay; CRLF is replaced by LF(\n) (CR ignored)
-        if (ch != 13)
-          cleandata += ch;
+      //2. seq. of two IACs
+      else if (d->iac && (ch == TN_IAC) && (!d->insb)) {
+	d->iac = false;
+	cleanData.last().append(ch);
+	d->command = "";
       }
-
-      // TODO: do something about all that code duplication ...
-
-      //we've just received the GA signal - higher layers shall be informed about it
-      if (d->recvdGA)
-      {
-        //prepend a newline, if needed
-        if (d->prependGANewLine)
-          cleandata = "\n" + cleandata;
-        d->prependGANewLine = false;
-        //forward data for further processing
-        QString unicodeData = d->inCoder->toUnicode (cleandata.data(), cleandata.length());
-
-	QVariant* qv = new QVariant(unicodeData);
-	QStringList sl("TelnetData");
-        postSession(qv, sl);
-	qDebug() << "posted FilteredData with GA!";
-	
-	//we'll need to prepend a new-line in next data sending
-	d->prependGANewLine = true;
-        //we got a prompt
-	qv = new QVariant();
-	sl.clear();
-	sl << "TelnetGA";
-        postSession(qv, sl);
-	qDebug() << "posted TelnetGA!";
-	
-        //clean the flag, and the data (so that we don't send it multiple times)
-        cleandata = "";
-        d->recvdGA = false;
+      //3. IAC DO/DONT/WILL/WONT
+      else if (d->iac && (!d->insb) &&
+	       ((ch == TN_WILL) || (ch == TN_WONT) ||
+		(ch == TN_DO) || (ch == TN_DONT))) {
+	d->iac = false;
+	d->iac2 = true;
+	d->command += ch;
+      }
+      //4. IAC DO/DONT/WILL/WONT <command code>
+      else if (d->iac2) {
+	d->iac2 = false;
+	d->command += ch;
+	processTelnetCommand (d->command);
+	d->command = "";
+      }
+      //5. IAC SB
+      else if (d->iac && (!d->insb) && (ch == TN_SB)) {
+	d->iac = false;
+	d->insb = true;
+	d->command += ch;
+      }
+      //6. IAC SE without IAC SB - error - ignored
+      else if (d->iac && (!d->insb) && (ch == TN_SE)) {
+	d->command = "";
+	d->iac = false;
+      }
+      //7. inside IAC SB
+      else if (d->insb) {
+	d->command += ch;
+	if (d->iac && (ch == TN_SE)) { //IAC SE - end of subcommand
+	  processTelnetCommand (d->command);
+	  d->command = "";
+	  d->iac = false;
+	  d->insb = false;
+	}
+	if (d->iac)
+	  d->iac = false;
+	else if (ch == TN_IAC)
+	  d->iac = true;
+      }
+      //8. IAC fol. by something else than IAC, SB, SE, DO, DONT, WILL, WONT
+      else {
+	d->iac = false;
+	d->command += ch;
+	processTelnetCommand (d->command);
+	//this could have set receivedGA to true; we'll handle that later
+	// (at the end of this function)
+	d->command = "";
       }
     }
-
-    //some data left to send - do it now!
-    if (!cleandata.empty())
-    {
-      d->prependGANewLine = false;
+    else {  //plaintext
+      //everything except CRLF is okay; CRLF is replaced by LF(\n) (CR ignored)
+      
+      switch (ch) {
+      case '\n':
+	cleanData.back().append(ch);
+	cleanData << "";
+	break;
+      case '\r':
+	break;
+      default:
+	cleanData.back().append(ch);
+      };
+    }
+    
+    // TODO: do something about all that code duplication ...
+    
+    //we've just received the GA signal - higher layers shall be informed about it
+    if (d->recvdGA) {
+      
+      //prepend a newline, if needed
+      if (d->prependGANewLine) {
+	cleanData[0].prepend("\n");
+	d->prependGANewLine = false;
+      }
 
       //forward data for further processing
-      QString unicodeData = d->inCoder->toUnicode (cleandata.data(), cleandata.length());
+      for (int j = 0; j < cleanData.size() - j; j++) {
+	QString unicodeData = d->inCoder->toUnicode(cleanData.at(j));	
+	QVariant* qv = new QVariant(unicodeData);
+	QStringList sl("TelnetData");
+	postSession(qv, sl);
+      }
+
+      QString unicodeData = d->inCoder->toUnicode(cleanData.takeLast());
       QVariant* qv = new QVariant(unicodeData);
-      QStringList sl;
-      sl << "TelnetData";
+      QStringList sl("TelnetGA");
       postSession(qv, sl);
-      qDebug() << "posted FilteredData!";
+      
+      //we'll need to prepend a new-line in next data sending
+      d->prependGANewLine = true;
+      //we got a prompt
+      
+      //clean the flag, and the data (so that we don't send it multiple times)
+      cleanData.clear();
+      d->recvdGA = false;
     }
+  }
+
+  qDebug() << cleanData;
+  
+  //some data left to send - do it now!
+  if (!cleanData.isEmpty()) {
+    d->prependGANewLine = false;
+    
+    //forward data for further processing
+    for (int j = 0; j < cleanData.size(); j++) {
+      QString unicodeData = d->inCoder->toUnicode(cleanData.at(j));
+      QVariant* qv = new QVariant(unicodeData);
+      QStringList sl("TelnetData");
+      postSession(qv, sl);
+      qDebug() << "posting" << unicodeData;
+    }
+
   }
 }

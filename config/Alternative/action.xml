@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions size="4" version="1.0">
+   <array1 label="reply" pattern="^\033\[\d+m(.+) tells you '.+'" tags="XMLTell">
+       <command>
+       #alias tt=tell $2 \$0
+       </command>
+   </array1>
+   <array2 label="score_hp" pattern="^(\d+)/(\d+) hits and (\d+)/(\d+) moves.">
+      <command>
+      #alias rep=emote reports $1
+      </command>
+   </array2>
+   <array3 label="score_mana" pattern="^(\d+)/(\d+) hits, (\d+)/(\d+) mana, and (\d+)/(\d+) moves.">
+      <command>
+      #alias rep=emote reports $1
+      </command>
+   </array3>
+   <array4 label="stat_xp" pattern="^Needed: (.+) xp, (.+) tp.">
+      <command>
+      #alias tnl=emote needs $2 xp and $3 tp to level.
+      </command>
+   </array4>
+</actions>

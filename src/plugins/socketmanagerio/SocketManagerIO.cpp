@@ -23,7 +23,8 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
     //    _dependencies.insert("commandmanager", 10);
     _implemented.insert("socketmanager",10);
     _receivesDataTypes << "SendToSocketData" << "ConnectToHost"
-		       << "DisconnectFromHost";
+		       << "DisconnectFromHost"
+		       << "MUMEPromptGARequest";
     _deliversDataTypes << "SocketReadData" << "SocketConnected"
 		       << "SocketDisconnected" << "DisplayData";
     _configurable = true;
@@ -43,8 +44,23 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
     zap->help("disconnect from the host");
     zap->dataType("DisconnectFromHost");
 
+
+    // Command: send
+    CommandEntry *send = new CommandEntry();
+    send->pluginName(shortName());
+    send->command("send");
+    send->help("send data directly to the host");
+    send->dataType("SendToSocketData");
+
+    // Command: prompt
+    CommandEntry *prompt = new CommandEntry();
+    prompt->pluginName(shortName());
+    prompt->command("prompt");
+    prompt->help("send the MUME prompt request");
+    prompt->dataType("MUMEPromptGARequest");
+    
     // For registering commands
-    _commandEntries << connect << zap;
+    _commandEntries << connect << send << prompt << zap;
 }
 
 
@@ -96,6 +112,12 @@ bool SocketManagerIO::startSession(QString s) {
     // Host settings
     QString host = _settings->value(cfg+"connection/host", "mume.org");
     int port = _settings->value(cfg+"connection/port", "4242").toInt();
+
+    // Mint's test server
+    //host = "76.121.49.145";
+    //port = 4242;
+    
+    //host = "127.0.0.1";
 
     // Proxy settings
     QString proxy_host = _settings->value(cfg+"proxy/host", "proxy.example.com");

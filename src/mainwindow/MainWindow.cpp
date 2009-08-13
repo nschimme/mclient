@@ -22,6 +22,7 @@
 #include "MainWindow.h"
 #include "WindowActionManager.h"
 #include "SmartSplitter.h"
+#include "SmartTabWidget.h"
 
 #include "ConfigManager.h"
 #include "PluginManager.h"
@@ -47,7 +48,7 @@ MainWindow::MainWindow(PluginManager *pm) {
   actMgr->createStatusBar();
 
   /** Create Primary Display Widgets */
-  _tabWidget = new QTabWidget;
+  _tabWidget = new SmartTabWidget;
   setCentralWidget(_tabWidget);
 
   /** Create Splash Screen */

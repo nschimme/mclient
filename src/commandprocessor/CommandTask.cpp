@@ -49,6 +49,7 @@ void CommandTask::customEvent(QEvent *e) {
       processStack();
      
     }
+
   }
   else {
     qDebug() << "CommandTask" << QThread::currentThread()
@@ -511,7 +512,7 @@ void CommandTask::parseMudOutput(const QString &output,
     qDebug() << "lines" << list;
     qDebug() << "action buffer" << _actionBuffer;
     
-    // Match
+    // Match on lines
     foreach(QString line, list) {
       if (line.size() == 1) displayData(line);
       else findAction(line, tags);
@@ -526,15 +527,8 @@ void CommandTask::parseMudOutput(const QString &output,
       _actionBuffer.clear();
       break;
     default:
-      /*
-      if (_actionBuffer.at(_actionBuffer.size()-1) == ' ') {
-         findAction(_actionBuffer, tags);
-         _actionBuffer.clear();
-      }
-      */
       break;
     };
-
   }
   else {
     // match tag blocks
@@ -551,7 +545,7 @@ void CommandTask::displayData(const QString &output) {
 }
 
 void CommandTask::postSession(QVariant *payload,
-				   const QStringList& tags) {
+			      const QStringList& tags) {
   MClientEventData *med =
     new MClientEventData(payload, tags,
 			 _commandProcessor->getPluginSession()->session());

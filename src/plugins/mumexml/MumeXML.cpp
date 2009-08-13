@@ -13,7 +13,7 @@ MumeXML::MumeXML(QObject* parent)
     _description = "Filters the XML tags.";
     _dependencies.insert("telnet", 1);
     _implemented.insert("mumexml",1);
-    _receivesDataTypes << "TelnetData";
+    _receivesDataTypes << "TelnetData" << "TelnetGA";
     _deliversDataTypes << "XMLNone" << "XMLAll" << "XMLTag"
 
 		       << "XMLPrompt" << "XMLRoom" << "XMLDescription"

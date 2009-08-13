@@ -24,6 +24,7 @@ MClientEventHandler::~MClientEventHandler() {
 // Post an event
 void MClientEventHandler::postSession(QVariant* payload, QStringList tags) {
   bool found = false;
+  /*
   foreach (QString s, tags) {
     // Iterate through all the data types
     //qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
@@ -45,11 +46,13 @@ void MClientEventHandler::postSession(QVariant* payload, QStringList tags) {
       ++it; // Iterate
     }
   }
-
+  */
   if (!found) {
+    /*
     qWarning() << "! No EventHandlers accepted data types" << tags;
 
     qWarning() << "! Rerouting event to session";
+    */
     MClientEventData *med = new MClientEventData(payload, tags,
 						 _pluginSession->session());
     MClientEvent* me = new MClientEvent(med);
