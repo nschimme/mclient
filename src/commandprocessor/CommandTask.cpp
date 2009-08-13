@@ -338,22 +338,9 @@ QString CommandTask::findAlias(const QString &name,
     QString newCommand = alias->command;
     QStringList tokens = arguments.split(QRegExp("\\s+"),
 					 QString::SkipEmptyParts);
-    for (int i = 0; i < tokens.size()+1; ++i) {
-      QRegExp rx(QString("^(\\$%1)|([^\\\\])(\\$%2)").arg(i).arg(i));
-      switch (i) {
-      case 0:
-	if (arguments.contains("\n")) {
-	  QString temp = arguments;
-	  newCommand.replace(rx, "\\2"+temp.replace(QString("\n"),
-						    QString(" ")));
-	} else {
-	  newCommand.replace(rx, "\\2"+arguments);
-	}
-	break;
-      default:
-	newCommand.replace(rx, "\\2"+tokens.at(i-1));
-	break;
-      };
+    for (int i = 0; i < tokens.size(); ++i) {
+      QRegExp rx(QString("^(\\$%1)|([^\\\\])(\\$%2)").arg(i+1).arg(i+1));
+      newCommand.replace(rx, "\\2"+tokens.at(i));
     }
     qDebug() << "* alias command is:" << newCommand;
 
@@ -446,21 +433,18 @@ bool CommandTask::findAction(const QString &pattern, QStringList tags) {
     // Create the new command
     QString newCommand = action->command;
     QStringList tokens = action->pattern.capturedTexts();
-    for (int i = 0; i < tokens.size()+1; ++i) {
+    for (int i = 0; i < tokens.size(); ++i) {
       // Match against non-escaped $ variables
       QRegExp rx(QString("^(\\$%1)|([^\\\\])(\\$%2)").arg(i).arg(i));
       switch (i) {
       case 0:
 	if (pattern.contains("\n")) {
-	  QString temp = pattern;
-	  newCommand.replace(rx, "\\2"+temp.replace(QString("\n"),
-						    QString(" ")));
-	} else {
-	  newCommand.replace(rx, "\\2"+pattern);
+	  newCommand.replace(rx, "\\2"+tokens[i].replace(QString("\n"),
+							 QString(" ")));
+	  continue;
 	}
-	break;
       default:
-	newCommand.replace(rx, "\\2"+tokens.at(i-1));
+	newCommand.replace(rx, "\\2"+tokens.at(i));
 	break;
       };
     }
@@ -485,8 +469,6 @@ bool CommandTask::findAction(const QString &pattern, QStringList tags) {
 
 void CommandTask::parseMudOutput(const QString &output,
 				 const QStringList &tags) {
-  qDebug() << "* Mud output: " << output << tags << ".";
-
   if (tags.contains("XMLNone")) {
     // Parse Lines
     QRegExp rx("([^\n]*\n)");
@@ -511,34 +493,19 @@ void CommandTask::parseMudOutput(const QString &output,
       if (valid != 0) _actionBuffer = output.mid(valid + 1);
     }
 
+    /*
     qDebug() << "lines" << list;
     qDebug() << "action buffer" << _actionBuffer;
+    */
     
     // Match on lines
-    foreach(QString line, list) {
+    foreach(QString line, list)
       if (line.size() == 1) displayData(line);
       else findAction(line, tags);
-    }
-
-    /*
-    // Some buffer fixes
-    switch (_actionBuffer.size()) {
-    case 0:
-      break;
-    case 1:
-      displayData(_actionBuffer);
-      _actionBuffer.clear();
-      break;
-    default:
-      break;
-    };
-    */
   }
-  else {
+  else
     // match tag blocks
     findAction(output, tags);
-
-  }
 }
 
 
