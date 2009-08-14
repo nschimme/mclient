@@ -20,7 +20,7 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
     _configurable = false;
     _configVersion = "2.0";
 
-    // Command: connect
+    // Command: script
     CommandEntry *script = new CommandEntry();
     script->pluginName(shortName());
     script->command("script");

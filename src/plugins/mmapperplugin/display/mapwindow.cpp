@@ -27,8 +27,7 @@
 #include "mapcanvas.h"
 
 MapWindow::MapWindow(QWidget * parent)
-    : QWidget(parent)
-{
+    : QWidget(parent) {
   m_verticalScrollStep = 0;
   m_horizontalScrollStep = 0;
   scrollTimer = NULL;
@@ -56,7 +55,7 @@ MapWindow::MapWindow(QWidget * parent)
   fmt.setDirectRendering( TRUE );
   fmt.setRgba( TRUE );
   fmt.setDepth( TRUE );
-  m_canvas = new MapCanvas(fmt, parent);
+  m_canvas = new MapCanvas(fmt);
 
   m_gridLayout->addWidget(m_canvas, 0, 0, 1, 1);
 

@@ -244,7 +244,7 @@ bool AliasManager::loadSettings(const QHash<QString, QVariant> &hash) {
   qDebug() << "* AliasManager loading"
 	   << hash.value("aliases/size", 0).toInt() << "aliases";
 
-  qDebug() << hash;
+  //qDebug() << hash;
 
   int size = hash.value("aliases/size", 0).toInt();
   for (int i = 1; i <= size; i++) {

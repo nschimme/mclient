@@ -1,12 +1,20 @@
+/*
+ * MMapperPlugin is based upon MMapper version 2.0.4 beta
+ *
+ * This is NOT the latest release of MMapper2 which has a new file
+ * compression map system. You will need an older map.
+ *
+ */
+
 #include <QMessageBox>
 #include <QFileDialog>
 
 #include "MapperManager.h"
-
-#include "MMapperPlugin.h"
 #include "MainWindow.h"
+
 #include "ActionManager.h"
 #include "MMapperPluginParser.h"
+#include "EventHandler.h"
 
 #include "configuration.h" // TODO: remove this
 
@@ -26,44 +34,30 @@
 #include "findroomsdlg.h"
 #include "roomeditattrdlg.h"
 
-MapperManager::MapperManager(QString s, MMapperPlugin *mp) {
+MapperManager::MapperManager(EventHandler *eh, QObject *parent)
+  : QThread(parent), _eventHandler(eh) {
   qRegisterMetaType<CommandQueue>("CommandQueue");
   qRegisterMetaType<DirectionType>("DirectionType");
   qRegisterMetaType<DoorActionType>("DoorActionType");
   qRegisterMetaType<Coordinate>("Coordinate");
 
-  _session = s;
-  _plugin = mp;
-  _mainWindow = MainWindow::instance();
-
-  qDebug() << "Creating MapWindow...";
-  _mapWindow = new MapWindow(_mainWindow);
-  qDebug() << "MapWindow loaded" << _mapWindow->thread();
-
-  _findRoomsDlg = 0;
   _roomSelection = NULL;
   _connectionSelection = NULL;
 
-  qDebug() << "* MapperManager thread:" << this->thread();
-}
+  connect(_eventHandler, SIGNAL(onPlayMode()), SLOT(onPlayMode()));
+  connect(_eventHandler, SIGNAL(onOfflineMode()), SLOT(onOfflineMode()));
 
-MapperManager::~MapperManager() {
-  exit();
-  wait();
-}
-
-
-void MapperManager::run() {
   _mapData = new MapData();
   _mapData->setObjectName("MapData");
   _mapData->start();
   qDebug("MapData loaded");
 
-  _prespammedPath = new PrespammedPath();
+  _prespammedPath = new PrespammedPath(parent);
   qDebug("PrespammedPath loaded");
 
-//   _mapWindow = new MapWindow(_mapData, _prespammedPath);
-//   qDebug("MapWindow/DockWidget loaded");
+  _mapWindow = new MapWindow;
+  getMapWindow()->getCanvas()->init(_mapData, _prespammedPath);
+  qDebug("MapWindow/DockWidget loaded");
 
   _pathMachine = new Mmapper2PathMachine();
   _pathMachine->setObjectName("Mmapper2PathMachine");
@@ -75,10 +69,15 @@ void MapperManager::run() {
   _propertySetter->start();
   qDebug("RoomPropertySetter loaded");
 
-  connect(this, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
-  connect(_pathMachine, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
-  connect(_mapData, SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
-  connect(_mapWindow->getCanvas(), SIGNAL(log( const QString&, const QString& )), _plugin, SLOT(log( const QString&, const QString& )));
+  _findRoomsDlg = new FindRoomsDlg(_mapData);
+  _findRoomsDlg->setObjectName("FindRoomsDlg");
+  qDebug("FindRooms loaded");
+
+  connect(this, SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
+  connect(_pathMachine, SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
+  connect(_mapData, SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
+  connect(_mapWindow->getCanvas(), SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
+  connect(_findRoomsDlg, SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
 
   connect(_mapWindow->getCanvas(), SIGNAL(newRoomSelection(const RoomSelection*)), SLOT(newRoomSelection(const RoomSelection*)));
   connect(_mapWindow->getCanvas(), SIGNAL(newConnectionSelection(ConnectionSelection*)), SLOT(newConnectionSelection(ConnectionSelection*)));
@@ -97,18 +96,113 @@ void MapperManager::run() {
   connect(_prespammedPath, SIGNAL(update()), _mapWindow->getCanvas(), SLOT(update()));
   connect(_mapData, SIGNAL(onDataLoaded()), _mapWindow->getCanvas(), SLOT(dataLoaded()) );
 
-  // Start Loading
-  connect(this, SIGNAL(initMapCanvas(MapData*, PrespammedPath*)),
-	  getMapWindow()->getCanvas(), SLOT(init(MapData*, PrespammedPath*)),
-	  Qt::DirectConnection);
+  connect(_findRoomsDlg, SIGNAL(center(qint32, qint32)), _mapWindow, SLOT(center(qint32, qint32)));
 
-  emit initMapCanvas(_mapData, _prespammedPath);
+  /** Threaded attempt
+  qDebug() << "Creating MapWindow...";
+  _mapWindow = new MapWindow;
+  qDebug() << "MapWindow loaded" << _mapWindow->thread();
+
+  _findRoomsDlg = 0;
+  _roomSelection = NULL;
+  _connectionSelection = NULL;
+  */
+
+  // auto load the map
+  if (Config().m_autoLoadWorld && Config().m_autoLoadFileName!="")
+    loadFile(Config().m_autoLoadFileName);
+
+  qDebug() << "* MapperManager thread:" << QThread::currentThread();
+}
+
+MapperManager::~MapperManager() {
+  exit();
+  wait();
+}
+
+
+void MapperManager::run() {
+  /** Threaded attempt
+  _mapData = new MapData();
+  _mapData->setObjectName("MapData");
+  _mapData->start();
+  qDebug("MapData loaded");
+
+  _prespammedPath = new PrespammedPath();
+  qDebug("PrespammedPath loaded");
+
+  //_mapWindow = new MapWindow(_mapData, _prespammedPath);
+  getMapWindow()->getCanvas()->init(_mapData, _prespammedPath);
+  qDebug("MapWindow initialized");
+
+  _pathMachine = new Mmapper2PathMachine();
+  _pathMachine->setObjectName("Mmapper2PathMachine");
+  _pathMachine->start();
+  qDebug("PathMachine loaded");
+
+  _propertySetter = new RoomPropertySetter();
+  _propertySetter->setObjectName("RoomPropertySetter");
+  _propertySetter->start();
+  qDebug("RoomPropertySetter loaded");
+
+  connect(this, SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
+  connect(_pathMachine, SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
+  connect(_mapData, SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
+  connect(_mapWindow->getCanvas(), SIGNAL(log( const QString&, const QString& )), _eventHandler, SLOT(log( const QString&, const QString& )));
+
+  connect(_mapWindow->getCanvas(), SIGNAL(newRoomSelection(const RoomSelection*)), SLOT(newRoomSelection(const RoomSelection*)));
+  connect(_mapWindow->getCanvas(), SIGNAL(newConnectionSelection(ConnectionSelection*)), SLOT(newConnectionSelection(ConnectionSelection*)));
+
+  connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, const Coordinate & )), _mapData, SLOT(lookingForRooms(RoomRecipient*, const Coordinate & )));
+  connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, ParseEvent* )), _mapData, SLOT(lookingForRooms(RoomRecipient*, ParseEvent* )));
+  connect(_pathMachine, SIGNAL(lookingForRooms(RoomRecipient*, uint )), _mapData, SLOT(lookingForRooms(RoomRecipient*, uint )));
+  connect(_pathMachine, SIGNAL(playerMoved(const Coordinate & )), _mapWindow->getCanvas(), SLOT(moveMarker(const Coordinate &)));
+  connect(_mapData, SIGNAL(clearingMap()), _pathMachine, SLOT(releaseAllPaths()));
+
+  connect(_mapWindow->getCanvas(), SIGNAL(setCurrentRoom(uint)), _pathMachine, SLOT(setCurrentRoom(uint)));
+  connect(_mapWindow->getCanvas(), SIGNAL(charMovedEvent(ParseEvent*)), _pathMachine, SLOT(event(ParseEvent*)));
+
+  connect(_mapData, SIGNAL(mapSizeChanged(const Coordinate &, const Coordinate &)), _mapWindow, SLOT(setScrollBars(const Coordinate &, const Coordinate &)));
+  connect(_mapWindow->getCanvas(), SIGNAL(roomPositionChanged()), _pathMachine, SLOT(retry()));
+  connect(_prespammedPath, SIGNAL(update()), _mapWindow->getCanvas(), SLOT(update()));
+  connect(_mapData, SIGNAL(onDataLoaded()), _mapWindow->getCanvas(), SLOT(dataLoaded()) );
+  */
 
   // Create Parser
-  _parser = new MMapperPluginParser(_session, _plugin, this);
+  _parser = new MMapperPluginParser(this);
 
-  // HACK for PlayMode
-  //onPlayMode();
+  connect(getParser(), SIGNAL(event(ParseEvent* )),
+          getPathMachine(), SLOT(event(ParseEvent* )));
+  connect(getParser(), SIGNAL(releaseAllPaths()),
+          getPathMachine(), SLOT(releaseAllPaths()));
+  connect(getParser(), SIGNAL(showPath(CommandQueue, bool)),
+          getPrespammedPath(), SLOT(setPath(CommandQueue, bool)));
+
+  connect(_eventHandler, SIGNAL(name(const QString&)),
+	  getParser(), SLOT(name(const QString&)));
+  connect(_eventHandler, SIGNAL(description(const QString&)),
+	  getParser(), SLOT(description(const QString&)));
+  connect(_eventHandler, SIGNAL(dynamicDescription(const QString&)),
+	  getParser(), SLOT(dynamicDescription(const QString&)));
+  connect(_eventHandler, SIGNAL(exits(const QString&)),
+	  getParser(), SLOT(exits(const QString&)));
+  connect(_eventHandler, SIGNAL(prompt(const QString&)),
+	  getParser(), SLOT(prompt(const QString&)));
+  connect(_eventHandler, SIGNAL(move(const QString&)),
+	  getParser(), SLOT(move(const QString&)));
+  
+  connect(_eventHandler, SIGNAL(userInput(QString)),
+	  getParser(), SLOT(userInput(QString)));
+  connect(_eventHandler, SIGNAL(mudOutput(const QString&)),
+	  getParser(), SLOT(mudOutput(const QString&)));
+
+  connect(getParser(), SIGNAL(sendToUser(const QString&)),
+ 	  _eventHandler, SLOT(displayMessage(const QString&)));
+  
+  connect(_eventHandler, SIGNAL(loadFile(const QString&)),
+	  this, SLOT(loadFile(const QString&)));
+  
+  // Start in offline mode
   onOfflineMode();
 
   exec();
@@ -124,7 +218,7 @@ void MapperManager::newFile()
   {
     AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , "");
     connect(storage, SIGNAL(onNewData()), getMapWindow()->getCanvas(), SLOT(dataLoaded()));
-    connect(storage, SIGNAL(log(const QString&, const QString&)), _plugin, SLOT(log(const QString&, const QString&)));
+    connect(storage, SIGNAL(log(const QString&, const QString&)), _eventHandler, SLOT(log(const QString&, const QString&)));
     storage->newData();
     delete(storage);
   }
@@ -167,7 +261,7 @@ void MapperManager::merge()
     AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
     connect(storage, SIGNAL(onDataLoaded()), getMapWindow()->getCanvas(), SLOT(dataLoaded()));
     connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-    connect(storage, SIGNAL(log(const QString&, const QString&)), _plugin, SLOT(log(const QString&, const QString&)));
+    connect(storage, SIGNAL(log(const QString&, const QString&)), _eventHandler, SLOT(log(const QString&, const QString&)));
 
 //     ActionManager *actMgr = ActionManager::self();
 //     actMgr->disableActions(true);
@@ -182,7 +276,8 @@ void MapperManager::merge()
     delete(storage);
     delete progressDlg;
 
-    _mainWindow->statusBar()->showMessage(tr("File merged"), 2000);
+    if (_mainWindow)
+      _mainWindow->statusBar()->showMessage(tr("File merged"), 2000);
     delete file;
   }
 }
@@ -191,7 +286,7 @@ void MapperManager::open()
 {
   if (maybeSave())
   {
-    QString fileName = QFileDialog::getOpenFileName(_mainWindow,"Choose map file ...","","MMapper2 (*.mm2);;MMapper (*.map)");
+    QString fileName = QFileDialog::getOpenFileName(_mapWindow,"Choose map file ...","","MMapper2 (*.mm2);;MMapper (*.map)");
     if (!fileName.isEmpty())
       loadFile(fileName);
   }
@@ -219,7 +314,7 @@ bool MapperManager::save()
 
 bool MapperManager::saveAs()
 {
-  QFileDialog save(_mainWindow, "Choose map file name ...");
+  QFileDialog save(_mapWindow, "Choose map file name ...");
   save.setFileMode(QFileDialog::AnyFile);
   save.setDirectory(QDir::current());
   save.setFilter("MMapper2 (*.mm2)");
@@ -231,7 +326,8 @@ bool MapperManager::saveAs()
   }
 
   if (fileNames.isEmpty()) {
-    _mainWindow->statusBar()->showMessage(tr("No filename provided"), 2000);
+    if (_mainWindow)
+      _mainWindow->statusBar()->showMessage(tr("No filename provided"), 2000);
     return false;
   }
 
@@ -243,7 +339,7 @@ bool MapperManager::maybeSave()
 {
   if ( _mapData->dataChanged() )
   {
-    int ret = QMessageBox::warning(_mainWindow, tr("Application"),
+    int ret = QMessageBox::warning(_mapWindow, tr("Application"),
                                    tr("The document has been modified.\n"
                                        "Do you want to save your changes?"),
                                        QMessageBox::Yes | QMessageBox::Default,
@@ -266,7 +362,7 @@ void MapperManager::loadFile(const QString &fileName)
 
   if (!file->open(QFile::ReadOnly))
   {
-    QMessageBox::warning(_mainWindow, tr("Application"),
+    QMessageBox::warning(_mapWindow, tr("Application"),
                          tr("Cannot read file %1:\n%2.")
                              .arg(fileName)
                              .arg(file->errorString()));
@@ -294,7 +390,7 @@ void MapperManager::loadFile(const QString &fileName)
   AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
   connect(storage, SIGNAL(onDataLoaded()), getMapWindow()->getCanvas(), SLOT(dataLoaded()));
   connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-  connect(storage, SIGNAL(log(const QString&, const QString&)), _plugin, SLOT(log(const QString&, const QString&)));
+  connect(storage, SIGNAL(log(const QString&, const QString&)), _eventHandler, SLOT(log(const QString&, const QString&)));
 
 //   ActionManager *actMgr = ActionManager::self();
 //   actMgr->disableActions(true);
@@ -310,7 +406,8 @@ void MapperManager::loadFile(const QString &fileName)
   delete progressDlg;
 
   //setCurrentFile(fileName);
-  _mainWindow->statusBar()->showMessage(tr("File loaded"), 2000);
+  if (_mainWindow)  
+      _mainWindow->statusBar()->showMessage(tr("File loaded"), 2000);
   delete file;
   //getMapWindow()->getCanvas()->setEnabled(true);
 }
@@ -356,7 +453,7 @@ bool MapperManager::saveFile(const QString &fileName)
 
   AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
   connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-  connect(storage, SIGNAL(log(const QString&, const QString&)), _plugin, SLOT(log(const QString&, const QString&)));
+  connect(storage, SIGNAL(log(const QString&, const QString&)), _eventHandler, SLOT(log(const QString&, const QString&)));
 
 //   ActionManager *actMgr = ActionManager::self();
 //   actMgr->disableActions(true);
@@ -372,7 +469,8 @@ bool MapperManager::saveFile(const QString &fileName)
   delete progressDlg;
 
   //setCurrentFile(fileName);
-  _mainWindow->statusBar()->showMessage(tr("File saved"), 2000);
+  if (_mainWindow)
+    _mainWindow->statusBar()->showMessage(tr("File saved"), 2000);
   delete file;
   getMapWindow()->getCanvas()->setEnabled(true);
 
@@ -594,7 +692,7 @@ void MapperManager::onFindRoom()
     _findRoomsDlg->setObjectName("FindRoomsDlg");
 
     connect(_findRoomsDlg, SIGNAL(log( const QString&, const QString& )),
-	    _plugin, SLOT(log( const QString&, const QString& )));
+	    _eventHandler, SLOT(log( const QString&, const QString& )));
     connect(_findRoomsDlg, SIGNAL(center(qint32, qint32)),
 	    _mapWindow, SLOT(center(qint32, qint32)));
 

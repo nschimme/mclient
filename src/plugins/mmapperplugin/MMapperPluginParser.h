@@ -11,8 +11,7 @@ class MMapperPluginParser : public AbstractParser {
     Q_OBJECT
 
     public:
-    MMapperPluginParser(QString, MMapperPlugin *, MapperManager*,
-			QObject *parent=0);
+    MMapperPluginParser(MapperManager*, QObject *parent=0);
     ~MMapperPluginParser();
 
     //void parseNewMudInput(IncomingData& que) {} // Unused

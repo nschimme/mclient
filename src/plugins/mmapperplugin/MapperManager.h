@@ -35,21 +35,22 @@ class ConnectionSelection;
 class RoomPropertySetter;
 class FindRoomsDlg;
 
-class MMapperPlugin;
-class MainWindow;
+class EventHandler;
 class MMapperPluginParser;
+class MainWindow;
 
 class MapperManager: public QThread {
   Q_OBJECT
 
   public:
-    MapperManager(QString s, MMapperPlugin *mp);
-    ~MapperManager ();
+    MapperManager(EventHandler *, QObject *parent=0);
+    ~MapperManager();
 
     MapWindow *getMapWindow() { return _mapWindow; }
     Mmapper2PathMachine *getPathMachine() { return _pathMachine; }
     MapData *getMapData() { return _mapData; }
     PrespammedPath *getPrespammedPath() { return _prespammedPath; }
+    MMapperPluginParser* getParser() { return _parser; }
     FindRoomsDlg *getFindRoomsDlg() { return _findRoomsDlg; }
 
     bool maybeSave();
@@ -101,8 +102,6 @@ class MapperManager: public QThread {
     void run();
 
   private:
-    QString _session;
-
     MapWindow *_mapWindow;
     Mmapper2PathMachine *_pathMachine;
     MapData *_mapData;
@@ -117,8 +116,8 @@ class MapperManager: public QThread {
     QPointer<QProgressDialog> progressDlg;
     FindRoomsDlg *_findRoomsDlg;
 
-    MainWindow *_mainWindow;
-    MMapperPlugin *_plugin;
+    EventHandler *_eventHandler;
+    QPointer<MainWindow> _mainWindow;
 };
 
 #endif /* _MAPPERMANAGER_H_ */

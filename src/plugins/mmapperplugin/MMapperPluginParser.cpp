@@ -9,45 +9,12 @@
 
 #include "patterns.h" // fog, etc
 
-MMapperPluginParser::MMapperPluginParser(QString s, MMapperPlugin *plugin,
-					 MapperManager *mapMgr,
+MMapperPluginParser::MMapperPluginParser(MapperManager *mapMgr,
 					 QObject *parent)
   : AbstractParser(mapMgr->getMapData(), parent) {
-  _session = s;
-
-  connect(this, SIGNAL(event(ParseEvent* )),
-          mapMgr->getPathMachine(),
-	  SLOT(event(ParseEvent* )), Qt::QueuedConnection);
-  connect(this, SIGNAL(releaseAllPaths()),
-          mapMgr->getPathMachine(),
-	  SLOT(releaseAllPaths()), Qt::QueuedConnection);
-  connect(this, SIGNAL(showPath(CommandQueue, bool)),
-          mapMgr->getPrespammedPath(),
-	  SLOT(setPath(CommandQueue, bool)), Qt::QueuedConnection);
-
-  connect(plugin, SIGNAL(name(const QString&)),
-	  SLOT(name(const QString&)));
-  connect(plugin, SIGNAL(description(const QString&)),
-	  SLOT(description(const QString&)));
-  connect(plugin, SIGNAL(dynamicDescription(const QString&)),
-	  SLOT(dynamicDescription(const QString&)));
-  connect(plugin, SIGNAL(exits(const QString&)),
-	  SLOT(exits(const QString&)));
-  connect(plugin, SIGNAL(prompt(const QString&)),
-	  SLOT(prompt(const QString&)));
-  connect(plugin, SIGNAL(move(const QString&)),
-	  SLOT(move(const QString&)));
-  
-  connect(plugin, SIGNAL(userInput(QString)),
-	  SLOT(userInput(QString)));
-  connect(plugin, SIGNAL(mudOutput(const QString&)),
-	  SLOT(mudOutput(const QString&)));
 
   connect(this, SIGNAL(sendToUser(const QByteArray&)),
 	  SLOT(sendToUserWrapper(const QByteArray&)));
-
-  connect(this, SIGNAL(sendToUser(const QString&)),
- 	  plugin, SLOT(displayMessage(const QString&)));
 
   _move = CID_NONE;
 

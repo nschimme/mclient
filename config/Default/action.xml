@@ -1,21 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <actions size="7" version="1.0">
-   <array1 label="reply" pattern="^\033\[[^m]*m([^\033'\s]+)(:?\033\[[^m]*m)* tells you" tags="XMLTell">
+   <array1 label="reply" pattern="^\033\[[^m]*m([^\033'\s]+)(?:\033\[[^m]*m)* tells you" tags="XMLTell">
        <command>
        #alias tt=tell $1 \$0
        </command>
    </array1>
-   <array2 label="score_hp" pattern="^(:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)*/(:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)* hits and (:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)*/(:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)* moves.">
+   <array2 label="score_hp" pattern="^(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* hits and (?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* moves.">
       <command>
       #alias rep=emote reports:   $1/$2 hits     $3/$4 moves
       </command>
    </array2>
-   <array3 label="score_mana" pattern="^(:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)*/(:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)* hits, (:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)*/(:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)* mana, and (:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)*/(:?\033\[[^m]*m)*(\d+)(:?\033\[[^m]*m)* moves.">
+   <array3 label="score_mana" pattern="^(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* hits, (?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* mana, and (?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* moves.">
       <command>
       #alias rep=emote reports:   $1/$2 hits     $3/$4 mana     $5/$6 moves
       </command>
    </array3>
-   <array4 label="stat_xp" pattern="^Needed: (:?\033\[[^m]*m)*(.+)(:?\033\[[^m]*m)* xp, (:?\033\[[^m]*m)*(.+)(:?\033\[[^m]*m)* tp.">
+   <array4 label="stat_xp" pattern="^Needed: (?:\033\[[^m]*m)*([0-9,]+)(?:\033\[[^m]*m)* xp, (?:\033\[[^m]*m)*([0-9,]+)(?:\033\[[^m]*m)* tp.">
       <command>
       #alias tnl=emote needs $1 xp and $2 tp to level.
       </command>

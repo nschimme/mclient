@@ -13,17 +13,17 @@ CommandProcessor::CommandProcessor(PluginSession *ps, QObject* parent)
   _symbol = QChar('#'); // Command prefix symbol
 
   // Internal Commands have a Null datatype.
-  _mapping.insert("quit", QString());
-  _mapping.insert("qui", QString());
-  _mapping.insert("help", QString());
-  _mapping.insert("version", QString());
-  _mapping.insert("emulate", QString());
-  _mapping.insert("print", QString());
-  _mapping.insert("delim", QString());
-  _mapping.insert("beep", QString());
-  _mapping.insert("alias", QString());
-  _mapping.insert("action", QString());
-  _mapping.insert("split", QString());
+  _mapping.insert("quit", 0);
+  _mapping.insert("qui", 0);
+  _mapping.insert("help", 0);
+  _mapping.insert("version", 0);
+  _mapping.insert("emulate", 0);
+  _mapping.insert("print", 0);
+  _mapping.insert("delim", 0);
+  _mapping.insert("beep", 0);
+  _mapping.insert("alias", 0);
+  _mapping.insert("action", 0);
+  _mapping.insert("split", 0);
 
   // Start the command task threads
   _actionTask = new CommandTask(COMMAND_ACTION, this);
@@ -79,19 +79,21 @@ QObject* CommandProcessor::getAction() const {
 
 
 bool CommandProcessor::unregisterCommand(const QString &source) {
-  if (!_registry.contains(source)) {
+  int removed = 0;
+  CommandMapping::iterator i = _mapping.begin();
+  while (i != _mapping.end() && i.value()->pluginName() == source) {
+    if (_mapping.remove(i.key()) == 0)
+      qDebug() << "Unable to remove command" << i.value()
+	       << "for plugin" << source;
+    ++i;
+    removed++;
+  }
+
+  if (removed == 0) {
     qDebug() << source << "was not registered! Unable to remove.";
     return false;
   }
 
-  QMultiHash<QString, QString>::iterator i = _registry.find(source);
-  while (i != _registry.end() && i.key() == source) {
-    if (_mapping.remove(i.value()) == 0)
-      qDebug() << "Unable to remove command" << i.value()
-	       << "for plugin" << source;
-    ++i;
-  }
-  _registry.remove(source);
   return true;
 }
 
@@ -103,9 +105,8 @@ void CommandProcessor::registerCommand(const QString &pluginName,
       qDebug() << "Error, command" << ce->command() << "was already added";
     } else {
       qDebug() << "Registering command " << ce->command() << " "
-	       << ce->dataType();
-      _mapping.insert(ce->command(), ce->dataType());
-      _registry.insertMulti(pluginName, ce->command());
+	       << ce->dataType() << "for" << pluginName;
+      _mapping.insert(ce->command(), ce);
     }
   }
 }

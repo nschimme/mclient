@@ -71,11 +71,9 @@ class MapCanvas : public QGLWidget//, public RoomRecipient
 
       void drawRoom(const Room* room, const std::vector<Room *> & rooms, const std::vector<std::set<RoomRecipient *> > & locks);
 
-
-
-  public slots:
     void init(MapData *mapData, PrespammedPath* pp);      
 
+  public slots:
     void forceMapperToRoom();
     void onInfoMarksEditDlgClose();
 

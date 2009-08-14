@@ -4,6 +4,7 @@
 #include "CommandProcessor.h"
 #include "AliasManager.h"
 #include "ActionManager.h"
+#include "CommandEntry.h"
 
 #include "MClientEvent.h"
 
@@ -71,7 +72,7 @@ void CommandTask::parseUserInput(const QString &input,
   QListIterator<QString> i(input.split(splitChar)); // QString::SkipEmptyParts
   for (i.toBack(); i.hasPrevious();) {
     _queue.append(i.previous());
-    qDebug() << "* adding" << _queue.last() << "to stack";
+    //qDebug() << "* adding" << _queue.last() << "to stack";
   }
 }
 
@@ -91,7 +92,7 @@ void CommandTask::processStack() {
 
     // Pop stack
     QString current = _queue.takeLast();
-    qDebug() << "* popping" << current << "from stack";    
+    //qDebug() << "* popping" << current << "from stack";    
 
     QString command, arguments;
     
@@ -132,19 +133,19 @@ bool CommandTask::parseCommand(QString command,
   if (command.isEmpty()) command = "help";
     
   // Identify Command
-  QMapIterator<QString, QString> i(_commandProcessor->getCommandMapping());
-  while (i.hasNext()) {
-    if (i.next().key().startsWith(command)) {
+  CommandMapping map = _commandProcessor->getCommandMapping();
+  qDebug() << map;
+  CommandMapping::const_iterator i;
+  for (i = map.constBegin(); i != map.constEnd(); ++i) {
+    if (i.key().startsWith(command)) {
       // Command was identified
       command = i.key();
       
-      if (!i.value().isNull()) {
-	// External commands
-
-	// Relay command to corresponding plugin
+      if (i.value()) {
+	// External commands, relay command to corresponding plugin
 	QVariant* qv = new QVariant(arguments);
 	QStringList sl;
-	sl << i.value();
+	sl << i.value()->dataType();
 	postSession(qv, sl);
 
       } else {
@@ -154,7 +155,27 @@ bool CommandTask::parseCommand(QString command,
 	  findAction(arguments, QStringList("XMLNone"));
 
 	} else if (command == "print") {
-	  displayData(arguments);
+	  // Unescape arguments and display
+	  QString temp(arguments);
+	  QRegExp rx("\\\\(.)");
+	  int pos = 0;
+	  while ((pos = rx.indexIn(temp, pos)) != -1) {
+	    switch (rx.cap(1).at(0).toAscii()) {
+	    case 'r':
+	      temp.replace(pos, 2, "\r");
+	      break;
+	    case 'n':
+	      temp.replace(pos, 2, "\n");
+	      break;
+	    case 't':
+	      temp.replace(pos, 2, "\t");
+	      break;
+	    default:
+	      temp.remove(pos--, 1);
+	    };
+	    pos += rx.matchedLength();
+	  }
+	  displayData(temp);
 
 	} else if (command == "delim") {
 	  /*
@@ -197,10 +218,15 @@ bool CommandTask::parseCommand(QString command,
 	  
 	} else if (command == "help") {
 	  QString output = "#commands available:\n";
-	  QMapIterator<QString, QString>
-	    i(_commandProcessor->getCommandMapping());
-	  while (i.hasNext())
-	    output += QString("#%1\n").arg(i.next().key());
+	  for (i = map.constBegin(); i != map.constEnd(); ++i) {
+	    if (!i.value())
+	      // Inbuilt command
+	      output += QString("#%1\n").arg(i.key());
+	    else
+	      output += QString("#%1%2\n")
+		.arg(i.key(), -15, ' ') // pad 15 characters
+		.arg(i.value()->help());
+	  }
 	  displayData(output);
 
 	} else if (command == "beep") {
@@ -218,6 +244,7 @@ bool CommandTask::parseCommand(QString command,
 	}
 
       }
+      qDebug() << "command run";
       // Command run
       return true;
     }
@@ -338,9 +365,16 @@ QString CommandTask::findAlias(const QString &name,
     QString newCommand = alias->command;
     QStringList tokens = arguments.split(QRegExp("\\s+"),
 					 QString::SkipEmptyParts);
-    for (int i = 0; i < tokens.size(); ++i) {
-      QRegExp rx(QString("^(\\$%1)|([^\\\\])(\\$%2)").arg(i+1).arg(i+1));
-      newCommand.replace(rx, "\\2"+tokens.at(i));
+    for (int i = 0; i <= tokens.size(); ++i) {
+      QRegExp rx(QString("^\\$%1|([^\\\\])\\$%1").arg(i));
+      switch (i) {
+      case 0:
+	newCommand.replace(rx, "\\1"+arguments);
+	break;
+      default:
+	newCommand.replace(rx, "\\1"+tokens.at(i-1));
+	break;
+      };
     }
     qDebug() << "* alias command is:" << newCommand;
 
@@ -371,7 +405,7 @@ bool CommandTask::handleActionCommand(const QString &arguments) {
 	  .arg(j.value()->label,
 	       j.value()->pattern.pattern(),
 	       j.value()->command,
-	       j.value()->group,
+	       j.value()->tags.join(","),
 	       QString("%1").arg(j.value()->priority));
 	
 	output << out;
@@ -432,19 +466,22 @@ bool CommandTask::findAction(const QString &pattern, QStringList tags) {
   if (action) {
     // Create the new command
     QString newCommand = action->command;
-    QStringList tokens = action->pattern.capturedTexts();
-    for (int i = 0; i < tokens.size(); ++i) {
+    QStringList captures = action->pattern.capturedTexts();
+    for (int i = 0; i < captures.size(); ++i) {
       // Match against non-escaped $ variables
-      QRegExp rx(QString("^(\\$%1)|([^\\\\])(\\$%2)").arg(i).arg(i));
+      QRegExp rx(QString("^\\$%1|([^\\\\])\\$%1").arg(i));
       switch (i) {
       case 0:
+	/*
 	if (pattern.contains("\n")) {
-	  newCommand.replace(rx, "\\2"+tokens[i].replace(QString("\n"),
-							 QString(" ")));
+	  // Remove newlines from $0
+	  newCommand.replace(rx, captures[i].replace(QString("\n"),
+						     QString(" ")));
 	  continue;
 	}
+	*/
       default:
-	newCommand.replace(rx, "\\2"+tokens.at(i));
+	newCommand.replace(rx, "\\1"+captures.at(i));
 	break;
       };
     }

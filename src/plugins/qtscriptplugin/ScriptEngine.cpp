@@ -26,7 +26,7 @@ QScriptValue exe(QScriptContext *context, QScriptEngine *engine) {
 QScriptValue send(QScriptContext *context, QScriptEngine *engine) {
   QScriptValue a = context->argument(0);
 
-  QVariant* payload = new QVariant(a.toString().append("\n"));
+  QVariant* payload = new QVariant(a.toString());
   QStringList tags = (QStringList() << "SocketWriteData");
   ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
   e->postEvent(payload, tags);
@@ -48,7 +48,8 @@ QScriptValue emulate(QScriptContext *context, QScriptEngine *engine) {
 ScriptEngine::ScriptEngine(QObject* parent) : QScriptEngine(parent) {  
   
   // Add C++ functions to QtScript
-  QFlags<QScriptValue::PropertyFlag> functionFlags(QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration);
+  QFlags<QScriptValue::PropertyFlag>
+    functionFlags(QScriptValue::ReadOnly | QScriptValue::SkipInEnumeration);
   QScriptValue printFunction = newFunction(print);
   globalObject().setProperty("print", printFunction, functionFlags);
   QScriptValue exeFunction = newFunction(exe);
@@ -74,8 +75,8 @@ bool ScriptEngine::evaluateExpression(const QString &expr) {
   if (hasUncaughtException()) {
     QStringList output;
     output << "#" << uncaughtException().toString()
-	   << " on line " << QString("%1").arg(uncaughtExceptionLineNumber())
-	   << " with backstrace " << uncaughtExceptionBacktrace()
+	   << "on line" << QString::number(uncaughtExceptionLineNumber())
+	   << "with backstrace" << uncaughtExceptionBacktrace()
 	   << "\n";
     displayData(output.join(""));
     return false;
@@ -171,7 +172,7 @@ bool ScriptEngine::variableCommand(const QString &arguments) {
 }
 
 void ScriptEngine::handleException(const QScriptValue &value) {
-  qDebug() << "* ScriptEngine exception:" << value.toString();
+  qDebug() << "! ScriptEngine exception:" << value.toString();
 }
 
 void ScriptEngine::postEvent(QVariant *payload, const QStringList& tags) {

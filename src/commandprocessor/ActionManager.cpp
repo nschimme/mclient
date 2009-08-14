@@ -40,9 +40,8 @@ Action* ActionManager::match(const QString &pattern,
 	if (j.value()->pattern.indexIn(pattern) >= 0) {
 	  // Pattern matched
 	  qDebug() << "found action" << j.value()->label
-		   << j.value()->command
-		   << "for tag" << *tag;
-	  qDebug() << j.value()->pattern.capturedTexts();
+		   << "for tag" << *tag
+		   << "captures: " << j.value()->pattern.capturedTexts();
 	  
 	  // Return action
 	  return j.value();
@@ -79,19 +78,20 @@ bool ActionManager::add(const QString &label, const QRegExp &pattern,
   QMultiHash<QString, Action*> *actions;
   if (_actions.contains(priority)) {
     actions = _actions.value(priority);
+    /*
     qDebug() << "* Priority" << priority << "has a hash of size"
 	     << actions->size();
-    
+    */
   } else {
     actions = new QMultiHash<QString, Action*>;
     _actions.insert(priority, actions);
-    qDebug() << "* Priority" << priority << "created NEW hash";
+    //qDebug() << "* Priority" << priority << "created NEW hash";
   }
   
   foreach(QString tag, tags) {
-    qDebug() << "adding for tag" << tag;
+    //qDebug() << "adding for tag" << tag;
     actions->insert(tag, action);
-    qDebug() << "inserted action! hash is now size of" << actions->size();
+    //qDebug() << "inserted action! hash is now size of" << actions->size();
   }
   
   _mutex.unlock();
@@ -104,7 +104,7 @@ bool ActionManager::loadSettings(const QHash<QString, QVariant> &hash) {
   qDebug() << "* ActionManager loading"
 	   << hash.value("actions/size", 0).toInt() << "actions";
 
-  qDebug() << hash;
+  //qDebug() << hash;
 
   int count = 0;
   int size = hash.value("actions/size", 0).toInt();
@@ -115,11 +115,13 @@ bool ActionManager::loadSettings(const QHash<QString, QVariant> &hash) {
     if (hash.contains(prefix+"/label") &&
 	hash.contains(prefix+"/pattern") &&
 	hash.contains(prefix+"/command")) {
-      
+    
+      /*
       qDebug() << i << ":"
 	       << hash.value(prefix+"/pattern").toString()
 	       << "-->"
 	       << QRegExp(hash.value(prefix+"/pattern").toString()).pattern();
+      */
 
       // Clean up the command (remove indentation, etc)
       QStringList commandList;

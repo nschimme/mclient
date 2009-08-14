@@ -11,6 +11,8 @@ class CommandEntry;
 class CommandTask;
 class PluginSession;
 
+typedef QMap<QString, CommandEntry*> CommandMapping;
+
 class CommandProcessor : public QObject {
     Q_OBJECT
     
@@ -34,7 +36,7 @@ class CommandProcessor : public QObject {
 	void registerCommand(const QString &,
 			     const QList<CommandEntry *> &);
 
-	QMap<QString, QString> getCommandMapping() { return _mapping; };
+	CommandMapping getCommandMapping() { return _mapping; };
 	QChar getCommandSymbol() { return _symbol; };
 	QChar getDelimSymbol() { return _delim; };
 	PluginSession* getPluginSession() { return _pluginSession; };
@@ -43,8 +45,7 @@ class CommandProcessor : public QObject {
    private:
 	/** Commands Section */
         QChar _symbol, _delim;
-	QMap<QString, QString> _mapping;
-	QMultiHash<QString, QString> _registry;
+	CommandMapping _mapping;
 
 	PluginSession *_pluginSession;
 	CommandTask *_actionTask, *_userInputTask;

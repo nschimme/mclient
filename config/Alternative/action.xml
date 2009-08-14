@@ -1,23 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<actions size="4" version="1.0">
-   <array1 label="reply" pattern="^\033\[\d+m(.+) tells you '.+'" tags="XMLTell">
+<actions size="7" version="1.0">
+   <array1 label="reply" pattern="^\033\[[^m]*m([^\033'\s]+)(?:\033\[[^m]*m)* tells you" tags="XMLTell">
        <command>
-       #alias tt=tell $2 \$0
+       #alias tt=tell $1 \$0
        </command>
    </array1>
-   <array2 label="score_hp" pattern="^(\d+)/(\d+) hits and (\d+)/(\d+) moves.">
+   <array2 label="score_hp" pattern="^(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* hits and (?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* moves.">
       <command>
-      #alias rep=emote reports $1
+      #alias rep=emote reports:   $1/$2 hits     $3/$4 moves
       </command>
    </array2>
-   <array3 label="score_mana" pattern="^(\d+)/(\d+) hits, (\d+)/(\d+) mana, and (\d+)/(\d+) moves.">
+   <array3 label="score_mana" pattern="^(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* hits, (?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* mana, and (?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)*/(?:\033\[[^m]*m)*(\d+)(?:\033\[[^m]*m)* moves.">
       <command>
-      #alias rep=emote reports $1
+      #alias rep=emote reports:   $1/$2 hits     $3/$4 mana     $5/$6 moves
       </command>
    </array3>
-   <array4 label="stat_xp" pattern="^Needed: (.+) xp, (.+) tp.">
+   <array4 label="stat_xp" pattern="^Needed: (?:\033\[[^m]*m)*([0-9,]+)(?:\033\[[^m]*m)* xp, (?:\033\[[^m]*m)*([0-9,]+)(?:\033\[[^m]*m)* tp.">
       <command>
-      #alias tnl=emote needs $2 xp and $3 tp to level.
+      #alias tnl=emote needs $1 xp and $2 tp to level.
       </command>
    </array4>
+   <array5 label="xpcounter1" pattern="^XPCOUNTER: (\d+) (\d+) (\d+) (\d+) \d+\." group="XP Counter">
+      <command>
+      xpcalc $1 $2 $3 $4
+      xpprint
+      </command>
+   </array5>
+   <array6 label="xpcounter2" pattern="^You (receive your share of|feel more) experienced?\." group="XP Counter">
+      <command>
+      xp
+      </command>
+   </array6>
+   <array7 label="xpcounter3" pattern="^(Welcome to the land of Middle Earth|Reconnecting)\." group="XP Counter">
+      <command>
+      #script xpcnt_old_xp=0; xpcnt_old_tp=0; xpcnt_session_xp=0; xpcnt_session_tp=0;
+      </command>
+   </array7>
 </actions>

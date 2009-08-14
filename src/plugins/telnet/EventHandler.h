@@ -2,8 +2,6 @@
 #define EVENTHANDLER_H
 
 #include "MClientEventHandler.h"
-#include <list>
-#include <string>
 
 struct cTelnetPrivate;
 
@@ -156,10 +154,10 @@ class EventHandler : public MClientEventHandler {
 	/** Send out the data. Does not double IACs, this must be done
 	    by caller if needed. This function is suitable for sending
 	    telnet sequences. */
-	bool doSendData (const std::string &data);
+	bool doSendData (const QByteArray &data);
 	
 	/** processes a telnet command (IAC ...) */
-	void processTelnetCommand (const std::string &command);
+	void processTelnetCommand (const QByteArray &command);
 	
 	/** send a telnet option */
 	void sendTelnetOption (unsigned char type, unsigned char option);
