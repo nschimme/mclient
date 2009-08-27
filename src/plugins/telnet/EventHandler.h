@@ -163,6 +163,9 @@ class EventHandler : public MClientEventHandler {
 	void sendTelnetOption (unsigned char type, unsigned char option);
 	
 	cTelnetPrivate *d;
+
+ private:
+	QByteArray _cleanData;
 };
 
 

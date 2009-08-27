@@ -1,7 +1,8 @@
 #include "CommandProcessor.h"
 
 #include "PluginSession.h"
-#include "CommandTask.h"
+#include "UserCommandTask.h"
+#include "MudCommandTask.h"
 #include "CommandEntry.h"
 
 #include <QDebug>
@@ -12,22 +13,44 @@ CommandProcessor::CommandProcessor(PluginSession *ps, QObject* parent)
   _delim = QChar(';');  // Command delimeter symbol
   _symbol = QChar('#'); // Command prefix symbol
 
-  // Internal Commands have a Null datatype.
-  _mapping.insert("quit", 0);
-  _mapping.insert("qui", 0);
-  _mapping.insert("help", 0);
-  _mapping.insert("version", 0);
-  _mapping.insert("emulate", 0);
-  _mapping.insert("print", 0);
-  _mapping.insert("delim", 0);
-  _mapping.insert("beep", 0);
-  _mapping.insert("alias", 0);
-  _mapping.insert("action", 0);
-  _mapping.insert("split", 0);
+  // Internal Commands have a no plugin name.
+  _mapping.insert("quit", new CommandEntry("quit",
+					   "quits the program",
+					   CMD_ONE_LINE));
+  _mapping.insert("qui", new CommandEntry("qui",
+					  "",
+					  CMD_ONE_LINE));
+  _mapping.insert("help", new CommandEntry("help",
+					   "displays this information",
+					   CMD_ONE_LINE));
+  _mapping.insert("version", new CommandEntry("version",
+					      "version information",
+					      CMD_ONE_LINE));
+  _mapping.insert("emulate", new CommandEntry("emulate",
+					      "",
+					      CMD_ONE_LINE));
+  _mapping.insert("print", new CommandEntry("print",
+					    "",
+					    CMD_ONE_LINE));
+  _mapping.insert("delim", new CommandEntry("delim",
+					    "",
+					    CMD_ONE_LINE));
+  _mapping.insert("beep", new CommandEntry("beep",
+					   "",
+					   CMD_ONE_LINE));
+  _mapping.insert("alias", new CommandEntry("alias",
+					    "",
+					    CMD_ONE_LINE));
+  _mapping.insert("action", new CommandEntry("action",
+					     "",
+					     CMD_ONE_LINE));
+  _mapping.insert("split", new CommandEntry("split",
+					    "",
+					    CMD_ONE_LINE));
 
   // Start the command task threads
-  _actionTask = new CommandTask(COMMAND_ACTION, this);
-  _userInputTask = new CommandTask(COMMAND_ALIAS, this);
+  _actionTask = new MudCommandTask(this);
+  _userInputTask = new UserCommandTask(this);
   _actionTask->start();
   _userInputTask->start();
 

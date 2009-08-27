@@ -27,8 +27,6 @@ SimpleDisplay::SimpleDisplay(QWidget* parent)
 
     // Allowable Display Locations
     SET(_displayLocations, DL_DISPLAY);
-
-    qDebug() << "### created a new instance of simple display" << this;
 }
 
 

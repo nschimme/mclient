@@ -5,9 +5,12 @@
 
 #include <QString>
 
+enum CommandEntryType {CMD_ONE_LINE, CMD_MULTI_LINE};
+
 class CommandEntry {
 
     public:
+        CommandEntry(const QString, const QString, CommandEntryType);
         CommandEntry();
         ~CommandEntry();
 
@@ -27,11 +30,17 @@ class CommandEntry {
         const QString& dataType() const;
         void dataType(const QString);
 
+	// The type of command, one- or multi-lined
+	CommandEntryType commandType() const;
+	void commandType(CommandEntryType);
+
     protected:
         QString _pluginName;
 	QString _command;
 	QString _help;
 	QString _dataType;
+
+	CommandEntryType _commandType;
 };
 
 

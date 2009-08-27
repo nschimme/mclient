@@ -380,12 +380,23 @@ void PluginSession::customEvent(QEvent* e) {
       }
     }
 
+    // TODO: Improve this somehow. This is very hack-ish.
     if (me->dataTypes().contains("XMLAll")) {
       MClientEvent* nme = new MClientEvent(*me);
       QCoreApplication::postEvent(_commandProcessor->getAction(), nme);
       qDebug() << "* posting to CommandProcessor";
       found = true;
     }
+    if (me->dataTypes().contains("SocketConnected") ||
+	me->dataTypes().contains("SocketDisconnected")) {
+      MClientEvent* nme = new MClientEvent(*me);
+      QCoreApplication::postEvent(_commandProcessor->getAction(), nme);
+      nme = new MClientEvent(*me);
+      QCoreApplication::postEvent(_commandProcessor->getUserInput(), nme);
+      qDebug() << "* posting to CommandProcessor";
+      found = true;
+    }
+
     
     if (!found)
       qWarning() << "! No plugins accepted data types" << me->dataTypes();

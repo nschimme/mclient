@@ -5,8 +5,6 @@
 
 class QEvent;
 
-enum XmlMode {XML_NONE, XML_PROMPT, XML_ROOM, XML_NAME, XML_DESCRIPTION, XML_TERRAIN, XML_MAGIC, XML_EXITS, XML_TELL, XML_SAY, XML_NARRATE, XML_SONG, XML_PRAY, XML_SHOUT, XML_YELL, XML_EMOTE, XML_HIT, XML_DAMAGE, XML_WEATHER};
-
 class EventHandler : public MClientEventHandler {
     Q_OBJECT
     
@@ -17,27 +15,36 @@ class EventHandler : public MClientEventHandler {
         void customEvent(QEvent* e);
 
  protected:
-	static const QString nullString;
 	static const QString emptyString;
+	static const QChar escChar;
+	/*
+	static const QString nullString;
 	static const QByteArray greaterThanChar;
 	static const QByteArray lessThanChar;
 	static const QByteArray greaterThanTemplate;
 	static const QByteArray lessThanTemplate;
-	static const QChar escChar;
+	*/
 
     private:
 	void parse(const QByteArray&);
 	bool element(const QByteArray&);
-	bool characters(QByteArray&);
+	bool characters(const QByteArray&);
+
+	enum CharactersState {NORMAL, AMPERSAND, GREATER_THAN_1, LESS_THAN_1, GREATER_THAN_2, LESS_THAN_2};
+	CharactersState _charState;
+
+	enum XmlMode {XML_NONE, XML_PROMPT, XML_ROOM, XML_NAME, XML_DESCRIPTION, XML_TERRAIN, XML_MAGIC, XML_EXITS, XML_TELL, XML_SAY, XML_NARRATE, XML_SONG, XML_PRAY, XML_SHOUT, XML_YELL, XML_EMOTE, XML_HIT, XML_DAMAGE, XML_WEATHER};
+	XmlMode _xmlMode;
 
 	QString _buffer;
 
 	QByteArray _tempCharacters;
 	QByteArray _tempTag;
 	bool _readingTag;
-	XmlMode _xmlMode;
 
 	bool _removeXmlTags;
+
+	void postBuffer(const QStringList &);
 };
 
 

@@ -113,10 +113,6 @@ bool SocketManagerIO::startSession(QString s) {
     QString host = _settings->value(cfg+"connection/host", "mume.org");
     int port = _settings->value(cfg+"connection/port", "4242").toInt();
 
-    // Mint's test server
-    //host = "76.121.49.145";
-    //port = 4242;
-    
     //host = "127.0.0.1";
 
     // Proxy settings

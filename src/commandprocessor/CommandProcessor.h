@@ -8,7 +8,8 @@
 #include <QEvent>
 
 class CommandEntry;
-class CommandTask;
+class UserCommandTask;
+class MudCommandTask;
 class PluginSession;
 
 typedef QMap<QString, CommandEntry*> CommandMapping;
@@ -48,7 +49,8 @@ class CommandProcessor : public QObject {
 	CommandMapping _mapping;
 
 	PluginSession *_pluginSession;
-	CommandTask *_actionTask, *_userInputTask;
+	MudCommandTask *_actionTask;
+	UserCommandTask *_userInputTask;
 
  signals:
 	void quit();

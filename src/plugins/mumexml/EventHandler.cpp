@@ -7,11 +7,13 @@
 
 #include "MClientEvent.h"
 
+/*
 const QByteArray EventHandler::greaterThanChar(">");
 const QByteArray EventHandler::lessThanChar("<");
 const QByteArray EventHandler::greaterThanTemplate("&gt;");
 const QByteArray EventHandler::lessThanTemplate("&lt;");
 const QString EventHandler::nullString;
+*/
 const QString EventHandler::emptyString("");
 const QChar EventHandler::escChar('\x1B');
 
@@ -22,6 +24,8 @@ EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
   _readingTag = false;
   _xmlMode = XML_NONE;
   _removeXmlTags = true;
+
+  _charState = NORMAL;
 
   _buffer = emptyString;
 }
@@ -45,8 +49,17 @@ void EventHandler::customEvent(QEvent *e) {
 
       }
       else if (s.startsWith("TelnetGA")) {
-	parse(me->payload()->toByteArray());
-	
+	qDebug() << "* Flushing buffer due to TelentGA" << _buffer;
+	if (!_buffer.isEmpty()) {
+	  QStringList sl;
+	  sl << "XMLPrompt" << "XMLAll";
+	  postBuffer(sl);
+	  
+	}
+      }
+      else if (s.startsWith("SocketDisconnected")) {
+	_buffer.clear();
+
       }
       
     }
@@ -133,6 +146,15 @@ bool EventHandler::element(const QByteArray& line) {
   
   switch (_xmlMode) {
   case XML_NONE:
+    // We found the beginning of a tag, post the XML_NONE buffer since
+    // it is not a fragment
+    if (!_buffer.isEmpty()) {
+      QStringList sl;
+      sl << "XMLNone" << "XMLAll";
+      postBuffer(sl);
+
+    }
+    // Match for the tag
     if (length > 0)
       switch (line.at(0)) {
       case 'p':
@@ -236,12 +258,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Dynamic Description Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLDynamicDescription" << "XMLAll";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
 	break;
@@ -253,17 +272,14 @@ bool EventHandler::element(const QByteArray& line) {
     if (line.startsWith("/name")) {
       _xmlMode = XML_ROOM;
       
-      /** Mint's server doesn't place the newbline after the name */
+      /** Mint's server doesn't place the newline after the name */
       if (_buffer.at(_buffer.size() - 1) != '\n')
 	_buffer.append("\n");
       
       // Post Room Name Event
-      QVariant* qv = new QVariant(_buffer);
       QStringList sl;
       sl << "XMLName" << "XMLAll";
-      postSession(qv, sl);
-      
-      _buffer.clear();
+      postBuffer(sl);
       
     }
     break;
@@ -275,12 +291,10 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_ROOM;
 	  
 	  // Post Static Room Description Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLDescription" << "XMLAll";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear(); // reset buffer for dynamic desc
+	  postBuffer(sl);
+
 	}
 	break;
       }
@@ -293,12 +307,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Room Exits Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLExits" << "XMLAll";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -312,13 +323,10 @@ bool EventHandler::element(const QByteArray& line) {
 	    _xmlMode = XML_NONE;
 	    
 	    // Post Prompt Event
-	    QVariant* qv = new QVariant(_buffer);
 	    QStringList sl;
 	    sl << "XMLPrompt" << "XMLAll";
-	    postSession(qv, sl);
-	    
-	    _buffer.clear();
-	    
+	    postBuffer(sl);
+	  
 	  }
 	  break;
       }
@@ -331,12 +339,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_ROOM;
 	  
 	  // Post Terrain Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLTerrain" << "XMLAll";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -349,12 +354,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Magic Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLMagic" << "XMLAll";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -367,12 +369,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Tell Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLTell" << "XMLAll" << "XMLCommunication";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -385,12 +384,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Say Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLSay" << "XMLAll" << "XMLCommunication";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -403,12 +399,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Narrate Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLNarrate" << "XMLAll" << "XMLCommunication";
-	  postSession(qv, sl);
-
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -421,12 +414,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Song Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLSong" << "XMLAll" << "XMLCommunication";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -439,12 +429,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Pray Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLPray" << "XMLAll" << "XMLCommunication";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -457,12 +444,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Shout Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLShout" << "XMLAll" << "XMLCommunication";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -475,12 +459,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Yell Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLYell" << "XMLAll" << "XMLCommunication";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -493,12 +474,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Emote Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLEmote" << "XMLAll" << "XMLCommunication";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -511,12 +489,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Damage Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLDamage" << "XMLAll" << "XMLCombat";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -529,12 +504,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Hit Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLHit" << "XMLAll" << "XMLCombat";
-	  postSession(qv, sl);
-	  
-	  _buffer.clear();
+	  postBuffer(sl);
 	  
 	}
         break;
@@ -547,12 +519,9 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_NONE;
 	  
 	  // Post Weather Event
-	  QVariant* qv = new QVariant(_buffer);
 	  QStringList sl;
 	  sl << "XMLWeather" << "XMLAll";
-	  postSession(qv, sl);
-
-	  _buffer.clear();
+	  postBuffer(sl);
 
 	}
         break;
@@ -560,41 +529,112 @@ bool EventHandler::element(const QByteArray& line) {
     break;
   }
   
+  // Display tags?
   if (!_removeXmlTags) {
     QString output = "<"+line+">";
-    QVariant* qv = new QVariant(output);
+    QVariant *qv = new QVariant(output);
     QStringList sl("XMLTag");
     postSession(qv, sl);
   }
   return true;
 }
 
-bool EventHandler::characters(QByteArray& ch) {
-  // replace > and < chars
-  ch.replace(greaterThanTemplate, greaterThanChar);
-  ch.replace(lessThanTemplate, lessThanChar);
+bool EventHandler::characters(const QByteArray& data) {
+  // replace > (&gt;) and < (&lt;) chars and handle fragments
+  for (unsigned int i = 0; i < (unsigned int) data.length(); i++) {
+    switch (_charState) {
+    case NORMAL:
+      switch (data.at(i)) {
+      case '&':
+	// This might be a > or < character
+	_charState = AMPERSAND;
+	break;
+      case '\n':
+	// All other unknown tags get their contents printed still so
+	// we add the current character to the buffer
+	_buffer.append(data.at(i));
 
-  QVariant *qv;
-  QStringList sl;
+	// Post the buffer immediately if this is XML_NONE since it is
+	// clearly not a fragment
+	if (_xmlMode == XML_NONE) {
+	  QStringList sl;
+	  sl << "XMLNone" << "XMLAll";
+	  postBuffer(sl);
+  
+	}
+	break;
+      default:
+	// Add the current character to the buffer
+	_buffer.append(data.at(i));
+      };
+      break;
 
-  switch (_xmlMode) {
-  case XML_NONE:
-    qv = new QVariant(ch);
-    sl << "XMLNone" << "XMLAll";
-    postSession(qv, sl);
-    break;
-    
-  case XML_ROOM: // dynamic line
-  case XML_NAME:
-  case XML_DESCRIPTION: // static line
-  case XML_EXITS:
-  case XML_PROMPT:
-  default:
-    // This is for single-lined XML tags.
-    if (ch.length() > 0)
-      _buffer.append(ch);
-    break;
+    case AMPERSAND:
+      switch (data.at(i)) {
+      case 'l':
+	_charState = LESS_THAN_1;
+	break;
+      case 'g':
+	_charState = GREATER_THAN_1;
+	break;
+      default:
+	_charState = NORMAL;
+	_buffer.append(data.mid(i - 1, 2));
+      };
+      break;
+
+    case GREATER_THAN_1:
+      switch (data.at(i)) {
+      case 't':
+	_charState = GREATER_THAN_2;
+	break;
+      default:
+	_charState = NORMAL;
+	_buffer.append(data.mid(i - 2, 3));
+      };
+      break;
+
+    case LESS_THAN_1:
+      switch (data.at(i)) {
+      case 't':
+	_charState = LESS_THAN_2;
+	break;
+      default:
+	_charState = NORMAL;
+	_buffer.append(data.mid(i - 2, 3));
+      };
+      break;
+
+    case GREATER_THAN_2:
+      _charState = NORMAL;
+      switch (data.at(i)) {
+      case ';':
+	_buffer.append('>');
+	break;
+      default:
+	_buffer.append(data.mid(i - 3, 4));
+      };
+      break;
+
+    case LESS_THAN_2:
+      _charState = NORMAL;
+      switch (data.at(i)) {
+      case ';':
+	_buffer.append('<');
+	break;
+      default:
+	_buffer.append(data.mid(i - 3, 4));
+      };
+      break;
+    };
   }
   
   return true;
+}
+
+
+void EventHandler::postBuffer(const QStringList &tags) {
+  QVariant *qv = new QVariant(_buffer);
+  postSession(qv, tags);
+  _buffer.clear();
 }

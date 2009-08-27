@@ -75,14 +75,10 @@ void EventHandler::disconnectDevice() {
 
 void EventHandler::sendData(const QByteArray& ba) {
   // Send data to the sockets.
-  if (!_openSocket) {
-    displayMessage("#no open connections. Use '#connect' to open a "
-		   "connection.\n");
-    
-  }
-  else {
+  if (!_openSocket)
+    qDebug() << "! Socket is not open!";
+  else
     emit sendToSocket(ba);
-  }
 }
 
 
