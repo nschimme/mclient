@@ -24,8 +24,9 @@ void EventHandler::customEvent(QEvent *e) {
   else if (e->type() == 10001) {
     MClientEvent *me = static_cast<MClientEvent*>(e);
     
-    if(me->dataTypes().contains("ChangeUserInput")) {
-      // TODO: History, tab-completion
+    if(me->dataTypes().contains("CommandHistory")) {
+      // Display command history
+      emit showCommandHistory();
 
     }
     else if (me->dataTypes().contains("EchoMode")) {
@@ -58,4 +59,11 @@ void EventHandler::sendUserInput(const QString &input,
   QCoreApplication::postEvent(_pluginSession->getCommand()->getUserInput(),
 			      me);
   
+}
+
+
+void EventHandler::displayMessage(const QString& message) {
+  QVariant* qv = new QVariant(message);
+  QStringList sl("DisplayData");
+  postSession(qv, sl);
 }

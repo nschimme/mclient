@@ -25,8 +25,10 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
     _receivesDataTypes << "SendToSocketData" << "ConnectToHost"
 		       << "DisconnectFromHost"
 		       << "MUMEPromptGARequest";
+    /*
     _deliversDataTypes << "SocketReadData" << "SocketConnected"
 		       << "SocketDisconnected" << "DisplayData";
+    */
     _configurable = true;
     _configVersion = "2.0";
 

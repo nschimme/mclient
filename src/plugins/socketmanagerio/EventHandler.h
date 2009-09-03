@@ -14,15 +14,17 @@ class EventHandler : public MClientEventHandler {
 
         void customEvent(QEvent* e);
 
-        // IO members
-        void connectDevice();
-        void disconnectDevice();
+	const MenuData createMenus();
 
 public slots:
         void socketReadData(const QByteArray&);
 	void displayMessage(const QString&);
 	void socketOpened();
 	void socketClosed();
+
+        // Menu/Action members
+        void connectDevice();
+        void disconnectDevice();
 
  signals:
 	void connectToHost();

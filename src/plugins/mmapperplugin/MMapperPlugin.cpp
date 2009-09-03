@@ -27,12 +27,15 @@ MMapperPlugin::MMapperPlugin(QWidget* parent)
     _description = "An implementation of MMapper as a plugin for mClient";
     //_dependencies.insert("commandmanager", 10);
     //_implemented.insert("socketmanager",10);
-    _receivesDataTypes << "XMLName" << "XMLDescription"
+    _receivesDataTypes << "XMLAll"
+      /*
+		       << "XMLName" << "XMLDescription"
 		       << "XMLDynamicDescription" << "XMLExits" << "XMLPrompt"
 		       << "XMLMove" << "XMLNone" << "XMLTerrain"
+      */
 		       << "MMapperLoadMap" << "MMapperInput"
 		       << "SocketConnected" << "SocketDisconnected";
-    _deliversDataTypes << "DisplayData";
+    //_deliversDataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";
 

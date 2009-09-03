@@ -25,14 +25,14 @@ class PluginManager : public QObject {
         PluginManager(QObject *parent=0);
         ~PluginManager();
 
-	MainWindow* getMainWindow() { return _mainWindow; }
-	ConfigManager* getConfig() { return _configManager; }
-	PluginSession* getPluginSession(const QString &s) {
+	MainWindow* getMainWindow() const { return _mainWindow; }
+	ConfigManager* getConfig() const { return _configManager; }
+	PluginSession* getPluginSession(const QString &s) const {
 	  return _pluginSessions[s];
 	}
 	
 	// For PluginSession
-	QHash<QString, PluginEntry*> getAvailablePlugins() {
+	const QHash<QString, PluginEntry*> getAvailablePlugins() const {
 	  return _availablePlugins;
 	}
 
@@ -42,7 +42,6 @@ class PluginManager : public QObject {
 public slots:
         void initSession(const QString &s);
         void stopSession(const QString &s);
-        void initDisplay(PluginSession *ps);
 
     private:
         bool indexPlugins();

@@ -73,9 +73,11 @@ public slots:
     QAction *settingsAct;
     QAction *aliasAct;
 
+    /*
     QAction *connectAct;
     QAction *disconnectAct;
     QAction *reconnectAct;
+    */
 
     QAction *alwaysOnTopAct;
     QAction *fullScreenAct;

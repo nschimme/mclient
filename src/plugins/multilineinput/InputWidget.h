@@ -21,6 +21,7 @@ class InputWidget : public QPlainTextEdit {
 
 public slots:
         void toggleEchoMode(bool); 
+        void showCommandHistory(); 
 
     private:
 	QString _session;
@@ -31,9 +32,18 @@ public slots:
 	void detectedLineChange();
 	void wordHistory(int);
 
+	QMutableStringListIterator *_iterator;
+	bool _newInput;
+	QStringList _wordHistory;
+
+	void addHistory(const QString);
+	void forwardHistory();
+	void backwardHistory();
+
  signals:
 	void sendUserInput(const QString&, bool);
 	void resizeSplitter(QWidget*);
+	void displayMessage(const QString &);
 };
 
 

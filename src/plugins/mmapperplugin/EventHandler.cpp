@@ -27,63 +27,68 @@ void EventHandler::customEvent(QEvent *e) {
   else {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
-    foreach(QString s, me->dataTypes()) {
-      if (s.startsWith("X")) {
-	if (s.startsWith("XMLNone")) {
+    if (me->dataTypes().contains("XMLAll")) {
+      
+      if (me->dataTypes().contains("XMLExits")) {
+	emit exits(me->payload()->toString());
+	
+      } else {
+	// Is it one of these tags?
+	if (me->dataTypes().contains("XMLNone")) {
 	  emit mudOutput(me->payload()->toString());
 	  
-	} else if (s.startsWith("XMLName")) {
+	} else if (me->dataTypes().contains("XMLName")) {
 	  emit name(me->payload()->toString());
 	  
-	} else if (s.startsWith("XMLDescription")) {
+	} else if (me->dataTypes().contains("XMLDescription")) {
 	  emit description(me->payload()->toString());
 	  
-	} else if (s.startsWith("XMLDynamicDescription")) {
+	} else if (me->dataTypes().contains("XMLDynamicDescription")) {
 	  emit dynamicDescription(me->payload()->toString());
 	  
-	} else if (s.startsWith("XMLExits")) {
-	  emit exits(me->payload()->toString());
-      
-	} else if (s.startsWith("XMLPrompt")) {
+	} else if (me->dataTypes().contains("XMLPrompt")) {
 	  emit prompt(me->payload()->toString());
-
-	} else if (s.startsWith("XMLMove")) {
+	  
+	} else if (me->dataTypes().contains("XMLMove")) {
 	  emit move(me->payload()->toString());
 	  
-	} else if (s.startsWith("XMLTerrain")) {
+	} else if (me->dataTypes().contains("XMLTerrain")) {
 	  emit terrain(me->payload()->toString());
 	  qDebug() << "! MMapperPlugin got XMLTerrain, is this needed?";
-
 	}
-
+      
+	// These tags get forwarded to the CommandProcessor
+	MClientEvent* nme = new MClientEvent(*me);
+	QCoreApplication::postEvent(_pluginSession->
+				    getCommand()->
+				    getAction(), nme);
+	qDebug() << "* forwarding to CommandProcessor";
+	
       }
-      else if (s.startsWith("M")) {
-	if(s.startsWith("MMapperInput")) {
-	  emit userInput(me->payload()->toString());
-	  
-	} else if (s.startsWith("MMapperLoadMap")) {
-	  QString arguments = me->payload()->toString();
-	  if (arguments.isEmpty())
-	    displayMessage("#no file specified\n");
-	  else if (arguments == "!") // hack
-	    emit loadFile("/mnt/games/powwow/archive/arda.old.mm2");
-	  else
-	    emit loadFile(arguments);
-	  
-	}
-      }
-      else if (s.startsWith("S")) {
-	if (s.startsWith("SocketConnected")) {
-	  emit onPlayMode();
 
-	}
-	else if (s.startsWith("SocketDisconnected")) {
-	  emit onOfflineMode();
-
-	}
-
-      }
     }
+    else if(me->dataTypes().contains("MMapperInput")) {
+      emit userInput(me->payload()->toString());
+      
+    }
+    else if (me->dataTypes().contains("MMapperLoadMap")) {
+      QString arguments = me->payload()->toString();
+      if (arguments.isEmpty())
+	displayMessage("#no file specified\n");
+      else if (arguments == "!") // hack
+	emit loadFile("/mnt/games/powwow/archive/arda.old.mm2");
+      else
+	emit loadFile(arguments);
+      
+    }
+    else if (me->dataTypes().contains("SocketConnected")) {
+      emit onPlayMode();
+      
+    }
+    else if (me->dataTypes().contains("SocketDisconnected")) {
+      emit onOfflineMode();
+      
+    } 
   }
 }
 

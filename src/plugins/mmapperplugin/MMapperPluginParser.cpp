@@ -14,7 +14,8 @@ MMapperPluginParser::MMapperPluginParser(MapperManager *mapMgr,
   : AbstractParser(mapMgr->getMapData(), parent) {
 
   connect(this, SIGNAL(sendToUser(const QByteArray&)),
-	  SLOT(sendToUserWrapper(const QByteArray&)));
+	  SLOT(sendToUserWrapper(const QByteArray&)),
+	  Qt::DirectConnection);
 
   _move = CID_NONE;
 
@@ -54,6 +55,7 @@ void MMapperPluginParser::exits(QString text) {
 
 void MMapperPluginParser::prompt(QString text) {
   if (m_readingRoomDesc) {
+    qDebug() << "### emulating exits!";
     emulateExits();
     m_readingRoomDesc = false;
   }

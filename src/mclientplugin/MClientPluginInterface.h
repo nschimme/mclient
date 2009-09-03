@@ -34,9 +34,6 @@ class MClientPluginInterface {
         // Returns a QStringList of data types it cares about
         virtual const QStringList& receivesDataTypes() const=0;
 
-        // Returns a QStringList of data types it delivers
-        virtual const QStringList& deliversDataTypes() const=0;
-
         // Can this be configured manually?
         virtual bool configurable() const=0;
 

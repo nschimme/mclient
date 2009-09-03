@@ -12,8 +12,10 @@ Telnet::Telnet(QObject* parent)
     _implemented.insert("telnet",1);
     _receivesDataTypes << "SocketReadData" << "SocketConnected"
 		       << "SocketDisconnected" << "SocketWriteData";
+    /*
     _deliversDataTypes << "TelnetData" << "TelnetGA" << "SendToSocketData"
 		       << "EchoMode";
+    */
 }
 
 

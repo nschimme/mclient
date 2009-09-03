@@ -270,15 +270,6 @@ void PluginManager::initSession(const QString &s) {
 }
 
 
-void PluginManager::initDisplay(PluginSession *ps) {
-  qDebug() << "* Initializing display widgets from thread" << this->thread();
-  // We now start/create the widgets (this is a slot from
-  // PluginSession) in the main thread.
-  ps->initDisplay();
-
-}
-
-
 void PluginManager::stopSession(const QString &s) {
   if (_pluginSessions.contains(s)) {
     PluginSession *ps = _pluginSessions[s];

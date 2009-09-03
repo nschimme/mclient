@@ -14,6 +14,7 @@ MumeXML::MumeXML(QObject* parent)
     _dependencies.insert("telnet", 1);
     _implemented.insert("mumexml",1);
     _receivesDataTypes << "TelnetData" << "TelnetGA" << "SocketDisconnected";
+    /*
     _deliversDataTypes << "XMLNone" << "XMLAll" << "XMLTag"
 
 		       << "XMLPrompt" << "XMLRoom" << "XMLDescription"
@@ -26,6 +27,7 @@ MumeXML::MumeXML(QObject* parent)
 		       << "XMLCommunication"
       
 		       << "XMLHit" << "XMLDamage" << "XMLCombat";
+    */
 }
 
 

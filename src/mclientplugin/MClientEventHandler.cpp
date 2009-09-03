@@ -23,42 +23,10 @@ MClientEventHandler::~MClientEventHandler() {
 
 // Post an event
 void MClientEventHandler::postSession(QVariant* payload, QStringList tags) {
-  bool found = false;
-  /*
-  foreach (QString s, tags) {
-    // Iterate through all the data types
-    //qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
-    
-    QMultiHash<QString, QObject*>::iterator it
-      = _receivesTypes.find(s);
-    while (it != _receivesTypes.end() && it.key() == s) {
-      
-      qDebug() << "# posting" << tags << "to" 
-	       << it.value() << "with" << payload;
-      
-      // Post the event
-      MClientEventData *med = new MClientEventData(payload, tags,
-      _pluginSession->session());
-      MClientEvent* me = new MClientEvent(med);
-      QCoreApplication::postEvent(it.value(), me);
-      found = true;
-      
-      ++it; // Iterate
-    }
-  }
-  */
-  if (!found) {
-    /*
-    qWarning() << "! No EventHandlers accepted data types" << tags;
-
-    qWarning() << "! Rerouting event to session";
-    */
-    MClientEventData *med = new MClientEventData(payload, tags,
-						 _pluginSession->session());
-    MClientEvent* me = new MClientEvent(med);
-    QCoreApplication::postEvent(_pluginSession, me);
-
-  }
+  MClientEventData *med = new MClientEventData(payload, tags,
+					       _pluginSession->session());
+  MClientEvent* me = new MClientEvent(med);
+  QCoreApplication::postEvent(_pluginSession, me);
 }
 
 
@@ -85,17 +53,9 @@ void MClientEventHandler::engineEvent(QEvent *e) {
     // We should never get one of these
     
   }
-  else if (ee->dataType() == EE_DATATYPE_UPDATE) {
-    // Contains a hash of receiving EventHandlers we need to post to
-    QHash<QString, QVariant> raw = ee->payload()->toHash();
-    //qDebug() << raw;
-    
-    QHash<QString, QObject*> hash;
-    QHash<QString, QVariant>::const_iterator i;
-    for (i = raw.constBegin(); i != raw.constEnd(); ++i)
-      hash.insertMulti(i.key(), i.value().value<QObject*>() );
-    
-    _receivesTypes.unite(hash);
+}
 
-  }
+
+const MenuData MClientEventHandler::createMenus() {
+  return _menus;
 }

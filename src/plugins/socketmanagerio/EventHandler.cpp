@@ -4,6 +4,9 @@
 #include <QEvent>
 #include <QVariant>
 
+#include "SmartMenu.h"
+#include <QAction>
+
 #include "MClientEvent.h"
 #include "PluginSession.h"
 
@@ -47,6 +50,25 @@ void EventHandler::customEvent(QEvent *e) {
     qDebug() << "SocketManagerIO got a customEvent of type" << e->type();
 }
 
+
+// Menu
+const MenuData EventHandler::createMenus() {
+  QAction *connectAct = new QAction(tr("&Connect"), 0);
+  connectAct->setStatusTip(tr("Connect to the remote host"));
+  connect(connectAct, SIGNAL(triggered()), SLOT(connectDevice()) );
+  
+  QAction *disconnectAct = new QAction(tr("&Disconnect"), 0);
+  disconnectAct->setStatusTip(tr("Disconnect from the host"));
+  connect(disconnectAct, SIGNAL(triggered()), SLOT(disconnectDevice()) );
+
+  SmartMenu *fileMenu = new SmartMenu(tr("&File"), 0, 0);
+  fileMenu->addAction(connectAct);
+  fileMenu->addAction(disconnectAct);
+
+  _menus.insert(fileMenu);
+
+  return _menus;
+}
 
 // IO members
 void EventHandler::connectDevice() {

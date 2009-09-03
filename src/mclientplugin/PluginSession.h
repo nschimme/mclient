@@ -20,6 +20,8 @@ class QApplication;
 class QEvent;
 class QPluginLoader;
 
+typedef QHash<QString, QPluginLoader*> PluginHash;
+
 class PluginSession : public QThread {
   Q_OBJECT
     
@@ -31,18 +33,19 @@ class PluginSession : public QThread {
     void customEvent(QEvent* e);
 
     // For starting/stopping the session
-    void initDisplay();
     void startSession();
     void stopSession();
 
-    PluginManager* getManager() { return _pluginManager; }
-    CommandProcessor* getCommand() { return _commandProcessor; }
-    AliasManager* getAlias() { return _aliasManager; }
-    ActionManager* getAction() { return _actionManager; }
-    const QString& session() { return _session; }
+    PluginManager* getManager() const { return _pluginManager; }
+    CommandProcessor* getCommand() const { return _commandProcessor; }
+    AliasManager* getAlias() const { return _aliasManager; }
+    ActionManager* getAction() const { return _actionManager; }
+
+    const QString& session() const { return _session; }
+    const PluginHash loadedPlugins() const { return _loadedPlugins; }
 
  protected:
-        void run();
+    void run();
 
   private:
     QString _session;
@@ -56,18 +59,15 @@ class PluginSession : public QThread {
     bool loadPlugin(const QString &libName);
     bool checkDependencies(MClientPluginInterface *iPlugin);
 
-    // For posting datatypes to each plugin
-    void postReceivingPlugins();
-
     const QPluginLoader* pluginWithAPI(const QString &api) const;
 
     // A hash of the plugin object pointers, short name -> pointer
     // NOTE: this way of indexing plugins gives each one a unique slot
-    QHash<QString, QPluginLoader*> _loadedPlugins;
+    PluginHash _loadedPlugins;
   
     // A hash of the plugin object pointers, api -> pointer
     // NOTE: some plugins may be repeated here.
-    QHash<QString, QPluginLoader*> _pluginAPIs;
+    PluginHash _pluginAPIs;
   
     // A hash of the plugin object pointers, data type -> pointer
     // NOTE: this is used to keep track of what data types each plugin
@@ -75,12 +75,9 @@ class PluginSession : public QThread {
     // entries for a given plugin.
     QMultiHash<QString, MClientEventHandler*> _receivesTypes;
     
-    // A hash of plugin object pointers, pointer -> data type
-    QMultiHash<QPluginLoader*, QString> _deliversTypes;
-
  signals:
-    void sendWidgets(const QList< QPair<int, QWidget*> >&);
-    void doneLoading(PluginSession*);
+    void sendPlugins(const PluginHash &);
+    void doneLoading(PluginSession *);
 };
 
 #endif /* PLUGINSESSION_H */

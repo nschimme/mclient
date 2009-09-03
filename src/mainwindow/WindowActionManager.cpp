@@ -20,6 +20,7 @@
 #include "PluginSession.h"
 #include "PluginManager.h"
 #include "MClientEvent.h"
+#include "SmartMenuBar.h"
 
 WindowActionManager* WindowActionManager::_pinstance = 0;
 
@@ -46,6 +47,7 @@ WindowActionManager::~WindowActionManager() {
 }
 
 void WindowActionManager::createActions() {
+  /*
   connectAct = new QAction(QIcon(":/mainwindow/connect.png"), tr("&Connect..."), this);
   connectAct->setStatusTip(tr("Load a new session and connect to the remote host"));
   connect(connectAct, SIGNAL(triggered()), SLOT(connectSession()) );
@@ -57,6 +59,7 @@ void WindowActionManager::createActions() {
   reconnectAct = new QAction(QIcon(":/mainwindow/reconnect.png"), tr("&Reconnect"), this);
   reconnectAct->setStatusTip(tr("Reconnect to the current session's remote host"));
   connect(reconnectAct, SIGNAL(triggered()), SLOT(reconnectSession()) );
+  */
 
   exitAct = new QAction(QIcon(":/mainwindow/exit.png"), tr("E&xit"), this);
   exitAct->setStatusTip(tr("Exit the application"));
@@ -154,12 +157,14 @@ void WindowActionManager::disableActions(bool value)
 
 
 void WindowActionManager::createMenus() {
-  QMenuBar *menuBar = _mainWindow->menuBar();
+  SmartMenuBar *menuBar = static_cast<SmartMenuBar*>(_mainWindow->menuBar());
 
   fileMenu = menuBar->addMenu(tr("&File"));
+  /*
   fileMenu->addAction(connectAct);
   fileMenu->addAction(disconnectAct);
   fileMenu->addAction(reconnectAct);
+  */
   fileMenu->addSeparator();
   fileMenu->addAction(exitAct);
 
@@ -188,17 +193,18 @@ void WindowActionManager::createMenus() {
   helpMenu->addSeparator();
   helpMenu->addAction(aboutAct);
   helpMenu->addAction(aboutQtAct);
-
 }
 
 
 void WindowActionManager::createToolBars() {
+  /*
   connectToolBar = _mainWindow->addToolBar(tr("Connection"));
   connectToolBar->setObjectName("ToolBarConnect");
   connectToolBar->addAction(connectAct);
   connectToolBar->addAction(disconnectAct);
   connectToolBar->addAction(reconnectAct);
   connectToolBar->setVisible(false);
+  */
 
   editToolBar = _mainWindow->addToolBar(tr("Edit"));
   editToolBar->setObjectName("ToolBarEdit");

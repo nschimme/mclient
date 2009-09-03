@@ -192,9 +192,11 @@ void MapperManager::run() {
 	  getParser(), SLOT(move(const QString&)));
   
   connect(_eventHandler, SIGNAL(userInput(QString)),
-	  getParser(), SLOT(userInput(QString)));
+	  getParser(), SLOT(userInput(QString)),
+	  Qt::DirectConnection);
   connect(_eventHandler, SIGNAL(mudOutput(const QString&)),
-	  getParser(), SLOT(mudOutput(const QString&)));
+	  getParser(), SLOT(mudOutput(const QString&)),
+	  Qt::DirectConnection);
 
   connect(getParser(), SIGNAL(sendToUser(const QString&)),
  	  _eventHandler, SLOT(displayMessage(const QString&)));

@@ -16,9 +16,11 @@ class EventHandler : public MClientEventHandler {
 
 public slots:
         void sendUserInput(const QString&, bool);
+        void displayMessage(const QString &); 
 
  signals:
 	void setEchoMode(bool);
+	void showCommandHistory();
 };
 
 

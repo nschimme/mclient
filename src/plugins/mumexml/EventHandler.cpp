@@ -3,6 +3,8 @@
 #include <QEvent>
 #include <QVariant>
 #include <QStringList>
+#include <QTimer>
+
 #include <QDebug>
 
 #include "MClientEvent.h"

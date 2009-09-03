@@ -43,9 +43,6 @@ class MClientPlugin : public QObject, public MClientPluginInterface {
         // Returns a QStringList of data types it cares about
         const QStringList& receivesDataTypes() const;
 
-        // Returns a QStringList of data types it delivers
-        const QStringList& deliversDataTypes() const;
-        
         // Can this be configured manually?
         bool configurable() const;
 

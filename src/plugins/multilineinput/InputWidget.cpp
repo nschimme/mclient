@@ -9,7 +9,11 @@
 #include <QFontMetrics>
 #include <QTextCursor>
 
+// Smart Splitter
 #include <QSizePolicy>
+
+// Word History
+#include <QStringList>
 
 InputWidget::InputWidget(QString s, MultiLineInput* mli, QWidget* parent) 
     : QPlainTextEdit(parent) {
@@ -38,6 +42,12 @@ InputWidget::InputWidget(QString s, MultiLineInput* mli, QWidget* parent)
 
     // Local Echo?
     _echoMode = true;
+
+    // Word History
+    _wordHistory << "lol" << "dork";
+    _iterator = new QMutableStringListIterator(_wordHistory);
+    _newInput = true;
+
 }
 
 
@@ -68,7 +78,6 @@ void InputWidget::keyPressEvent(QKeyEvent *event) {
     default:                /** Otherwise ignore  */
       QPlainTextEdit::keyPressEvent(event);
       detectedLineChange();
-      break;
       
     };
     break;
@@ -80,41 +89,40 @@ void InputWidget::keyPressEvent(QKeyEvent *event) {
 
     switch (event->modifiers()) {
     case Qt::NoModifier:
-      //wordHistory(event->key());
-      //break;
+      wordHistory(event->key());
+      break;
     default:
       QPlainTextEdit::keyPressEvent(event);
-      break;
     };
     break;
     
     /** All other keys */
   default:
     QPlainTextEdit::keyPressEvent(event);
-    break;
   };
 }
 
 
-void wordHistory(int /* key */) {
-  /* TODO: FIX THIS
+void InputWidget::wordHistory(int key) {
   QTextCursor cursor = textCursor();
   switch (key) {
   case Qt::Key_Up:
     if (!cursor.movePosition(QTextCursor::Up)) {
       // At the top of the document
+      forwardHistory();
+
     }
     break;
   case Qt::Key_Down:
     if (!cursor.movePosition(QTextCursor::Down)) {
       // At the end of the document
+      backwardHistory();
+
     }
     break;
   case Qt::Key_Tab:
     break;
   };
-  setTextCursor(cursor);
-  */
 }
 
 
@@ -134,6 +142,9 @@ void InputWidget::detectedLineChange() {
 void InputWidget::gotInput() {
   selectAll();
   emit sendUserInput(toPlainText(), _echoMode);
+  addHistory(toPlainText());
+  _iterator->toBack();
+
 }
 
 
@@ -148,4 +159,68 @@ void InputWidget::toggleEchoMode(bool b) {
     //setEchoMode(QLineEdit::Password);
 
   }
+}
+
+
+void InputWidget::addHistory(const QString string) {
+  if (!string.isEmpty()) {
+    qDebug() << "* adding history:" << string;
+    _wordHistory << string;
+  }
+
+  if (_wordHistory.size() > 100) _wordHistory.removeFirst();
+
+}
+
+
+void InputWidget::forwardHistory() {
+  if (!_iterator->hasNext()) {
+    qDebug() << "* no newer word history to go to";
+    return ;
+
+  }
+  
+  if (_newInput) {
+    selectAll();
+    addHistory(toPlainText());
+    
+  }
+
+  selectAll();
+  insertPlainText(_iterator->next());
+  _newInput = false;
+  
+}
+
+
+void InputWidget::backwardHistory() {
+  if (!_iterator->hasPrevious()) {
+    qDebug() << "* no older word history to go to";
+    return ;
+
+  }
+  
+  if (_newInput) {
+    selectAll();
+    addHistory(toPlainText());
+    
+  }
+
+  selectAll();
+  insertPlainText(_iterator->previous());
+  _newInput = false;
+
+}
+
+
+void InputWidget::showCommandHistory() {
+  QString message("#history:\r\n");
+  int i = 1;
+  foreach (QString s, _wordHistory)
+    message.append(QString::number(i++) + " " + s + "\r\n");
+
+  qDebug() << "* showing history" << message;
+
+  emit displayMessage(message);
+
 }

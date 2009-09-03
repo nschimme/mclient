@@ -63,11 +63,6 @@ const QStringList& MClientPlugin::receivesDataTypes() const {
 }
 
 
-const QStringList& MClientPlugin::deliversDataTypes() const {
-    return _deliversDataTypes;
-}
-
-
 bool MClientPlugin::configurable() const {
     return _configurable;
 }

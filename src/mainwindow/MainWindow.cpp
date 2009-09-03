@@ -23,12 +23,16 @@
 #include "WindowActionManager.h"
 #include "SmartSplitter.h"
 #include "SmartTabWidget.h"
+#include "SmartMenuBar.h"
 
 #include "ConfigManager.h"
 #include "PluginManager.h"
 #include "PluginSession.h"
 
 #include "MClientDefinitions.h"
+#include "MClientPluginInterface.h"
+#include "MClientDisplayInterface.h"
+#include "MClientEventHandler.h"
 
 #include "QuickConnectDialog.h"
 #include "ProfileManagerDialog.h"
@@ -40,6 +44,8 @@ MainWindow::MainWindow(PluginManager *pm) {
   readSettings();
   
   /** Create Other Child Widgets */
+  delete menuBar();
+  setMenuBar(new SmartMenuBar(this));
   // Initialize WindowActionManager
   WindowActionManager *actMgr = WindowActionManager::instance(this);
   actMgr->createActions();
@@ -127,9 +133,49 @@ void MainWindow::startProfile(const QString &profile) {
 }
 
 
-void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> >
-				&widgetList) {
-  qDebug() << "* receiving widgets!" << widgetList;
+void MainWindow::initDisplay(PluginSession *ps) {
+  // Create menus and generate a widget list
+  QList<QPair<int, QWidget*> > widgetList;
+
+  QString session(ps->session());
+
+  qDebug() << "* Initializing display widgets from thread"
+	   << this->thread() << "for session" << session;
+  // We now start/create the widgets (this is a slot from
+  // PluginSession) in the main thread.
+
+  foreach(QPluginLoader* pl, ps->loadedPlugins()) {
+    MClientPluginInterface* pi
+      = qobject_cast<MClientPluginInterface*>(pl->instance());
+    if (pi) {
+      // Create menus
+      MenuData menus = pi->getEventHandler(session)->createMenus();
+      if (!menus.isEmpty()) {
+	qDebug() << "* Display found menus for plugin"
+		 << pi->shortName() << menus;
+
+	static_cast<SmartMenuBar*>(menuBar())->addMenu(menus);
+      }
+
+      // Create the widgets outside of the threads
+      MClientDisplayInterface* pd
+	= qobject_cast<MClientDisplayInterface*>(pl->instance());
+      if (pd) {
+	// Initialize the display
+	pd->initDisplay(session);
+	
+	QPair<int, QWidget*> pair(pd->displayLocations(),
+				  pd->getWidget(session));
+	widgetList << pair;
+	
+      }
+
+    }
+  }
+  qDebug() << "* received widgets" << widgetList;
+
+  // Generate menus
+  static_cast<SmartMenuBar*>(menuBar())->generateMenus();
 
   // Create the layout
   QVBoxLayout *layout = new QVBoxLayout();
@@ -164,7 +210,7 @@ void MainWindow::receiveWidgets(const QList< QPair<int, QWidget*> >
       dockWidget->setFloating(false);
       addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
       _dockWidgets.insert("test", dockWidget);
-      //widget->show();
+      //widgetList.at(i).second->show();
       
     }
 

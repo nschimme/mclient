@@ -24,10 +24,10 @@
 
 #include <QtGui>
 #include <QPointer>
+#include <QPluginLoader>
 
-class QAction;
-class QMenu;
 class PluginManager;
+class PluginSession;
 class QuickConnectDialog;
 
 class MainWindow : public QMainWindow {
@@ -39,11 +39,11 @@ class MainWindow : public QMainWindow {
   
   const QString currentSession() const;
 
-  PluginManager* getPluginManager() { return _pluginManager; }
+  PluginManager* getPluginManager() const { return _pluginManager; }
 
 public slots:
     void start();
-    void receiveWidgets(const QList< QPair<int, QWidget*> >&);
+    void initDisplay(PluginSession *);
     void startProfile(const QString&);
 
 private slots:
@@ -53,7 +53,7 @@ private slots:
 
     void setCurrentProfile(const QString &profile);
 
-  protected:   
+ protected:   
     void closeEvent(QCloseEvent *event);
 
   private:

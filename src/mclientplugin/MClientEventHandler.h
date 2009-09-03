@@ -4,9 +4,13 @@
 #include <QObject>
 #include <QMultiHash>
 #include <QStringList>
+#include <QSet>
 
 class PluginSession;
+class SmartMenu;
 class MClientEventData;
+
+typedef QSet<SmartMenu*> MenuData;
 
 class MClientEventHandler : public QObject {
     Q_OBJECT
@@ -24,6 +28,9 @@ class MClientEventHandler : public QObject {
 	// Receive the PluginSession reference upon load
 	void setPluginSession(PluginSession *ps);
 
+	// Generate the menus
+	virtual const MenuData createMenus();
+
 public slots:
         // Post an event to the PluginSession
 	void postSession(QVariant* payload, QStringList types);
@@ -32,13 +39,12 @@ public slots:
 	void postManager(QVariant* payload, QStringList types, 
 			 QString session);
 
-
     protected:
-	QMultiHash<QString, QObject*> _receivesTypes;
-
 	// References
 	PluginSession *_pluginSession;
 
+	// Menus
+	MenuData _menus;
 };
 
 

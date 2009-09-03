@@ -4,6 +4,7 @@
 #include "MultiLineInput.h"
 #include "EventHandler.h"
 #include "InputWidget.h"
+#include "CommandEntry.h"
 
 Q_EXPORT_PLUGIN2(multilineinput, MultiLineInput)
 
@@ -15,14 +16,24 @@ MultiLineInput::MultiLineInput(QWidget* parent)
     _description = "A multi lined input plugin.";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _receivesDataTypes << "ChangeUserInput" << "EchoMode"
+    _receivesDataTypes << "CommandHistory" << "EchoMode"
 		       << "SocketDisconnected";
-    _deliversDataTypes << "UserInput";
+    //_deliversDataTypes << "UserInput";
     _configurable = false;
     _configVersion = "2.0";
 
     // Allowable Display Locations
     SET(_displayLocations, DL_INPUT);
+
+    // Command: history
+    CommandEntry *history = new CommandEntry();
+    history->pluginName(shortName());
+    history->command("history");
+    history->help("show command history");
+    history->dataType("CommandHistory");
+    
+    // For registering commands
+    _commandEntries << history;
 }
 
 
@@ -72,8 +83,12 @@ bool MultiLineInput::initDisplay(QString s) {
   // Connect Signals/Slots
   connect(_widgets[s], SIGNAL(sendUserInput(const QString&, bool)),
 	  _eventHandlers[s], SLOT(sendUserInput(const QString&, bool)));
+  connect(_widgets[s], SIGNAL(displayMessage(const QString &)),
+	  _eventHandlers[s], SLOT(displayMessage(const QString &)));
   connect(_eventHandlers[s], SIGNAL(setEchoMode(bool)),
 	  _widgets[s], SLOT(toggleEchoMode(bool)));
+  connect(_eventHandlers[s], SIGNAL(showCommandHistory()),
+	  _widgets[s], SLOT(showCommandHistory()));
 
   return true;
 }
