@@ -52,7 +52,7 @@ void EventHandler::customEvent(QEvent *e) {
 
 
 // Menu
-const MenuData EventHandler::createMenus() {
+const MenuData& EventHandler::createMenus() {
   QAction *connectAct = new QAction(tr("&Connect"), 0);
   connectAct->setStatusTip(tr("Connect to the remote host"));
   connect(connectAct, SIGNAL(triggered()), SLOT(connectDevice()) );

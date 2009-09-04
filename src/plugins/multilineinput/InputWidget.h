@@ -3,13 +3,11 @@
 
 #include <QPlainTextEdit>
 
-class MultiLineInput;
-
 class InputWidget : public QPlainTextEdit {
     Q_OBJECT
     
     public:
-        InputWidget(QString s, MultiLineInput *mli, QWidget* parent=0);
+        InputWidget(QWidget* parent=0);
         ~InputWidget();
 
 	QSize sizeHint() const;
@@ -24,8 +22,6 @@ public slots:
         void showCommandHistory(); 
 
     private:
-	QString _session;
-	MultiLineInput* _mli;
 	bool _echoMode;
 
         void gotInput();

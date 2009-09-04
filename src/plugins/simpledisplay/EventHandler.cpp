@@ -6,7 +6,11 @@
 #include "MClientEvent.h"
 #include "PluginSession.h"
 
-EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
+#include "ClientTextEdit.h"
+
+EventHandler::EventHandler(QWidget* parent) : MClientDisplayHandler(parent) {
+  // Allowable Display Locations
+  SET(_displayLocations, DL_DISPLAY);
 }
 
 
@@ -26,4 +30,13 @@ void EventHandler::customEvent(QEvent *e) {
     emit displayText(me->payload()->toString());
 
   }
+}
+
+QWidget* EventHandler::createWidget() {
+  _widget = new ClientTextEdit;
+
+  connect(this, SIGNAL(displayText(const QString&)),
+	  _widget, SLOT(displayText(const QString&)));
+
+  return _widget;
 }

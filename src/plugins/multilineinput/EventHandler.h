@@ -1,18 +1,21 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
-#include "MClientEventHandler.h"
+#include "MClientDisplayHandler.h"
 
 class QEvent;
+class InputWidget;
 
-class EventHandler : public MClientEventHandler {
+class EventHandler : public MClientDisplayHandler {
     Q_OBJECT
     
     public:
-        EventHandler(QObject* parent=0);
+        EventHandler(QWidget* parent=0);
         ~EventHandler();
 
         void customEvent(QEvent* e);
+
+	QWidget* createWidget();
 
 public slots:
         void sendUserInput(const QString&, bool);
@@ -21,6 +24,9 @@ public slots:
  signals:
 	void setEchoMode(bool);
 	void showCommandHistory();
+
+ private:
+	InputWidget *_widget;
 };
 
 

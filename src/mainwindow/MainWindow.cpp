@@ -31,8 +31,8 @@
 
 #include "MClientDefinitions.h"
 #include "MClientPluginInterface.h"
-#include "MClientDisplayInterface.h"
 #include "MClientEventHandler.h"
+#include "MClientDisplayHandler.h"
 
 #include "QuickConnectDialog.h"
 #include "ProfileManagerDialog.h"
@@ -148,28 +148,32 @@ void MainWindow::initDisplay(PluginSession *ps) {
     MClientPluginInterface* pi
       = qobject_cast<MClientPluginInterface*>(pl->instance());
     if (pi) {
-      // Create menus
-      MenuData menus = pi->getEventHandler(session)->createMenus();
-      if (!menus.isEmpty()) {
-	qDebug() << "* Display found menus for plugin"
-		 << pi->shortName() << menus;
 
-	static_cast<SmartMenuBar*>(menuBar())->addMenu(menus);
+      MClientEventHandler *eh
+	= qobject_cast<MClientEventHandler*>(pi->getEventHandler(session));
+
+      if (eh) {
+	// Create menus
+	MenuData menus = eh->createMenus();
+	if (!menus.isEmpty()) {
+	  qDebug() << "* Display found menus for plugin"
+		   << pi->shortName() << menus;
+	  
+	  static_cast<SmartMenuBar*>(menuBar())->addMenu(menus);
+	}
+
+	// Create the widgets outside of the threads
+	MClientDisplayHandler *dh
+	  = qobject_cast<MClientDisplayHandler*>(eh);
+	if (dh) {
+	  // Initialize the display
+	  QPair<int, QWidget*> pair(dh->displayLocations(),
+				    dh->createWidget());
+	  widgetList << pair;
+	  
+	}
+
       }
-
-      // Create the widgets outside of the threads
-      MClientDisplayInterface* pd
-	= qobject_cast<MClientDisplayInterface*>(pl->instance());
-      if (pd) {
-	// Initialize the display
-	pd->initDisplay(session);
-	
-	QPair<int, QWidget*> pair(pd->displayLocations(),
-				  pd->getWidget(session));
-	widgetList << pair;
-	
-      }
-
     }
   }
   qDebug() << "* received widgets" << widgetList;

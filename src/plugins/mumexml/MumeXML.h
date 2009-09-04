@@ -1,11 +1,11 @@
 #ifndef MUMEXML_H
 #define MUMEXML_H
 
-#include "MClientFilterPlugin.h"
+#include "MClientPlugin.h"
 
 class EventHandler;
 
-class MumeXML : public MClientFilterPlugin {
+class MumeXML : public MClientPlugin {
     Q_OBJECT
     
     public:

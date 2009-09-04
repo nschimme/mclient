@@ -14,7 +14,7 @@ class EventHandler : public MClientEventHandler {
 
         void customEvent(QEvent* e);
 
-	const MenuData createMenus();
+	const MenuData& createMenus();
 
 public slots:
         void socketReadData(const QByteArray&);

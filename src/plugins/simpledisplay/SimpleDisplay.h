@@ -1,19 +1,18 @@
 #ifndef SIMPLEDISPLAY_H
 #define SIMPLEDISPLAY_H
 
-#include "MClientDisplayPlugin.h"
+#include "MClientPlugin.h"
 
 #include <QPointer>
 
-class ClientTextEdit;
 class EventHandler;
 class QEvent;
 
-class SimpleDisplay : public MClientDisplayPlugin {
+class SimpleDisplay : public MClientPlugin {
     Q_OBJECT
     
     public:
-        SimpleDisplay(QWidget* parent=0);
+        SimpleDisplay(QObject* parent=0);
         ~SimpleDisplay();
 
         // Plugin members
@@ -25,12 +24,7 @@ class SimpleDisplay : public MClientDisplayPlugin {
 
 	MClientEventHandler* getEventHandler(QString s);
 
-        // Display members
-        bool initDisplay(QString s);
-        QWidget* getWidget(QString s);
-
     private:
-	QHash<QString, QPointer<ClientTextEdit> > _widgets;
 	QHash<QString, QPointer<EventHandler> > _eventHandlers;
 };
 

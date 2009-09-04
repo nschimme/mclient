@@ -9,7 +9,11 @@
 #include "PluginSession.h"
 #include "CommandProcessor.h"
 
-EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
+#include "InputWidget.h"
+
+EventHandler::EventHandler(QWidget* parent) : MClientDisplayHandler(parent) {
+  // Allowable Display Locations
+  SET(_displayLocations, DL_INPUT);
 }
 
 
@@ -40,6 +44,24 @@ void EventHandler::customEvent(QEvent *e) {
 
   }
 }
+
+
+QWidget* EventHandler::createWidget() {
+  _widget = new InputWidget;  
+
+  // Connect Signals/Slots
+  connect(_widget, SIGNAL(sendUserInput(const QString&, bool)),
+	  SLOT(sendUserInput(const QString&, bool)));
+  connect(_widget, SIGNAL(displayMessage(const QString &)),
+	  SLOT(displayMessage(const QString &)));
+  connect(this, SIGNAL(setEchoMode(bool)),
+	  _widget, SLOT(toggleEchoMode(bool)));
+  connect(this, SIGNAL(showCommandHistory()),
+	  _widget, SLOT(showCommandHistory()));
+
+  return _widget;
+}
+
 
 
 void EventHandler::sendUserInput(const QString &input,

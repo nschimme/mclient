@@ -4,7 +4,7 @@
 Q_EXPORT_PLUGIN2(telnet, Telnet)
 
 Telnet::Telnet(QObject* parent) 
-        : MClientFilterPlugin(parent) {
+        : MClientPlugin(parent) {
     _shortName = "telnetdatafilter";
     _longName = "Telnet Data Filter";
     _description = "A telnet data filter.";

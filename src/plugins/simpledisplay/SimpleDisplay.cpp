@@ -1,5 +1,4 @@
 #include "SimpleDisplay.h"
-#include "ClientTextEdit.h"
 #include "EventHandler.h"
 
 #include "PluginManager.h"
@@ -13,8 +12,8 @@
 
 Q_EXPORT_PLUGIN2(simpledisplay, SimpleDisplay)
 
-SimpleDisplay::SimpleDisplay(QWidget* parent) 
-        : MClientDisplayPlugin(parent) {
+SimpleDisplay::SimpleDisplay(QObject* parent) 
+        : MClientPlugin(parent) {
     _shortName = "simpledisplay";
     _longName = "Simple Display";
     _description = "A simple display plugin using QTextEdit.";
@@ -24,9 +23,6 @@ SimpleDisplay::SimpleDisplay(QWidget* parent)
     //_deliversDataTypes << "?";
     _configurable = false;
     _configVersion = "2.0";
-
-    // Allowable Display Locations
-    SET(_displayLocations, DL_DISPLAY);
 }
 
 
@@ -56,29 +52,12 @@ bool SimpleDisplay::startSession(QString s) {
 
 
 bool SimpleDisplay::stopSession(QString s) {
-  if (_widgets[s]->close()) {
-    qDebug() << "* removed Simple DisplayWidget for session" << s << this;
-    delete _eventHandlers[s];
-  }
+  qDebug() << "* removed Simple DisplayWidget for session" << s << this;
+  delete _eventHandlers[s];
   return true;
 }
 
 
 MClientEventHandler* SimpleDisplay::getEventHandler(QString s) {
   return _eventHandlers[s].data();
-}
-
-
-// Display plugin members
-bool SimpleDisplay::initDisplay(QString s) {
-  _widgets[s] = new ClientTextEdit;
-
-  connect(_eventHandlers[s], SIGNAL(displayText(const QString&)),
-	  _widgets[s], SLOT(displayText(const QString&)));
-  
-  return true;
-}
-
-QWidget* SimpleDisplay::getWidget(QString s) {
-  return _widgets[s];
 }

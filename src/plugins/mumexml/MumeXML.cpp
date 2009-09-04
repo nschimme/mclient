@@ -7,7 +7,7 @@ Q_EXPORT_PLUGIN2(mumexml, MumeXML)
 
 
 MumeXML::MumeXML(QObject* parent) 
-        : MClientFilterPlugin(parent) {
+        : MClientPlugin(parent) {
     _shortName = "mumexmlfilter";
     _longName = "Mume XML Filter";
     _description = "Filters the XML tags.";

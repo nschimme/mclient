@@ -10,11 +10,18 @@
 #include "PluginSession.h"
 #include "CommandProcessor.h"
 
-EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
+#include "MapperManager.h"
+#include "mapwindow.h" // for grabbing the QWidget
+
+EventHandler::EventHandler(QWidget* parent) : MClientDisplayHandler(parent) {
+  // Allowable Display Locations
+  SET(_displayLocations, DL_FLOAT);
 }
 
 
 EventHandler::~EventHandler() {
+  _mapper->getMapWindow()->close();
+  _mapper->deleteLater();
   qDebug() << "* removed MMapperPlugin for session"
 	   << _pluginSession->session();
 }
@@ -90,6 +97,13 @@ void EventHandler::customEvent(QEvent *e) {
       
     } 
   }
+}
+
+
+QWidget* EventHandler::createWidget() {
+  _mapper = new MapperManager(this);
+  _mapper->start();
+  return _mapper->getMapWindow();
 }
 
 

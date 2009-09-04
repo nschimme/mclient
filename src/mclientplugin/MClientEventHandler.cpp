@@ -56,6 +56,6 @@ void MClientEventHandler::engineEvent(QEvent *e) {
 }
 
 
-const MenuData MClientEventHandler::createMenus() {
+const MenuData& MClientEventHandler::createMenus() {
   return _menus;
 }

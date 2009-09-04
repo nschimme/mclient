@@ -1,19 +1,21 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
-#include "MClientEventHandler.h"
+#include "MClientDisplayHandler.h"
 
 class QEvent;
-class ScriptEngine;
+class MapperManager;
 
-class EventHandler : public MClientEventHandler {
+class EventHandler : public MClientDisplayHandler {
     Q_OBJECT
     
     public:
-        EventHandler(QObject* parent=0);
+        EventHandler(QWidget* parent=0);
         ~EventHandler();
 
         void customEvent(QEvent* e);
+
+	QWidget* createWidget();
 
 public slots:
 	void displayMessage(const QString&);
@@ -35,6 +37,9 @@ public slots:
 
 	void onPlayMode();
 	void onOfflineMode();
+	
+ private:
+	MapperManager *_mapper;
 };
 
 

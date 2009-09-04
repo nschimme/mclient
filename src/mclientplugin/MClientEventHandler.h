@@ -22,14 +22,11 @@ class MClientEventHandler : public QObject {
         // Handles custom events
         virtual void customEvent(QEvent *e)=0;
 
-	// Handles MClientEngineEvents
-	void engineEvent(QEvent *e);
-
 	// Receive the PluginSession reference upon load
 	void setPluginSession(PluginSession *ps);
 
 	// Generate the menus
-	virtual const MenuData createMenus();
+	virtual const MenuData& createMenus();
 
 public slots:
         // Post an event to the PluginSession
@@ -40,6 +37,9 @@ public slots:
 			 QString session);
 
     protected:
+	// Handles MClientEngineEvents
+	void engineEvent(QEvent *e);
+
 	// References
 	PluginSession *_pluginSession;
 

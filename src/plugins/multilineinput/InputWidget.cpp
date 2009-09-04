@@ -1,4 +1,3 @@
-#include "MultiLineInput.h"
 #include "InputWidget.h"
 
 #include <QDebug>
@@ -15,10 +14,8 @@
 // Word History
 #include <QStringList>
 
-InputWidget::InputWidget(QString s, MultiLineInput* mli, QWidget* parent) 
+InputWidget::InputWidget(QWidget* parent) 
     : QPlainTextEdit(parent) {
-    _session = s;
-    _mli = mli;
 
     // Size Policy
     QFontMetrics fm(currentCharFormat().font());
@@ -35,10 +32,6 @@ InputWidget::InputWidget(QString s, MultiLineInput* mli, QWidget* parent)
 
     // Line Wrapping
     setLineWrapMode(QPlainTextEdit::NoWrap);
-
-    // Debugging Information
-    qDebug() << "* MultiLineInput thread:" << _mli->thread();
-    qDebug() << "* InputWidget thread:" << this->thread();
 
     // Local Echo?
     _echoMode = true;

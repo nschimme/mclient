@@ -10,7 +10,6 @@
 #include "ActionManager.h"
 #include "AliasManager.h"
 
-#include "MClientDisplayInterface.h"
 #include "MClientPluginInterface.h"
 #include "PluginEntry.h"
 

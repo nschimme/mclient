@@ -20,12 +20,12 @@
 #ifndef TELNET_H
 #define TELNET_H
 
-#include "MClientFilterPlugin.h"
+#include "MClientPlugin.h"
 #include <QHash>
 
 class EventHandler;
 
-class Telnet : public MClientFilterPlugin {
+class Telnet : public MClientPlugin {
     Q_OBJECT
     
     public:
