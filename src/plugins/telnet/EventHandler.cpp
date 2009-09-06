@@ -26,6 +26,7 @@
 #include <QDebug>
 #include <QStringList>
 #include <QTextCodec>
+#include <QApplication> // for beep
 
 struct cTelnetPrivate {
   QString encoding;
@@ -563,6 +564,9 @@ void EventHandler::socketRead (const QByteArray &data) {
       //everything except CRLF is okay; CRLF is replaced by LF(\n) (CR ignored)
         
       switch (data.at(i)) {
+      case '\a': // BEL
+	QApplication::beep();
+	break;
       case '\r':
 	break;
       default:

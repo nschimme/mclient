@@ -30,6 +30,13 @@ EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
   _charState = NORMAL;
 
   _buffer = emptyString;
+
+  // Timer
+  _fragmentTimer = new QTimer(this);
+  _fragmentTimer->setInterval(1000); // 1000 ms
+  _fragmentTimer->setSingleShot(true);
+  connect(_fragmentTimer, SIGNAL(timeout()), this, SLOT(postFragment()));
+
 }
 
 
@@ -48,16 +55,13 @@ void EventHandler::customEvent(QEvent *e) {
     foreach(QString s, types) {
       if (s.startsWith("TelnetData")) {
 	parse(me->payload()->toByteArray());
+	_fragmentTimer->start(); // (re)start timer
 
       }
       else if (s.startsWith("TelnetGA")) {
-	qDebug() << "* Flushing buffer due to TelentGA" << _buffer;
-	if (!_buffer.isEmpty()) {
-	  QStringList sl;
-	  sl << "XMLPrompt" << "XMLAll";
-	  postBuffer(sl);
-	  
-	}
+	_fragmentTimer->stop();
+	postFragment();
+
       }
       else if (s.startsWith("SocketDisconnected")) {
 	_buffer.clear();
@@ -639,4 +643,16 @@ void EventHandler::postBuffer(const QStringList &tags) {
   QVariant *qv = new QVariant(_buffer);
   postSession(qv, tags);
   _buffer.clear();
+}
+
+
+void EventHandler::postFragment() {
+  qDebug() << "* Flushing buffer due to TelentGA" << _buffer;
+  if (!_buffer.isEmpty()) {
+    QStringList sl;
+    sl << "XMLPrompt" << "XMLAll";
+    postBuffer(sl);
+    
+  }
+
 }

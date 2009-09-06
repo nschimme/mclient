@@ -4,6 +4,7 @@
 #include "MClientEventHandler.h"
 
 class QEvent;
+class QTimer;
 
 class EventHandler : public MClientEventHandler {
     Q_OBJECT
@@ -13,6 +14,9 @@ class EventHandler : public MClientEventHandler {
         ~EventHandler();
 
         void customEvent(QEvent* e);
+
+public slots:
+        void postFragment();
 
  protected:
 	static const QString emptyString;
@@ -37,6 +41,7 @@ class EventHandler : public MClientEventHandler {
 	XmlMode _xmlMode;
 
 	QString _buffer;
+	QTimer *_fragmentTimer;
 
 	QByteArray _tempCharacters;
 	QByteArray _tempTag;
