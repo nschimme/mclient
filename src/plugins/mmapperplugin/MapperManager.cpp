@@ -33,6 +33,8 @@
 
 #include "findroomsdlg.h"
 #include "roomeditattrdlg.h"
+#include "progresscounter.h"
+#include "mapstorage/filesaver.h"
 
 MapperManager::MapperManager(EventHandler *eh, QObject *parent)
   : QThread(parent), _eventHandler(eh) {
@@ -97,6 +99,46 @@ MapperManager::MapperManager(EventHandler *eh, QObject *parent)
   connect(_mapData, SIGNAL(onDataLoaded()), _mapWindow->getCanvas(), SLOT(dataLoaded()) );
 
   connect(_findRoomsDlg, SIGNAL(center(qint32, qint32)), _mapWindow, SLOT(center(qint32, qint32)));
+
+  // Create Parser
+  _parser = new MMapperPluginParser(this);
+
+  connect(getParser(), SIGNAL(event(ParseEvent* )),
+          getPathMachine(), SLOT(event(ParseEvent* )));
+  connect(getParser(), SIGNAL(releaseAllPaths()),
+          getPathMachine(), SLOT(releaseAllPaths()));
+  connect(getParser(), SIGNAL(showPath(CommandQueue, bool)),
+          getPrespammedPath(), SLOT(setPath(CommandQueue, bool)));
+
+  connect(_eventHandler, SIGNAL(name(const QString&)),
+	  getParser(), SLOT(name(const QString&)));
+  connect(_eventHandler, SIGNAL(description(const QString&)),
+	  getParser(), SLOT(description(const QString&)));
+  connect(_eventHandler, SIGNAL(dynamicDescription(const QString&)),
+	  getParser(), SLOT(dynamicDescription(const QString&)));
+  connect(_eventHandler, SIGNAL(exits(const QString&)),
+	  getParser(), SLOT(exits(const QString&)));
+  connect(_eventHandler, SIGNAL(prompt(const QString&)),
+	  getParser(), SLOT(prompt(const QString&)));
+  connect(_eventHandler, SIGNAL(move(const QString&)),
+	  getParser(), SLOT(move(const QString&)));
+  
+  connect(_eventHandler, SIGNAL(userInput(QString)),
+	  getParser(), SLOT(userInput(QString)),
+	  Qt::DirectConnection);
+  connect(_eventHandler, SIGNAL(mudOutput(const QString&)),
+	  getParser(), SLOT(mudOutput(const QString&)),
+	  Qt::DirectConnection);
+
+  connect(getParser(), SIGNAL(sendToUser(const QByteArray &)),
+ 	  _eventHandler, SLOT(displayMessage(const QByteArray &)),
+	  Qt::DirectConnection);
+  
+  connect(_eventHandler, SIGNAL(loadFile(const QString&)),
+	  this, SLOT(loadFile(const QString&)));
+  
+  // Start in offline mode
+  onOfflineMode();
 
   /** Threaded attempt
   qDebug() << "Creating MapWindow...";
@@ -166,7 +208,6 @@ void MapperManager::run() {
   connect(_mapWindow->getCanvas(), SIGNAL(roomPositionChanged()), _pathMachine, SLOT(retry()));
   connect(_prespammedPath, SIGNAL(update()), _mapWindow->getCanvas(), SLOT(update()));
   connect(_mapData, SIGNAL(onDataLoaded()), _mapWindow->getCanvas(), SLOT(dataLoaded()) );
-  */
 
   // Create Parser
   _parser = new MMapperPluginParser(this);
@@ -198,8 +239,9 @@ void MapperManager::run() {
 	  getParser(), SLOT(mudOutput(const QString&)),
 	  Qt::DirectConnection);
 
-  connect(getParser(), SIGNAL(sendToUser(const QString&)),
- 	  _eventHandler, SLOT(displayMessage(const QString&)));
+  connect(getParser(), SIGNAL(sendToUser(const QByteArray &)),
+ 	  _eventHandler, SLOT(displayMessage(const QByteArray &)),
+	  Qt::DirectConnection);
   
   connect(_eventHandler, SIGNAL(loadFile(const QString&)),
 	  this, SLOT(loadFile(const QString&)));
@@ -208,6 +250,7 @@ void MapperManager::run() {
   onOfflineMode();
 
   exec();
+  */
 }
 
 
@@ -260,10 +303,10 @@ void MapperManager::merge()
     getMapWindow()->getCanvas()->clearRoomSelection();
     getMapWindow()->getCanvas()->clearConnectionSelection();
 
-    AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
+    AbstractMapStorage *storage = new MapStorage(*_mapData , fileName, file);
     connect(storage, SIGNAL(onDataLoaded()), getMapWindow()->getCanvas(), SLOT(dataLoaded()));
-    connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-    connect(storage, SIGNAL(log(const QString&, const QString&)), _eventHandler, SLOT(log(const QString&, const QString&)));
+    connect(storage->progressCounter(), SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
+    connect(storage, SIGNAL(log(const QString&, const QString&)), this, SLOT(log(const QString&, const QString&)));
 
 //     ActionManager *actMgr = ActionManager::self();
 //     actMgr->disableActions(true);
@@ -391,8 +434,8 @@ void MapperManager::loadFile(const QString &fileName)
 
   AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
   connect(storage, SIGNAL(onDataLoaded()), getMapWindow()->getCanvas(), SLOT(dataLoaded()));
-  connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-  connect(storage, SIGNAL(log(const QString&, const QString&)), _eventHandler, SLOT(log(const QString&, const QString&)));
+  connect(storage->progressCounter(), SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
+  connect(storage, SIGNAL(log(const QString&, const QString&)), this, SLOT(log(const QString&, const QString&)));
 
 //   ActionManager *actMgr = ActionManager::self();
 //   actMgr->disableActions(true);
@@ -423,19 +466,21 @@ void MapperManager::percentageChanged(quint32 p)
   //qApp->processEvents();
 }
 
-bool MapperManager::saveFile(const QString &fileName)
+bool MapperManager::saveFile(const QString &fileName, bool baseMapOnly )
 {
   getMapWindow()->getCanvas()->setEnabled(false);
 
-  //QIODevice *file = KFilterDev::deviceForFile( filename, "application/x-gzip", TRUE );
-  QFile *file = new QFile( fileName );
-  if (!file->open(QFile::WriteOnly))
+  FileSaver saver;
+  try
+  {
+    saver.open( fileName );
+  }
+  catch ( std::exception &e )
   {
     QMessageBox::warning(NULL, tr("Application"),
                          tr("Cannot write file %1:\n%2.")
-                             .arg(fileName)
-                             .arg(file->errorString()));
-    delete file;
+                         .arg(fileName)
+                         .arg(e.what()));
     getMapWindow()->getCanvas()->setEnabled(true);
     return false;
   }
@@ -453,27 +498,41 @@ bool MapperManager::saveFile(const QString &fileName)
   progressDlg->setValue(0);
   progressDlg->show();
 
-  AbstractMapStorage *storage = (AbstractMapStorage*) new MapStorage(*_mapData , fileName, file);
-  connect(storage, SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
-  connect(storage, SIGNAL(log(const QString&, const QString&)), _eventHandler, SLOT(log(const QString&, const QString&)));
+  std::auto_ptr<AbstractMapStorage> storage( new MapStorage(*_mapData , fileName, &saver.file()) );
+  connect(storage->progressCounter(), SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
+  connect(storage.get(), SIGNAL(log(const QString&, const QString&)), this, SLOT(log(const QString&, const QString&)));
 
 //   ActionManager *actMgr = ActionManager::self();
 //   actMgr->disableActions(true);
   //getMapWindow()->getCanvas()->hide();
-  if (storage->canSave()) storage->saveData();
+  if (storage->canSave()) storage->saveData( baseMapOnly );
   //getMapWindow()->getCanvas()->show();
 //   actMgr->disableActions(false);
 //   actMgr->cutAct->setEnabled(false);
 //   actMgr->copyAct->setEnabled(false);
 //   actMgr->pasteAct->setEnabled(false);
 
-  delete(storage);
   delete progressDlg;
 
-  //setCurrentFile(fileName);
-  if (_mainWindow)
-    _mainWindow->statusBar()->showMessage(tr("File saved"), 2000);
-  delete file;
+  try
+  {
+    saver.close();
+  }
+  catch ( std::exception &e )
+  {
+    QMessageBox::warning(NULL, tr("Application"),
+                         tr("Cannot write file %1:\n%2.")
+                         .arg(fileName)
+                         .arg(e.what()));
+    getMapWindow()->getCanvas()->setEnabled(true);
+    return false;
+  }
+  
+  /*
+  if ( !baseMapOnly )
+    setCurrentFile(fileName);
+  statusBar()->showMessage(tr("File saved"), 2000);
+  */
   getMapWindow()->getCanvas()->setEnabled(true);
 
   return true;

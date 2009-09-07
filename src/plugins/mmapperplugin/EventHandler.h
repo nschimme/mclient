@@ -18,7 +18,7 @@ class EventHandler : public MClientDisplayHandler {
 	QWidget* createWidget();
 
 public slots:
-	void displayMessage(const QString&);
+	void displayMessage(const QByteArray &);
         void log(const QString&, const QString&);
 
  signals:

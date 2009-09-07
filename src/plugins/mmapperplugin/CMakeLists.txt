@@ -35,6 +35,7 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/mapdata
     ${CMAKE_CURRENT_SOURCE_DIR}/mapfrontend
     ${CMAKE_CURRENT_SOURCE_DIR}/mapstorage
+    ${CMAKE_CURRENT_SOURCE_DIR}/3rdparty
     ${CMAKE_CURRENT_SOURCE_DIR}/pandoragroup
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
     ${CMAKE_CURRENT_SOURCE_DIR}/pathmachine

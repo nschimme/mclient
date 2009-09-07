@@ -1,8 +1,6 @@
 /************************************************************************
 **
-** Authors:   Ulf Hermann <ulfonk_mennhar@gmx.de> (Alve),
-**            Marek Krejza <krejza@gmail.com> (Caligor),
-**            Nils Schimmelmann <nschimme@gmail.com> (Jahara)
+** Authors:   Thomas Equeter <waba@waba.be>
 **
 ** This file is part of the MMapper project. 
 ** Maintained by Nils Schimmelmann <nschimme@gmail.com>
@@ -24,35 +22,35 @@
 **
 ************************************************************************/
 
-#include "abstractmapstorage.h"
-#include "mapdata.h"
-#include "progresscounter.h"
-#include "qtiocompressor.h"
+#ifndef INCLUDED_FILESAVER_H
+#define INCLUDED_FILESAVER_H
 
-AbstractMapStorage::AbstractMapStorage(MapData& mapdata, const QString& filename, QFile* file) : 
-m_file(file),
-m_mapData(mapdata),
-m_fileName(filename),
-m_progressCounter( new ProgressCounter( this ) )
+#include <QFile>
+
+/*! \brief Save to a file in an atomic way.
+ *
+ * Currently this does not work on Windows (where a simple file overwriting is
+ * then performed).
+ */
+class FileSaver
 {
-  m_compressor = new QtIOCompressor(file);
-}
+  QString m_filename;
+  QFile m_file; // disables copying
 
-AbstractMapStorage::AbstractMapStorage(MapData& mapdata, const QString& filename) : 
-m_file(NULL),
-m_mapData(mapdata),
-m_fileName(filename),
-m_progressCounter( new ProgressCounter( this ) )
-{
-  m_compressor = new QtIOCompressor(NULL);   
-}
+public:
+  FileSaver();
+  ~FileSaver();
 
-AbstractMapStorage::~AbstractMapStorage()
-{
-}
+  QFile &file() { return m_file; }
 
-const ProgressCounter *AbstractMapStorage::progressCounter() const
-{
-  return m_progressCounter;
-}
+  /*! \exception std::runtime_error if the file can't be opened or a currently
+   * open file can't be closed.
+   */
+  void open( QString filename );
 
+  /*! \exception std::runtime_error if the file can't be safely closed.
+   */
+  void close();
+};
+
+#endif /* INCLUDED_FILESAVER_H */

@@ -58,7 +58,7 @@ class MapperManager: public QThread {
   public slots:
     void newFile();
     void loadFile(const QString &fileName);
-    bool saveFile(const QString &fileName);
+    bool saveFile(const QString &fileName, bool =false);
     void open();
     void reload();
     void merge();

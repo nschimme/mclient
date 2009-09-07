@@ -1,8 +1,6 @@
 /************************************************************************
 **
-** Authors:   Ulf Hermann <ulfonk_mennhar@gmx.de> (Alve),
-**            Marek Krejza <krejza@gmail.com> (Caligor),
-**            Nils Schimmelmann <nschimme@gmail.com> (Jahara)
+** Authors:   Thomas Equeter <waba@waba.be>
 **
 ** This file is part of the MMapper project. 
 ** Maintained by Nils Schimmelmann <nschimme@gmail.com>
@@ -24,35 +22,28 @@
 **
 ************************************************************************/
 
-#include "abstractmapstorage.h"
-#include "mapdata.h"
-#include "progresscounter.h"
-#include "qtiocompressor.h"
+#ifndef INCLUDED_STEPCOUNTER_H
+#define INCLUDED_STEPCOUNTER_H
 
-AbstractMapStorage::AbstractMapStorage(MapData& mapdata, const QString& filename, QFile* file) : 
-m_file(file),
-m_mapData(mapdata),
-m_fileName(filename),
-m_progressCounter( new ProgressCounter( this ) )
+#include <QObject>
+
+class ProgressCounter : public QObject
 {
-  m_compressor = new QtIOCompressor(file);
-}
+  Q_OBJECT
 
-AbstractMapStorage::AbstractMapStorage(MapData& mapdata, const QString& filename) : 
-m_file(NULL),
-m_mapData(mapdata),
-m_fileName(filename),
-m_progressCounter( new ProgressCounter( this ) )
-{
-  m_compressor = new QtIOCompressor(NULL);   
-}
+  quint32 m_totalSteps, m_steps, m_percentage;
 
-AbstractMapStorage::~AbstractMapStorage()
-{
-}
+public:
+  ProgressCounter();
+  ProgressCounter( QObject *parent );
+  virtual ~ProgressCounter();
 
-const ProgressCounter *AbstractMapStorage::progressCounter() const
-{
-  return m_progressCounter;
-}
+  void step( quint32 steps = 1 );
+  void increaseTotalStepsBy( quint32 steps );
+  void reset();
 
+signals:
+  void onPercentageChanged( quint32 );
+};
+
+#endif /* INCLUDED_STEPCOUNTER_H */

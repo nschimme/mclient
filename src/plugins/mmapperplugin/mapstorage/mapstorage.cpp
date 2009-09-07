@@ -1,28 +1,30 @@
 /************************************************************************
 **
-** Authors:   Ulf Hermann <ulfonk_mennhar@gmx.de> (Alve), 
-**            Marek Krejza <krejza@gmail.com> (Caligor)
+** Authors:   Ulf Hermann <ulfonk_mennhar@gmx.de> (Alve),
+**            Marek Krejza <krejza@gmail.com> (Caligor),
+**            Nils Schimmelmann <nschimme@gmail.com> (Jahara)
 **
-** This file is part of the MMapper2 project. 
-** Maintained by Marek Krejza <krejza@gmail.com>
+** This file is part of the MMapper project. 
+** Maintained by Nils Schimmelmann <nschimme@gmail.com>
 **
-** Copyright: See COPYING file that comes with this distribution
+** This program is free software; you can redistribute it and/or
+** modify it under the terms of the GNU General Public License
+** as published by the Free Software Foundation; either version 2
+** of the License, or (at your option) any later version.
 **
-** This file may be used under the terms of the GNU General Public
-** License version 2.0 as published by the Free Software Foundation
-** and appearing in the file COPYING included in the packaging of
-** this file.  
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-** NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-** LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-** OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-** WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the:
+** Free Software Foundation, Inc.
+** 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 **
-*************************************************************************/
+************************************************************************/
 
+#include <cassert>
 #include <iostream>
 #include "mapstorage.h"
 #include "mapdata.h"
@@ -33,7 +35,8 @@
 #include "oldroom.h"
 #include "mmapper2room.h"
 #include "mmapper2exit.h"
-#include <assert.h>
+#include "progresscounter.h"
+#include "basemapsavefilter.h"
 
 using namespace std;
 
@@ -388,8 +391,7 @@ bool MapStorage::mergeData()
     }
     
     emit log ("MapStorage", "Loading data ...");
-    quint32 percentage = 0;
-    emit onPercentageChanged(0);
+    m_progressCounter->reset();
 
     QDataStream stream (m_file);
 
@@ -409,16 +411,20 @@ bool MapStorage::mergeData()
     stream >> magic;
     if ( magic != 0xFFB2AF01 ) return false;
     stream >> version;
-    if ( version != 030 && version != 020 && version != 021 && version != 007 ) return false;
+    if ( version != 031 && version != 030 &&
+	 version != 020 && version != 021 && version != 007 ) return false;
+
+    // QtIOCompressor
+    if (version >= 031) {
+      m_compressor->open(QIODevice::ReadOnly);
+      stream.setDevice(m_compressor);
+    }
 
     stream >> roomsCount;
     if (version < 020) stream >> connectionsCount;
     stream >> marksCount;
 
-    float percentageBase = 100.0f / (roomsCount + connectionsCount + marksCount);
-
-    uint percentageCounter = 0;
-
+    m_progressCounter->increaseTotalStepsBy( roomsCount + connectionsCount + marksCount );
 
     Coordinate pos;
 
@@ -463,12 +469,7 @@ bool MapStorage::mergeData()
         room = loadRoom(stream, version);
       }
 
-      percentageCounter++;
-      if ((percentageBase * percentageCounter) != percentage)
-      {
-        percentage = (uint)(percentageBase * percentageCounter) ;
-        emit onPercentageChanged(percentage);
-      }
+      m_progressCounter->step();
       m_mapData.insertPredefinedRoom(room);
     }
 
@@ -483,12 +484,7 @@ bool MapStorage::mergeData()
         translateOldConnection(connection);
         delete connection;
 
-        percentageCounter++;
-        if ((percentageBase * percentageCounter) != percentage)
-        {
-          percentage = (quint32)(percentageBase * percentageCounter) ;
-          emit onPercentageChanged(percentage);
-        }
+        m_progressCounter->step();
       }
       connectionList.clear();
     }
@@ -504,22 +500,21 @@ bool MapStorage::mergeData()
       loadMark(mark, stream, version);      
       markerList.append(mark);
       
-      percentageCounter++;
-      if (((quint32)(percentageBase * percentageCounter)) != percentage)
-      {
-        percentage = (quint32)(percentageBase * percentageCounter) ;
-        emit onPercentageChanged(percentage);
-      }
+      m_progressCounter->step();
     }
 
-    emit onPercentageChanged(100);
     emit log ("MapStorage", "Finished loading.");
 
     if (m_mapData.getRoomsCount() < 1 ) return false;
 
     m_mapData.setFileName(m_fileName);
     m_mapData.unsetDataChanged();
+
+    if (version >= 031)
+      m_compressor->close();
+
   }
+
   m_mapData.checkSize();
   emit onDataLoaded();
   return true;
@@ -665,7 +660,7 @@ void MapStorage::loadOldConnection(Connection * connection, QDataStream & stream
   QString vqstr;
   quint32 vquint32;
 
-  Room *r1, *r2;
+  Room *r1 = 0, *r2 = 0;
 
   ConnectionFlags cf = 0;
   ConnectionType ct = CT_UNDEFINED;
@@ -842,40 +837,45 @@ void MapStorage::saveExits(const Room * room, QDataStream & stream)
   }
 }
 
-bool MapStorage::saveData()
+bool MapStorage::saveData( bool baseMapOnly )
 {
-  const Room *room = NULL;
-
-  InfoMark *mark = NULL;
-
-  uint roomsCount = 0;
-  uint marksCount = 0;
-
-  emit log ("MapStorage", "Writting data to file ...");
+  emit log ("MapStorage", "Writing data to file ...");
 
   QDataStream stream (m_file);
 
-  emit onPercentageChanged(0);
-
+  // Collect the room and marker lists. The room list can't be acquired
+  // directly apparently and we have to go through a RoomSaver which receives
+  // them from a sort of callback function.
   QList<const Room *> roomList;
   MarkerList& markerList = m_mapData.getMarkersList();
   RoomSaver saver(&m_mapData, roomList);
-
   for (uint i = 0; i < m_mapData.getRoomsCount(); ++i)
   {
     m_mapData.lookingForRooms(&saver, i);
   }
-  roomsCount = saver.getRoomsCount();
 
-  marksCount = markerList.size();
+  uint roomsCount = saver.getRoomsCount();
+  uint marksCount = markerList.size();
 
-  float percentageBase = 100.0f / (roomsCount + marksCount);
-  uint percentage = 0;
-  uint percentageCounter = 0;
+  m_progressCounter->reset();
+  m_progressCounter->increaseTotalStepsBy( roomsCount + marksCount );
+
+  BaseMapSaveFilter filter;
+  if ( baseMapOnly )
+  {
+      filter.setMapData( &m_mapData );
+      m_progressCounter->increaseTotalStepsBy( filter.prepareCount() );
+      filter.prepare( m_progressCounter );
+      roomsCount = filter.acceptedRoomsCount();
+  }
 
   // Write a header with a "magic number" and a version
   stream << (quint32)0xFFB2AF01;
-  stream << (qint32)030;
+  stream << (qint32)031;
+
+  // QtIOCompressor
+  m_compressor->open(QIODevice::WriteOnly);
+  stream.setDevice(m_compressor);
 
   //write counters
   stream << (quint32)roomsCount;
@@ -891,32 +891,43 @@ bool MapStorage::saveData()
   QListIterator<const Room *>  roomit(roomList);
   while (roomit.hasNext())
   {
-    room = roomit.next();
-    if (!room->isTemporary()) saveRoom(room, stream);
-
-    percentageCounter++;
-    if ((percentageBase * percentageCounter) != percentage)
+    const Room *room = roomit.next();
+    if ( baseMapOnly )
     {
-      percentage = (uint)(percentageBase * percentageCounter) ;
-      emit onPercentageChanged(percentage);
+      BaseMapSaveFilter::Action action = filter.filter( room );
+      if ( !room->isTemporary() && action != BaseMapSaveFilter::REJECT )
+      {
+        if ( action == BaseMapSaveFilter::ALTER )
+        {
+          Room copy = filter.alteredRoom( room );
+          saveRoom( &copy, stream );
+        }
+        else // action == PASS
+        {
+          saveRoom(room, stream);
+        }
+      }
     }
+    else
+    {
+      saveRoom(room, stream);
+    }
+
+    m_progressCounter->step();
   }
 
   // save items
   MarkerListIterator markerit(markerList);
   while (markerit.hasNext())
   {
-    mark = markerit.next();
+    InfoMark *mark = markerit.next();
     saveMark(mark, stream);
 
-    percentageCounter++;
-    if ((percentageBase * percentageCounter) != percentage)
-    {
-      percentage = (uint)(percentageBase * percentageCounter) ;
-      emit onPercentageChanged(percentage);
-    }
+    m_progressCounter->step();
   }
-
+  
+  m_compressor->close();
+  
   emit log ("MapStorage", "Writting data finished.");
 
   m_mapData.unsetDataChanged();

@@ -13,10 +13,6 @@ MMapperPluginParser::MMapperPluginParser(MapperManager *mapMgr,
 					 QObject *parent)
   : AbstractParser(mapMgr->getMapData(), parent) {
 
-  connect(this, SIGNAL(sendToUser(const QByteArray&)),
-	  SLOT(sendToUserWrapper(const QByteArray&)),
-	  Qt::DirectConnection);
-
   _move = CID_NONE;
 
   qDebug() << "MMapperPluginParser loaded";
@@ -55,7 +51,7 @@ void MMapperPluginParser::exits(QString text) {
 
 void MMapperPluginParser::prompt(QString text) {
   if (m_readingRoomDesc) {
-    qDebug() << "### emulating exits!";
+    qDebug() << "### emulating exits!" << QThread::currentThread();
     emulateExits();
     m_readingRoomDesc = false;
   }
@@ -163,16 +159,4 @@ void MMapperPluginParser::mudOutput(const QString &text) {
       return;
     }
   }
-}
-
-
-void MMapperPluginParser::sendToUserWrapper(const QByteArray &ba) {
-  QString text(ba);
-  emit sendToUser(text);
-}
-
-
-void MMapperPluginParser::sendToMudWrapper(const QByteArray &ba) {
-  QString text(ba);
-  emit sendToMud(text);
 }

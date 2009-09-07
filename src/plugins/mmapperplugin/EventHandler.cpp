@@ -102,12 +102,12 @@ void EventHandler::customEvent(QEvent *e) {
 
 QWidget* EventHandler::createWidget() {
   _mapper = new MapperManager(this);
-  _mapper->start();
+  //_mapper->start();
   return _mapper->getMapWindow();
 }
 
 
-void EventHandler::displayMessage(const QString& message) {
+void EventHandler::displayMessage(const QByteArray& message) {
   QVariant* qv = new QVariant(message);
   QStringList sl("DisplayData");
   postSession(qv, sl);
