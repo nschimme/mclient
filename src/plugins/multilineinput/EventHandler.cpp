@@ -67,11 +67,12 @@ QWidget* EventHandler::createWidget() {
 void EventHandler::sendUserInput(const QString &input,
 					       bool echo) {
   if (echo) {
-    QVariant* qv = new QVariant(input + "\n");
+    QVariant *qv = new QVariant(input + "\n");
     QStringList sl("UserInput");
     postSession(qv, sl);
   }
 
+  /*
   // Post to command processor
   QVariant *payload = new QVariant(input);
   QStringList tags("UserInput");
@@ -80,7 +81,13 @@ void EventHandler::sendUserInput(const QString &input,
   MClientEvent* me = new MClientEvent(med);
   QCoreApplication::postEvent(_pluginSession->getCommand()->getUserInput(),
 			      me);
+  */
   
+  // We submit to MMapperPlugin first
+  QVariant *qv = new QVariant(input);
+  QStringList tags("MMapperInput");
+  postSession(qv, tags);
+
 }
 
 

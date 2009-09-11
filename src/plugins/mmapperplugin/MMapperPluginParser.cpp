@@ -62,7 +62,7 @@ void MMapperPluginParser::prompt(QString text) {
 }
 
 
-void MMapperPluginParser::move(QString text) {
+void MMapperPluginParser::move(const QString &text) {
   switch (text.at(0).toAscii()) {
     case 'n':
       _move = CID_NORTH;
@@ -101,7 +101,6 @@ void MMapperPluginParser::submit() {
   
   // non standard end of description parsed (fog, dark or so ...)
   if (Patterns::matchNoDescriptionPatterns(m_roomName)) {
-    qDebug() << "* MMapperPluginParser detected something wrong";
     m_roomName = nullString;
     m_dynamicRoomDesc = nullString;
     m_staticRoomDesc = nullString;
@@ -126,8 +125,9 @@ void MMapperPluginParser::submit() {
 
 
 void MMapperPluginParser::userInput(QString text) {
-  qDebug() << "* MMapperPluginParser got input" << text << thread();
-  parseUserCommands(text);
+  qDebug() << "* MMapperPluginParser got input" << text;
+  if (parseUserCommands(text))
+    emit sendToMud(text.toAscii());
 }
 
 

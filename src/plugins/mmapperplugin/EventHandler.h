@@ -20,6 +20,7 @@ class EventHandler : public MClientDisplayHandler {
 public slots:
 	void displayMessage(const QByteArray &);
         void log(const QString&, const QString&);
+	void postCommand(const QByteArray &);
 
  signals:
 	void name(QString);
@@ -27,7 +28,7 @@ public slots:
 	void dynamicDescription(const QString &);
 	void prompt(QString);
 	void exits(QString);
-	void move(QString);
+	void move(const QString &);
 	void terrain(QString);
 
 	void userInput(QString);

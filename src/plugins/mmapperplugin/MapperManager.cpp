@@ -120,8 +120,8 @@ MapperManager::MapperManager(EventHandler *eh, QObject *parent)
 	  getParser(), SLOT(exits(const QString&)));
   connect(_eventHandler, SIGNAL(prompt(const QString&)),
 	  getParser(), SLOT(prompt(const QString&)));
-  connect(_eventHandler, SIGNAL(move(const QString&)),
-	  getParser(), SLOT(move(const QString&)));
+  connect(_eventHandler, SIGNAL(move(const QString &)),
+	  getParser(), SLOT(move(const QString &)));
   
   connect(_eventHandler, SIGNAL(userInput(QString)),
 	  getParser(), SLOT(userInput(QString)),
@@ -132,6 +132,9 @@ MapperManager::MapperManager(EventHandler *eh, QObject *parent)
 
   connect(getParser(), SIGNAL(sendToUser(const QByteArray &)),
  	  _eventHandler, SLOT(displayMessage(const QByteArray &)),
+	  Qt::DirectConnection);
+  connect(getParser(), SIGNAL(sendToMud(const QByteArray &)),
+ 	  _eventHandler, SLOT(postCommand(const QByteArray &)),
 	  Qt::DirectConnection);
   
   connect(_eventHandler, SIGNAL(loadFile(const QString&)),

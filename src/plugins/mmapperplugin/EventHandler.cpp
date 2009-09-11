@@ -83,7 +83,7 @@ void EventHandler::customEvent(QEvent *e) {
       if (arguments.isEmpty())
 	displayMessage("#no file specified\n");
       else if (arguments == "!") // hack
-	emit loadFile("/mnt/games/powwow/archive/arda.old.mm2");
+	emit loadFile("/mnt/games/powwow/z263-264.mm2");
       else
 	emit loadFile(arguments);
       
@@ -116,4 +116,17 @@ void EventHandler::displayMessage(const QByteArray& message) {
 
 void EventHandler::log(const QString& message, const QString& s) {
   qDebug() << "* MMapperPlugin[" << s << "]: " << message;
+}
+
+
+void EventHandler::postCommand(const QByteArray &input) {
+  qDebug() << "* MmapperPlugin submitting command" << input;
+  QVariant *payload = new QVariant(input);
+  QStringList tags("UserInput");
+  MClientEventData *med = new MClientEventData(payload, tags,
+					       _pluginSession->session());
+  MClientEvent* me = new MClientEvent(med);
+  QCoreApplication::postEvent(_pluginSession->getCommand()->getUserInput(),
+			      me);
+
 }

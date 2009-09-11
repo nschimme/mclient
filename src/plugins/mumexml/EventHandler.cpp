@@ -211,7 +211,7 @@ bool EventHandler::element(const QByteArray& line) {
 	  // Post the XML Movement
 	  QVariant* qv = new QVariant(move);
 	  QStringList sl;
-	  sl << "XMLMove";
+	  sl << "XMLMove" << "XMLAll";
 	  postSession(qv, sl);
 	  
 	}

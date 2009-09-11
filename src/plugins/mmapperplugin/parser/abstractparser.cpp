@@ -1047,10 +1047,12 @@ bool AbstractParser::parseUserCommands(QString& command)
 
   if (Config().m_mapMode != 2)
     return true;
-  else
-  {
+  else {
+    /*
     emit sendToUser("\r\n>");
     return false; //do not send command to mud server for offline mode
+    */
+    return true; // do send the forward the command to mClient
   }
 }
 

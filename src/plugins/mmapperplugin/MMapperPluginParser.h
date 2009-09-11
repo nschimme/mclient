@@ -22,13 +22,10 @@ public slots:
     void dynamicDescription(const QString &);
     void prompt(QString);
     void exits(QString);
-    void move(QString);
+    void move(const QString &);
     
     void userInput(QString);
     void mudOutput(const QString&);
-
-    void sendToUserWrapper(const QByteArray&);
-    void sendToMudWrapper(const QByteArray&);
 
    private:
     QString _session;
@@ -37,8 +34,8 @@ public slots:
     void submit();
 
  signals:
-    void sendToUser(const QString&);
-    void sendToMud(const QString&);
+    //void sendToUser(const QByteArray &);
+    //void sendToMud(const QByteArray &);
 
 };
 
