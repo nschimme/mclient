@@ -31,6 +31,7 @@ add_library(socketmanagerio SHARED
 target_link_libraries(
     socketmanagerio
     mclientplugin
+    mainwindow
     ${QT_LIBRARIES}
 )
 

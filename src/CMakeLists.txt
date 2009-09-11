@@ -65,12 +65,13 @@ target_link_libraries(mclient
     ${QT_QTMAIN_LIBRARY}
     ${QT_LIBRARIES}
     mclientplugin
+    mainwindow
     commandprocessor
 )
 
 # mClient's Core Engine
 add_subdirectory(mclientplugin)
-#add_subdirectory(mainwindow)
+add_subdirectory(mainwindow)
 add_subdirectory(commandprocessor)
 
 # Various Plugins

@@ -139,8 +139,9 @@ void MainWindow::initDisplay(PluginSession *ps) {
 
   QString session(ps->session());
 
-  qDebug() << "* Initializing display widgets from thread"
-	   << this->thread() << "for session" << session;
+  qDebug() << "* Initializing" << ps->loadedPlugins().size()
+           << "display widgets from thread"
+           << this->thread() << "for session" << session;
   // We now start/create the widgets (this is a slot from
   // PluginSession) in the main thread.
 
@@ -149,8 +150,7 @@ void MainWindow::initDisplay(PluginSession *ps) {
       = qobject_cast<MClientPluginInterface*>(pl->instance());
     if (pi) {
 
-      MClientEventHandler *eh
-	= qobject_cast<MClientEventHandler*>(pi->getEventHandler(session));
+      MClientEventHandler *eh = pi->getEventHandler(session);
 
       if (eh) {
 	// Create menus
@@ -159,22 +159,22 @@ void MainWindow::initDisplay(PluginSession *ps) {
 	  qDebug() << "* Display found menus for plugin"
 		   << pi->shortName() << menus;
 	  
-	  static_cast<SmartMenuBar*>(menuBar())->addMenu(menus);
+          static_cast<SmartMenuBar*>(menuBar())->addMenu(menus);
 	}
 
 	// Create the widgets outside of the threads
-	MClientDisplayHandler *dh
-	  = qobject_cast<MClientDisplayHandler*>(eh);
+        MClientDisplayHandler *dh = dynamic_cast<MClientDisplayHandler*>(eh);
 	if (dh) {
 	  // Initialize the display
 	  QPair<int, QWidget*> pair(dh->displayLocations(),
 				    dh->createWidget());
 	  widgetList << pair;
 	  
-	}
+        } else qDebug() << "! Display unable to cast DisplayHandler" << eh;
 
-      }
-    }
+      } else qDebug() << "! Display unable to cast EventHandler" << pi;
+
+    } else qDebug() << "! Display unable to cast PluginInterface" << pi;
   }
   qDebug() << "* received widgets" << widgetList;
 

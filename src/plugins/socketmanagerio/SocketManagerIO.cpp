@@ -171,5 +171,11 @@ bool SocketManagerIO::stopSession(QString s) {
 
 
 MClientEventHandler* SocketManagerIO::getEventHandler(QString s) {
-  return _eventHandlers[s].data();
+  if (_eventHandlers.contains(s))
+      return _eventHandlers[s].data();
+  else {
+      qDebug() << "! SocketManagerIO unable to find EventHandler for"
+               << s << "; hash is" << _eventHandlers;
+      return 0;
+  }
 }
