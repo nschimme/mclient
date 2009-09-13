@@ -18,10 +18,8 @@ class MultiLineInput : public MClientPlugin {
 
         // Plugin members
         void configure();
-        bool loadSettings();
-        bool saveSettings() const;
-        bool startSession(QString s);
-        bool stopSession(QString s);
+        bool startSession(PluginSession *ps);
+        bool stopSession(PluginSession *ps);
 
 	MClientEventHandler* getEventHandler(QString s);
 

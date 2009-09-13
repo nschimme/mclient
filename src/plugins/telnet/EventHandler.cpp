@@ -68,7 +68,8 @@ struct cTelnetPrivate {
 #define DEFAULT_ENCODING "ISO 8859-1"
 
 
-EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
+EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+  : MClientEventHandler(ps, mp) {
   /** KMuddy Telnet */
   d = new cTelnetPrivate;
   
@@ -566,8 +567,6 @@ void EventHandler::socketRead (const QByteArray &data) {
       switch (data.at(i)) {
       case '\a': // BEL
 	QApplication::beep();
-	break;
-      case '\r':
 	break;
       default:
 	_cleanData.append(data.at(i));

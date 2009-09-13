@@ -5,13 +5,15 @@
 #include "MClientDefinitions.h"
 #include <QWidget>
 
+class PluginSession;
+class MClientPlugin;
 class QEvent;
 
 class MClientDisplayHandler : public MClientEventHandler {
     Q_OBJECT
 
     public:
-        MClientDisplayHandler(QWidget* parent=0);
+        MClientDisplayHandler(PluginSession *ps, MClientPlugin *mp);
         ~MClientDisplayHandler();
 
         // Plugin members

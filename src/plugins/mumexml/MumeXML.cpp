@@ -1,4 +1,6 @@
 #include "MumeXML.h"
+
+#include "PluginSession.h"
 #include "EventHandler.h"
 
 #include <QDebug>
@@ -39,24 +41,14 @@ void MumeXML::configure() {
 }
 
 
-bool MumeXML::loadSettings() {
-    return true;
-}
-
-
-bool MumeXML::saveSettings() const {
-    return true;
-}
-
-
-bool MumeXML::startSession(QString s) {
-  _eventHandlers[s] = new EventHandler;
+bool MumeXML::startSession(PluginSession *ps) {
+  _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool MumeXML::stopSession(QString s) {
-  delete _eventHandlers[s];
+bool MumeXML::stopSession(PluginSession *ps) {
+  delete _eventHandlers[ps->session()];
   return true;
 }
 

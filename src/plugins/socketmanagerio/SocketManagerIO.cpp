@@ -1,6 +1,5 @@
 #include "SocketManagerIO.h"
 #include "SocketManagerIOConfig.h"
-#include "SocketReader.h"
 #include "EventHandler.h"
 
 #include "PluginManager.h"
@@ -67,8 +66,6 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
 
 
 SocketManagerIO::~SocketManagerIO() {
-  // Clean up the QHash of sockets.
-  // saveSettings();
 }
 
 
@@ -86,84 +83,15 @@ void SocketManagerIO::configure() {
 }
 
 
-bool SocketManagerIO::loadSettings() {
-  /*
-  _settings =
-    _pluginManager->getConfig()->pluginSettings(_pluginSession->session(),
-						_shortName);
-  */
-  
+bool SocketManagerIO::startSession(PluginSession *ps) {
+  QString s = ps->session();
+  _eventHandlers[s] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool SocketManagerIO::saveSettings() const {
-  /*
-  _plugiManager->getConfig()->writePluginSettings(_pluginSession->session(),
-				     _shortName);
-  */
-  return true;
-}
-
-
-bool SocketManagerIO::startSession(QString s) {
-  _settings = new QHash<QString, QString>;
-
-    QString cfg = QString("config/%1/").arg(s);
-
-    // Host settings
-    QString host = _settings->value(cfg+"connection/host", "mume.org");
-    int port = _settings->value(cfg+"connection/port", "4242").toInt();
-
-    //host = "127.0.0.1";
-
-    // Proxy settings
-    QString proxy_host = _settings->value(cfg+"proxy/host", "proxy.example.com");
-    int proxy_port = _settings->value(cfg+"proxy/port", "0").toInt();
-    QString proxy_user = _settings->value(cfg+"proxy/proxy_user", "");
-    QString proxy_pass = _settings->value(cfg+"proxy/proxy_pass", "");
-
-
-    _socketReaders[s] = new SocketReader(s, this);
-    if(proxy_port != 0 && !proxy_host.isEmpty()) {
-        QNetworkProxy* proxy = new QNetworkProxy();
-        //proxy->setType(QNetworkProxy::Socks5Proxy);
-        proxy->setHostName(proxy_host);
-        proxy->setPort(proxy_port);
-        proxy->setUser(proxy_user);
-        proxy->setPassword(proxy_pass);
-
-        _socketReaders[s]->proxy(proxy);
-        qDebug() << "* added proxy" << proxy_host << proxy_port
-		 << "to SocketReader in session" << s;
-    }
-    _socketReaders[s]->host(host);
-    _socketReaders[s]->port(port);
-
-  _eventHandlers[s] = new EventHandler;
-
-  connect(_eventHandlers[s], SIGNAL(connectToHost()),
-	  _socketReaders[s], SLOT(connectToHost()));
-  connect(_eventHandlers[s], SIGNAL(closeSocket()),
-	  _socketReaders[s], SLOT(closeSocket()));
-  connect(_eventHandlers[s], SIGNAL(sendToSocket(const QByteArray &)),
-	  _socketReaders[s], SLOT(sendToSocket(const QByteArray &)));
-
-  connect(_socketReaders[s], SIGNAL(socketReadData(const QByteArray &)),
-	  _eventHandlers[s], SLOT(socketReadData(const QByteArray &)));
-  connect(_socketReaders[s], SIGNAL(displayMessage(const QString &)),
-	  _eventHandlers[s], SLOT(displayMessage(const QString &)));
-  connect(_socketReaders[s], SIGNAL(socketOpened()),
-	  _eventHandlers[s], SLOT(socketOpened()));
-  connect(_socketReaders[s], SIGNAL(socketClosed()),
-	  _eventHandlers[s], SLOT(socketClosed()));
-
-  return true;
-}
-
-
-bool SocketManagerIO::stopSession(QString s) {
-  delete _socketReaders[s];
+bool SocketManagerIO::stopSession(PluginSession *ps) {
+  QString s = ps->session();
   delete _eventHandlers[s];
   qDebug() << "* removed SocketReader for session" << s;
   return true;

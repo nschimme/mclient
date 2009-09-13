@@ -21,10 +21,10 @@ class ProxyServer : public QTcpServer {
 
 	void start();
 
-        void port(const int);
-        void password(const QByteArray);
+        void port(const int port) { _port = port; }
+        void password(const QByteArray password) { _password = password; }
 
-        const int& port() const;
+        const int& port() const { return _port; }
         const QByteArray& password() const { return _password; }
 	
 	const ProxyConnections& getConnections() const { return _proxyConnections; }

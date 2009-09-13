@@ -1,4 +1,5 @@
 #include "EventHandler.h"
+#include "SocketReader.h"
 
 #include <QDebug>
 #include <QEvent>
@@ -9,13 +10,63 @@
 
 #include "MClientEvent.h"
 #include "PluginSession.h"
+#include "ConfigEntry.h"
 
-EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
+EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+  : MClientEventHandler(ps, mp) {
   _openSocket = false;
+  _socketReader = new SocketReader(ps->session(), this);
+
+  QString cfg = QString("config/");
+  
+  // Host settings
+  QString host = _config->value(cfg+"connection/host", "mume.org").toString();
+  int port = _config->value(cfg+"connection/port", "4242").toInt();
+  
+  // Proxy settings
+  QString proxy_host = _config->value(cfg+"proxy/host",
+				      "proxy.example.com").toString();
+  int proxy_port = _config->value(cfg+"proxy/port", "0").toInt();
+  QString proxy_user = _config->value(cfg+"proxy/proxy_user",
+				      "").toString();
+  QString proxy_pass = _config->value(cfg+"proxy/proxy_pass",
+				      "").toString();
+  
+  if(proxy_port != 0 && !proxy_host.isEmpty()) {
+    QNetworkProxy* proxy = new QNetworkProxy();
+    //proxy->setType(QNetworkProxy::Socks5Proxy);
+    proxy->setHostName(proxy_host);
+    proxy->setPort(proxy_port);
+    proxy->setUser(proxy_user);
+    proxy->setPassword(proxy_pass);
+      
+    _socketReader->proxy(proxy);
+    qDebug() << "* added proxy" << proxy_host << proxy_port
+	     << "to SocketReader";
+  }
+  _socketReader->host(host);
+  _socketReader->port(port);
+    
+  // Signals and slots
+  connect(this, SIGNAL(connectToHost()), _socketReader, SLOT(connectToHost()));
+  connect(this, SIGNAL(closeSocket()), _socketReader, SLOT(closeSocket()));
+  connect(this, SIGNAL(sendToSocket(const QByteArray &)),
+	  _socketReader, SLOT(sendToSocket(const QByteArray &)));
+    
+  connect(_socketReader, SIGNAL(socketReadData(const QByteArray &)),
+	  SLOT(socketReadData(const QByteArray &)));
+  connect(_socketReader, SIGNAL(displayMessage(const QString &)),
+	  SLOT(displayMessage(const QString &)));
+  connect(_socketReader, SIGNAL(socketOpened()),
+	  SLOT(socketOpened()));
+  connect(_socketReader, SIGNAL(socketClosed()),
+	  SLOT(socketClosed()));
+  
 }
 
 
 EventHandler::~EventHandler() {
+  delete _socketReader;
 }
 
 

@@ -6,7 +6,10 @@
 #include <QStringList>
 #include <QSet>
 
+class MClientPlugin;
 class PluginSession;
+
+class ConfigEntry;
 class SmartMenu;
 class MClientEventData;
 
@@ -16,14 +19,11 @@ class MClientEventHandler : public QObject {
     Q_OBJECT
     
     public:
-        MClientEventHandler(QObject* parent=0);
+        MClientEventHandler(PluginSession *ps, MClientPlugin *pl);
         ~MClientEventHandler();
 
         // Handles custom events
         virtual void customEvent(QEvent *e)=0;
-
-	// Receive the PluginSession reference upon load
-	void setPluginSession(PluginSession *ps);
 
 	// Generate the menus
 	virtual const MenuData& createMenus();
@@ -40,8 +40,12 @@ public slots:
 	// Handles MClientEngineEvents
 	void engineEvent(QEvent *e);
 
-	// References
+	// Configuration Settings
+	ConfigEntry *_config;
+
+	// Plugin and Session References
 	PluginSession *_pluginSession;
+	MClientPlugin *_plugin;
 
 	// Menus
 	MenuData _menus;

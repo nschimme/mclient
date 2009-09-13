@@ -8,7 +8,8 @@
 
 #include "ClientTextEdit.h"
 
-EventHandler::EventHandler(QWidget* parent) : MClientDisplayHandler(parent) {
+EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+  : MClientDisplayHandler(ps, mp) {
   // Allowable Display Locations
   SET(_displayLocations, DL_DISPLAY);
 }

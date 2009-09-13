@@ -3,9 +3,8 @@
 
 #include <QtNetwork>
 
-ProxyConnection::ProxyConnection(int socketDescriptor, QObject *parent)
-  : QObject(parent) {
-  _server = static_cast<ProxyServer*>(parent);
+ProxyConnection::ProxyConnection(int socketDescriptor, ProxyServer *server)
+  : QObject(server), _server(server) {
 
   // For removal from the ProxyServer's list
   connect(this, SIGNAL(disconnected(ProxyConnection *)),
@@ -17,7 +16,6 @@ ProxyConnection::ProxyConnection(int socketDescriptor, QObject *parent)
   _state = PROXY_DISCONNECTED;
   _socket = new QTcpSocket(this);
   connect(_socket, SIGNAL(destroyed(QObject *)), SLOT(onSocketDestroyed()));
-  connect(_socket, SIGNAL(readyRead()), SLOT(onPasswordRead()));
   connect(_socket, SIGNAL(disconnected()), SLOT(onDisconnect()));
   connect(_socket, SIGNAL(error(QAbstractSocket::SocketError)),
 	  SLOT(onError(QAbstractSocket::SocketError)));
@@ -32,21 +30,34 @@ ProxyConnection::ProxyConnection(int socketDescriptor, QObject *parent)
     qDebug() << "* Client connected to proxy from" << _peerAddress;
     QByteArray ba("\033[1;37;41m                     \033[0m\r\n"
 		  "\033[1;37;41m Welcome to mClient! \033[0m\r\n"
-		  "\033[1;37;41m                     \033[0m\r\n"
-		  "\r\n"
-		  "Password? ");
-    ba += (unsigned char) 255; // IAC
-    ba += (unsigned char) 251; // WILL
-    ba += (unsigned char) 1;   // OPT_ECHO
+		  "\033[1;37;41m                     \033[0m\r\n");
     sendToSocket(ba);
-    
-    // Password Timeout
-    _timer = new QTimer(this);
-    _timer->setSingleShot(true);
-    connect(_timer, SIGNAL(timeout()), SLOT(onTimeout()));
-    _timer->start(30 * 1000); // 30 seconds
 
-    _state = PROXY_AUTHENTICATING;
+    if (_server->password().isEmpty()) {
+      // No password
+      connect(_socket, SIGNAL(readyRead()), SLOT(onReadyRead()));
+      ba = QByteArray("\r\nType \033[1m#help\033[0m for help.\r\n");
+      sendToSocket(ba);
+      _state = PROXY_CONNECTED;
+      emit authenticated(this);
+      
+    } else {
+      // Password
+      connect(_socket, SIGNAL(readyRead()), SLOT(onPasswordRead()));
+      ba = QByteArray("\r\nPassword? ");
+      ba += (unsigned char) 255; // IAC
+      ba += (unsigned char) 251; // WILL
+      ba += (unsigned char) 1;   // OPT_ECHO
+      sendToSocket(ba);
+    
+      // Password Timeout
+      _timer = new QTimer(this);
+      _timer->setSingleShot(true);
+      connect(_timer, SIGNAL(timeout()), SLOT(onTimeout()));
+      _timer->start(30 * 1000); // 30 seconds
+
+      _state = PROXY_AUTHENTICATING;
+    }
   }
 }
 

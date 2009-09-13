@@ -3,6 +3,7 @@
 
 #include "MClientPlugin.h"
 
+class PluginSession;
 class EventHandler;
 
 class MumeXML : public MClientPlugin {
@@ -14,10 +15,8 @@ class MumeXML : public MClientPlugin {
 
         // From MClientFilterPlugin
         void configure();
-        bool loadSettings();
-        bool saveSettings() const;
-        bool startSession(QString s);
-        bool stopSession(QString s);
+        bool startSession(PluginSession *ps);
+        bool stopSession(PluginSession *ps);
 
 	MClientEventHandler* getEventHandler(QString s);
 

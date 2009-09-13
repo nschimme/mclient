@@ -34,24 +34,16 @@ void SimpleDisplay::configure() {
 }
 
 
-bool SimpleDisplay::loadSettings() {
- return true;
-}
-
-        
-bool SimpleDisplay::saveSettings() const {
-  return true;
-}
-
-
-bool SimpleDisplay::startSession(QString s) {
+bool SimpleDisplay::startSession(PluginSession *ps) {
+  QString s = ps->session();
   qDebug() << "* starting SimpleDisplay for session" << s;
-  _eventHandlers[s] = new EventHandler;
+  _eventHandlers[s] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool SimpleDisplay::stopSession(QString s) {
+bool SimpleDisplay::stopSession(PluginSession *ps) {
+  QString s = ps->session();
   qDebug() << "* removed Simple DisplayWidget for session" << s << this;
   delete _eventHandlers[s];
   return true;

@@ -13,7 +13,8 @@
 #include "MapperManager.h"
 #include "mapwindow.h" // for grabbing the QWidget
 
-EventHandler::EventHandler(QWidget* parent) : MClientDisplayHandler(parent) {
+EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+  : MClientDisplayHandler(ps, mp) {
   // Allowable Display Locations
   SET(_displayLocations, DL_FLOAT);
 }
@@ -36,34 +37,36 @@ void EventHandler::customEvent(QEvent *e) {
     
     if (me->dataTypes().contains("XMLAll")) {
       
+      bool display = true;
       if (me->dataTypes().contains("XMLExits")) {
 	emit exits(me->payload()->toString());
-	
-      } else {
-	// Is it one of these tags?
-	if (me->dataTypes().contains("XMLNone")) {
-	  emit mudOutput(me->payload()->toString());
+	display = false;
+
+      } else if (me->dataTypes().contains("XMLNone")) {
+	emit mudOutput(me->payload()->toString());
 	  
-	} else if (me->dataTypes().contains("XMLName")) {
-	  emit name(me->payload()->toString());
+      } else if (me->dataTypes().contains("XMLName")) {
+	emit name(me->payload()->toString());
+
+      } else if (me->dataTypes().contains("XMLDescription")) {
+	emit description(me->payload()->toString());
+	display = false;
+
+      } else if (me->dataTypes().contains("XMLDynamicDescription")) {
+	emit dynamicDescription(me->payload()->toString());
 	  
-	} else if (me->dataTypes().contains("XMLDescription")) {
-	  emit description(me->payload()->toString());
+      } else if (me->dataTypes().contains("XMLPrompt")) {
+	emit prompt(me->payload()->toString());
 	  
-	} else if (me->dataTypes().contains("XMLDynamicDescription")) {
-	  emit dynamicDescription(me->payload()->toString());
+      } else if (me->dataTypes().contains("XMLMove")) {
+	emit move(me->payload()->toString());
 	  
-	} else if (me->dataTypes().contains("XMLPrompt")) {
-	  emit prompt(me->payload()->toString());
-	  
-	} else if (me->dataTypes().contains("XMLMove")) {
-	  emit move(me->payload()->toString());
-	  
-	} else if (me->dataTypes().contains("XMLTerrain")) {
-	  emit terrain(me->payload()->toString());
-	  qDebug() << "! MMapperPlugin got XMLTerrain, is this needed?";
-	}
-      
+      } else if (me->dataTypes().contains("XMLTerrain")) {
+	emit terrain(me->payload()->toString());
+       
+      }  
+
+      if (display) {
 	// These tags get forwarded to the CommandProcessor
 	MClientEvent* nme = new MClientEvent(*me);
 	QCoreApplication::postEvent(_pluginSession->
@@ -114,7 +117,7 @@ void EventHandler::displayMessage(const QByteArray& message) {
 }
 
 
-void EventHandler::log(const QString& message, const QString& s) {
+void EventHandler::log(const QString& s, const QString& message) {
   qDebug() << "* MMapperPlugin[" << s << "]: " << message;
 }
 

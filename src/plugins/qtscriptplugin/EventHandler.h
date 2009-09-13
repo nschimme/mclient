@@ -10,7 +10,7 @@ class EventHandler : public MClientEventHandler {
     Q_OBJECT
     
     public:
-        EventHandler(QObject* parent=0);
+        EventHandler(PluginSession *ps, MClientPlugin *mp);
         ~EventHandler();
 
         void customEvent(QEvent* e);

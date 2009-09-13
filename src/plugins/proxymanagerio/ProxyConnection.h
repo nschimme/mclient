@@ -14,7 +14,7 @@ class ProxyConnection : public QObject {
   Q_OBJECT
 
   public:
-        ProxyConnection(int, QObject *parent=0);
+        ProxyConnection(int, ProxyServer *);
         ~ProxyConnection();
 
 	const QString& peerAddress() const { return _peerAddress; }

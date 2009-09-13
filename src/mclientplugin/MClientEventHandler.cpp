@@ -2,9 +2,14 @@
 
 #include "PluginManager.h"
 #include "PluginSession.h"
+
+#include "MClientPlugin.h"
+
 #include "MClientEvent.h"
 #include "MClientEngineEvent.h"
 #include "MClientEventData.h"
+
+#include "ConfigEntry.h"
 
 #include <QApplication>
 #include <QEvent>
@@ -13,7 +18,11 @@
 #include <QVariant>
 #include <QDebug>
 
-MClientEventHandler::MClientEventHandler(QObject* parent) : QObject(parent) {
+MClientEventHandler::MClientEventHandler(PluginSession *ps, MClientPlugin *mp)
+  : QObject(mp), _pluginSession(ps), _plugin(mp) {
+
+  // Retrieve the ConfigEntry
+  _config = _pluginSession->retrievePluginSettings(_plugin->shortName());
 }
 
 
@@ -39,12 +48,6 @@ void MClientEventHandler::postManager(QVariant* payload, QStringList tags,
 }
 
 
-// Receive the PluginSession reference upon load
-void MClientEventHandler::setPluginSession(PluginSession *ps) {
-  _pluginSession = ps;
-}
-
-
 // Handles MClientEngineEvent
 void MClientEventHandler::engineEvent(QEvent *e) {
   MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
@@ -59,3 +62,11 @@ void MClientEventHandler::engineEvent(QEvent *e) {
 const MenuData& MClientEventHandler::createMenus() {
   return _menus;
 }
+
+
+/*
+bool MClientEventHandler::loadSettings(const QHash<QString, QVariant> &hash) {
+  _settings = hash;
+}
+*/
+

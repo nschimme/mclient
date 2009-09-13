@@ -2,8 +2,10 @@
 #include <QDebug>
 
 #include "MultiLineInput.h"
+
 #include "EventHandler.h"
 #include "CommandEntry.h"
+#include "PluginSession.h"
 
 Q_EXPORT_PLUGIN2(multilineinput, MultiLineInput)
 
@@ -41,26 +43,16 @@ void MultiLineInput::configure() {
 }
 
 
-bool MultiLineInput::loadSettings() {
-
-  return true;
-}
-
-        
-bool MultiLineInput::saveSettings() const {
+bool MultiLineInput::startSession(PluginSession *ps) {
+  _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool MultiLineInput::startSession(QString s) {
-  _eventHandlers[s] = new EventHandler;
-  return true;
-}
-
-
-bool MultiLineInput::stopSession(QString s) {
-  qDebug() << "* removed MultiLineInput InputWidget for session" << s;
-  delete _eventHandlers[s];
+bool MultiLineInput::stopSession(PluginSession *ps) {
+  qDebug() << "* removed MultiLineInput InputWidget for session"
+	   << ps->session();
+  delete _eventHandlers[ps->session()];
   return true;
 }
 

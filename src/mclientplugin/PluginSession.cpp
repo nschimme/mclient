@@ -12,6 +12,7 @@
 
 #include "MClientPluginInterface.h"
 #include "PluginEntry.h"
+#include "ConfigEntry.h"
 
 #include "MClientEventHandler.h"
 
@@ -37,10 +38,11 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
   getManager()->getConfig()->readPluginSettings(_session, "alias");
   getManager()->getConfig()->readPluginSettings(_session, "action");
   _aliasManager->loadSettings(*getManager()->
-			      getConfig()->pluginSettings(_session, "alias"));
+			      getConfig()->
+			      pluginSettings(_session, "alias")->hash());
   _actionManager->loadSettings(*getManager()->
 			       getConfig()->
-			       pluginSettings(_session, "action"));
+			       pluginSettings(_session, "action")->hash());
 
   // Create the command processor
   _commandProcessor = new CommandProcessor(this);
@@ -88,8 +90,8 @@ void PluginSession::run() {
 
 void PluginSession::loadAllPlugins() {
   // Get the needed plugins for this profile
-  QHash<QString, QVariant> *hash
-    = getManager()->getConfig()->profileSettings(_session);
+  SettingsHash *hash
+    = getManager()->getConfig()->profileSettings(_session)->hash();
 
   QStringList pluginsToLoad;
   int pluginsSize = hash->value("profile/plugins/size", 0).toInt();
@@ -245,17 +247,11 @@ void PluginSession::startSession() {
     
     if (iPlugin) {      
       // Start the sessions within the thread
-      iPlugin->startSession(_session);
+      iPlugin->startSession(this);
       
       // Receive the event handler
       MClientEventHandler* eventHandler = iPlugin->getEventHandler(_session);
 
-      // The plugin will need PluginSession's reference to send events
-      eventHandler->setPluginSession(this);
-
-      // Each plugin takes care of its own settings
-      iPlugin->loadSettings();
-      
       // Insert datatypes this plugin wants into hash
       if(!iPlugin->receivesDataTypes().isEmpty()) {
 	/*
@@ -283,8 +279,9 @@ void PluginSession::stopSession() {
     MClientPluginInterface *pi
       = qobject_cast<MClientPluginInterface*>(pl->instance());
     if (pi) {
-      pi->saveSettings();
-      pi->stopSession(_session);
+      // TODO
+      //pi->saveSettings();
+      pi->stopSession(this);
     }
   }
 
@@ -351,4 +348,9 @@ void PluginSession::customEvent(QEvent* e) {
       qWarning() << "! No plugins accepted data types" << me->dataTypes();
     
   }
+}
+
+
+ConfigEntry* PluginSession::retrievePluginSettings(const QString &pluginName) const {
+  return _pluginManager->getConfig()->pluginSettings(_session, pluginName);
 }

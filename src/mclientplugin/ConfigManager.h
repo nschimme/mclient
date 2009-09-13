@@ -11,8 +11,12 @@ bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map);
 bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map);
 bool sortXmlElements(const QString &s1, const QString &s2);
 
+class ConfigEntry;
 class QAbstractTableModel;
 class ConfigModel;
+
+typedef QHash<QString, QVariant> SettingsHash;
+typedef QHash<QString, ConfigEntry*> ConfigEntryHash;
 
 class ConfigManager : public QObject {
     Q_OBJECT
@@ -24,22 +28,22 @@ class ConfigManager : public QObject {
         // General app-level settings
         bool readApplicationSettings();
         bool writeApplicationSettings();
-	QHash<QString, QVariant>* applicationSettings() {
+	SettingsHash* applicationSettings() {
 	  return _appSettings;
 	}
 
 	// Profile settings
 	bool readProfileSettings(const QString &dirName);
 	bool writeProfileSettings(const QString &profileName);
-	QHash<QString, QVariant>* profileSettings(const QString &profileName) {
+	ConfigEntry* profileSettings(const QString &profileName) {
 	  return _profileSettings[profileName];
 	}
 
         // Take care of plugin settings that are stored in xml
 	bool readPluginSettings(const QString&, const QString&);
 	bool writePluginSettings(const QString&, const QString&);
-	QHash<QString, QVariant>* pluginSettings(const QString &profileName,
-						 const QString &pluginName) {
+	ConfigEntry* pluginSettings(const QString &profileName,
+				    const QString &pluginName) {
 	  return _pluginSettings[profileName]->value(pluginName);
 	}
 
@@ -72,19 +76,13 @@ class ConfigManager : public QObject {
         QString _pluginPath;
 
 	// Application's settings
-	QHash<QString, QVariant> *_appSettings;
+	SettingsHash *_appSettings;
 
 	// Profile's settings
-	QHash<QString, // profile
-	  QHash<QString, QVariant>* // settings
-	  > _profileSettings;
+	ConfigEntryHash _profileSettings;
 	
 	// Hash of each profile's plugin settings
-	QHash<QString, // profile
-	  QHash<QString, // plugin
-	    QHash<QString, QVariant>* // settings
-	  >*
-	> _pluginSettings;
+	QHash<QString, ConfigEntryHash*> _pluginSettings;
 
 	ConfigModel *_model;
 };

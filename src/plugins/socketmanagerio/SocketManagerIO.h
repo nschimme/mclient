@@ -8,12 +8,8 @@
 #include <QSettings>
 
 class SocketManagerIOConfig;
-class SocketReader;
 class EventHandler;
-
-class QByteArray;
 class QEvent;
-class QString;
 
 class SocketManagerIO : public MClientPlugin {
     Q_OBJECT
@@ -24,21 +20,16 @@ class SocketManagerIO : public MClientPlugin {
 
         // Plugin members
         void configure();
-        bool loadSettings();
-        bool saveSettings() const;
-        bool startSession(QString s);
-        bool stopSession(QString s);
+        bool startSession(PluginSession *ps);
+        bool stopSession(PluginSession *ps);
 
 	MClientEventHandler* getEventHandler(QString s);
 
     private:
-        QHash<QString, QPointer<SocketReader> > _socketReaders;
 	QHash<QString, QPointer<EventHandler> > _eventHandlers;
 
-	QHash<QString, QString> *_settings;
         QPointer<SocketManagerIOConfig> _configWidget;
 
 };
-
 
 #endif /* SOCKETMANAGERIO_H */

@@ -1,20 +1,15 @@
 #include "SocketReader.h"
-#include "SocketManagerIO.h"
 
 #include <QMetaType>
 #include <QDebug>
 #include <QTcpSocket>
 
-SocketReader::SocketReader(const QString &s, SocketManagerIO *sm,
-			   QObject *parent) 
-    : QThread(parent) { 
+SocketReader::SocketReader(const QString s, QObject *parent)
+  : QThread(parent), _session(s) { 
   qRegisterMetaType<QAbstractSocket::SocketError>
     ("QAbstractSocket::SocketError");
-
-    _session = s;
-    _sm = sm;
-    
-    _proxy.setType(QNetworkProxy::NoProxy);
+  
+  _proxy.setType(QNetworkProxy::NoProxy);
 }
 
 
@@ -83,7 +78,6 @@ void SocketReader::run() {
 	    SLOT(onError(QAbstractSocket::SocketError))); 
     
     
-    qDebug() << "* SocketManagerIO thread:" << _sm->thread();
     qDebug() << "* SocketReader thread:" << this->thread();
     qDebug() << "* Socket thread:" << _socket->thread();
    

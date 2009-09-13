@@ -5,12 +5,13 @@
 
 class QEvent;
 class ClientTextEdit;
+class PluginSession;
 
 class EventHandler : public MClientDisplayHandler {
     Q_OBJECT
     
     public:
-        EventHandler(QWidget* parent=0);
+         EventHandler(PluginSession *ps, MClientPlugin *mp);
         ~EventHandler();
 
         void customEvent(QEvent* e);

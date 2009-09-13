@@ -68,7 +68,7 @@ bool AbstractCommandTask::processStack() {
     if (_stack++ > 100) {
       _queue.clear();
       qWarning() << "! Stack overflow!";
-      displayData("#error: stack overflow.\n");
+      displayData("#error: stack overflow.\r\n");
       return false;
     }
 
@@ -95,14 +95,14 @@ bool AbstractCommandTask::processStack() {
       parseArguments(current);
       qDebug() << "* writing" << current << "to socket";
 
-      QVariant* qv = new QVariant(current + "\n");
+      QVariant* qv = new QVariant(current + "\r\n");
       QStringList sl("SocketWriteData");
       postSession(qv, sl);
       
     }
     else {
       displayData("#no open connections. "
-		  "Use '\033[1m#connect\033[0m' to open a connection.\n");
+		  "Use '\033[1m#connect\033[0m' to open a connection.\r\n");
 
     }
   }
@@ -114,7 +114,7 @@ const QString& AbstractCommandTask::parseArguments(QString &arguments,
 						   CommandEntryType type) {
   if (type == CMD_ONE_LINE) {
     int lineEnd;
-    if ((lineEnd = arguments.indexOf("\n")) != -1) {
+    if ((lineEnd = arguments.indexOf("\r\n")) != -1) {
       _queue.append(arguments.mid(lineEnd + 1));
       arguments.truncate(lineEnd);
       qDebug() << "arguments truncated to" << arguments << _queue;
@@ -227,20 +227,21 @@ bool AbstractCommandTask::findCommand(const QString &rawCommand,
 	  /*
 	    if (arguments.size() == 1 && arguments.at(0) != ' ') {
 	    _delim = arguments.at(0);
-	    displayData("#delimeter is now " + arguments + "\n");
+	    displayData("#delimeter is now " + arguments + "\r\n");
 	    } else
-	    displayData("#not allowed\n");
+	    displayData("#not allowed\r\n");
 	  */
 
 	} else if (command == "qui") {
-	  displayData("#you have to write '#quit' - no less, to quit!\n");
+	  displayData("#you have to write '#quit' - no less, to quit!\r\n");
 	  
 	} else if (command == "quit") {
 	  _commandProcessor->emitQuit();
 
 	} else if (command == "version") {
-	  QString output = QString("mClient %1, \251 2009 by Jahara\n"
-				   "%2")
+	  QString output = QString("mClient %1, \251 2009 by Jahara\r\n"
+				   "%2"
+				   "%3")
 	    .arg( // %1
 #ifdef SVN_REVISION
 		 "SVN Revision " + QString::number(SVN_REVISION)
@@ -255,17 +256,22 @@ bool AbstractCommandTask::findCommand(const QString &rawCommand,
 	    .arg( // %2
 
 #if __STDC__
-		 "Compiled " __TIME__ " " __DATE__ "\n"
+		 "Compiled " __TIME__ " " __DATE__ "\r\n"
 #else
 		 ""
 #endif
+		 )
+	    .arg( // %3
+		 tr("Based on Qt %1 (%2 bit)\r\n")
+		 .arg(QLatin1String(QT_VERSION_STR),
+		      QString::number(QSysInfo::WordSize))
 		 );
 	  displayData(output);
 	  
 	} else if (command == "help") {
-	  QString output = "\033[1;4m#commands available:\033[0m\n";
+	  QString output = "\033[1;4m#commands available:\033[0m\r\n";
 	  for (i = map.constBegin(); i != map.constEnd(); ++i) {
-	    output += QString("\033[1m#%1\033[0m%2\n")
+	    output += QString("\033[1m#%1\033[0m%2\r\n")
 	      .arg(i.key(), -15, ' ') // pad 15 characters
 	      .arg(i.value()->help());
 	  }
@@ -308,7 +314,7 @@ bool AbstractCommandTask::findCommand(const QString &rawCommand,
 
   // Unknown command!
   parseArguments(arguments);
-  displayData(QString("#unknown command \"" + command + "\"\n"));
+  displayData(QString("#unknown command \"" + command + "\"\r\n"));
   return false;
 
 }
@@ -322,16 +328,16 @@ bool AbstractCommandTask::handleAliasCommand(const QString &arguments) {
     
     QString output;
     if (aliases->count() == 0)
-      output = "#no aliases are defined.\n";
+      output = "#no aliases are defined.\r\n";
 
     else {
-      output = QString("#the following alias%1 defined:\n").arg(aliases->count()==1?" is":"es are");
+      output = QString("#the following alias%1 defined:\r\n").arg(aliases->count()==1?" is":"es are");
 
       // Attach the aliases
       QHashIterator<QString, Alias*> i(aliases->getHash());
       while (i.hasNext()) {
 	i.next();
-	output += QString("#alias %1=%2\n").arg(i.key(),
+	output += QString("#alias %1=%2\r\n").arg(i.key(),
 						i.value()->command);
       }
     }
@@ -360,12 +366,12 @@ bool AbstractCommandTask::handleAliasCommand(const QString &arguments) {
     Alias *alias = aliases->match(name);
     if (alias) {
       // Display alias
-      displayData(QString("#alias %1=%2\n").arg(alias->name,
+      displayData(QString("#alias %1=%2\r\n").arg(alias->name,
 						alias->command));
 
     } else {
       // Error, no alias exists
-      displayData("#unknown alias, cannot show: \""+name+"\"\n");
+      displayData("#unknown alias, cannot show: \""+name+"\"\r\n");
       return false;
     }
 
@@ -376,11 +382,11 @@ bool AbstractCommandTask::handleAliasCommand(const QString &arguments) {
     if (alias) {
       // Delete alias
       aliases->remove(name);
-      displayData("#deleting alias: "+cmd.at(0)+"\n");
+      displayData("#deleting alias: "+cmd.at(0)+"\r\n");
 
     } else {
       // Error, no alias exists
-      displayData("#unknown alias, cannot delete: \""+name+"\"\n");
+      displayData("#unknown alias, cannot delete: \""+name+"\"\r\n");
       return false;
 
     }
@@ -390,7 +396,7 @@ bool AbstractCommandTask::handleAliasCommand(const QString &arguments) {
     aliases->add(name, command, group);
     if (_verbose)
       displayData("#new alias in group '"
-		  +(group.isEmpty()?"*":group)+"': "+name+"="+command+"\n");
+		  +(group.isEmpty()?"*":group)+"': "+name+"="+command+"\r\n");
 
   }
 
@@ -425,7 +431,7 @@ bool AbstractCommandTask::findAlias(const QString &name,
     }
     qDebug() << "* alias command is:" << newCommand;
     
-    displayData("[" + newCommand + "]\n");
+    displayData("[" + newCommand + "]\r\n");
     parseUserInput(newCommand);
     return true;
 
@@ -450,7 +456,7 @@ bool AbstractCommandTask::handleActionCommand(const QString &arguments) {
       
       QHash<QString, Action*>::const_iterator j;
       for (j = i.value()->constBegin(); j != i.value()->constEnd(); ++j) {
-	QString out = QString("#action >%1@%2=%3 {%4} {%5}\n")
+	QString out = QString("#action >%1@%2=%3 {%4} {%5}\r\n")
 	  .arg(j.value()->label,
 	       j.value()->pattern.pattern(),
 	       j.value()->command,
@@ -464,9 +470,9 @@ bool AbstractCommandTask::handleActionCommand(const QString &arguments) {
 
     // Attach initial text:
     if (output.size() == 0)
-      output.prepend("#no actions are defined.\n");
+      output.prepend("#no actions are defined.\r\n");
     else
-      output.prepend(QString("#the following action%1 defined:\n").arg(output.size()==1?" is":"s are"));
+      output.prepend(QString("#the following action%1 defined:\r\n").arg(output.size()==1?" is":"s are"));
     
     // Display the string
     displayData(output.join(""));
@@ -498,7 +504,7 @@ bool AbstractCommandTask::handleActionCommand(const QString &arguments) {
     actions->add(label, pattern, command, tags, 0, active);
     qDebug() << "created action";
 
-    displayData("#new action \""+label+"\": "+label+"="+command+"\n");
+    displayData("#new action \""+label+"\": "+label+"="+command+"\r\n");
 
   }
   
@@ -522,9 +528,9 @@ bool AbstractCommandTask::findAction(const QString &pattern, QStringList tags) {
       switch (i) {
       case 0:
 	/*
-	if (pattern.contains("\n")) {
+	if (pattern.contains("\r\n")) {
 	  // Remove newlines from $0
-	  newCommand.replace(rx, captures[i].replace(QString("\n"),
+	  newCommand.replace(rx, captures[i].replace(QString("\r\n"),
 						     QString(" ")));
 	  continue;
 	}

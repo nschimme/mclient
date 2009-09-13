@@ -49,17 +49,11 @@ class MClientPlugin : public QObject, public MClientPluginInterface {
         // If so, we need to implement this
         virtual void configure()=0;
 
-        // Also, all plugins need to have the ability to load settings.
-        virtual bool loadSettings()=0;
-
-        // And also they need to save them.
-        virtual bool saveSettings() const=0;
-
         // Create objects local to one session
-        virtual bool startSession(QString s)=0;
+        virtual bool startSession(PluginSession *ps)=0;
 
         // Destroy objects local to one session
-        virtual bool stopSession(QString s)=0;
+        virtual bool stopSession(PluginSession *ps)=0;
 
 	// Set the plugin manager
 	void setPluginManager(PluginManager *pm);

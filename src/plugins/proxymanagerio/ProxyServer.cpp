@@ -10,8 +10,6 @@ ProxyServer::ProxyServer(EventHandler *eh, QObject *parent)
 
   // TODO: replace this with some configuration code
   _maxConnections = 5;
-  _port = 4243;
-  _password = "foo";
 
   setMaxPendingConnections(_maxConnections + 1); // Allow one more for
 						 // max connection info
@@ -65,14 +63,4 @@ void ProxyServer::connectProxyConnection(ProxyConnection *proxyConnection) {
   // Display information is sent to the socket
   connect(_eventHandler, SIGNAL(sendToSocket(const QByteArray &)),
 	  proxyConnection, SLOT(sendToSocket(const QByteArray &)));
-}
-
-
-void ProxyServer::port(const int port) {
-    _port = port;
-}
-
-
-const int& ProxyServer::port() const {
-    return _port;
 }

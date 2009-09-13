@@ -2,14 +2,16 @@
 #define EVENTHANDLER_H
 
 #include "MClientEventHandler.h"
+#include <QPointer>
 
 class QEvent;
+class SocketReader;
 
 class EventHandler : public MClientEventHandler {
     Q_OBJECT
     
     public:
-        EventHandler(QObject* parent=0);
+        EventHandler(PluginSession *ps, MClientPlugin *mp);
         ~EventHandler();
 
         void customEvent(QEvent* e);
@@ -33,7 +35,8 @@ public slots:
 
  private:
 	bool _openSocket;
-
+        QPointer<SocketReader> _socketReader;
+	
         void sendData(const QByteArray&);
 
 };

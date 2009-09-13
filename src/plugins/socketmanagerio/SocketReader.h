@@ -7,7 +7,6 @@
 #include <QNetworkProxy>
 #include <QString>
 
-class SocketManagerIO;
 class QNetworkProxy;
 class QTcpSocket;
 
@@ -15,7 +14,7 @@ class SocketReader : public QThread {
     Q_OBJECT
 
     public:        
-        SocketReader(const QString&, SocketManagerIO*, QObject* parent=0);
+        SocketReader(const QString session, QObject* parent=0);
         ~SocketReader();
 
         void port(const int);
@@ -45,10 +44,8 @@ public slots:
     private:
         QPointer<QTcpSocket> _socket;
         QNetworkProxy _proxy;
-        SocketManagerIO* _sm;
-        QString _session;
         
-        QString _host;
+        QString _host, _session;
         int _port;
         
 

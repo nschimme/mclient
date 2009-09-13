@@ -2,7 +2,10 @@
 #include <QVariant>
 
 #include "QtScriptPlugin.h"
+
 #include "EventHandler.h"
+
+#include "PluginSession.h"
 #include "CommandEntry.h"
 #include "ScriptEngine.h"
 
@@ -47,18 +50,9 @@ void QtScriptPlugin::configure() {
 }
 
 
-bool QtScriptPlugin::loadSettings() {
-  return true;
-}
-
-        
-bool QtScriptPlugin::saveSettings() const {
-  return true;
-}
-
-
-bool QtScriptPlugin::startSession(QString s) {
-  _eventHandlers[s] = new EventHandler;
+bool QtScriptPlugin::startSession(PluginSession *ps) {
+  QString s = ps->session();
+  _eventHandlers[s] = new EventHandler(ps, this);
   _scriptEngines[s] = new ScriptEngine;
 
   // Connect Signals/Slots
@@ -77,7 +71,8 @@ bool QtScriptPlugin::startSession(QString s) {
 }
 
 
-bool QtScriptPlugin::stopSession(QString s) {
+bool QtScriptPlugin::stopSession(PluginSession *ps) {
+  QString s = ps->session();
   _eventHandlers[s]->deleteLater();
   _scriptEngines[s]->deleteLater();
   return true;

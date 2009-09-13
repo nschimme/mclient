@@ -5,6 +5,7 @@
 #include <QPointer>
 #include "MClientPlugin.h"
 
+class PluginSession;
 class EventHandler;
 class ScriptEngine;
 
@@ -17,10 +18,8 @@ class QtScriptPlugin : public MClientPlugin {
 
         // Plugin members
         void configure();
-        bool loadSettings();
-        bool saveSettings() const;
-        bool startSession(QString s);
-        bool stopSession(QString s);
+        bool startSession(PluginSession *ps);
+        bool stopSession(PluginSession *ps);
 
 	MClientEventHandler* getEventHandler(QString s);
 

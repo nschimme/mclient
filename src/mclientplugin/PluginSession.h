@@ -16,6 +16,8 @@ class CommandProcessor;
 class ActionManager;
 class AliasManager;
 
+class ConfigEntry;
+
 class QApplication;
 class QEvent;
 class QPluginLoader;
@@ -43,6 +45,9 @@ class PluginSession : public QThread {
 
     const QString& session() const { return _session; }
     const PluginHash loadedPlugins() const { return _loadedPlugins; }
+
+    // For EventHandlers to easily receive the ConfigEntry
+    ConfigEntry* retrievePluginSettings(const QString &pluginName) const;
 
  protected:
     void run();

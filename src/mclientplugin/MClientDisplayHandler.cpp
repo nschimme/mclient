@@ -2,8 +2,9 @@
 
 #include <QEvent>
 
-MClientDisplayHandler::MClientDisplayHandler(QWidget* parent)
-  : MClientEventHandler(parent) {
+MClientDisplayHandler::MClientDisplayHandler(PluginSession *ps,
+					     MClientPlugin *mp)
+  : MClientEventHandler(ps, mp) {
   _displayLocations = 0;
 }
 

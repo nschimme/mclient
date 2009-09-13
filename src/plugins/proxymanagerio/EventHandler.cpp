@@ -10,9 +10,18 @@
 
 #include "PluginSession.h"
 #include "CommandProcessor.h"
+#include "ConfigEntry.h"
 
-EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
+EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+  : MClientEventHandler(ps, mp) {
   _proxyServer = new ProxyServer(this);
+
+  // Host settings
+  QString password = _config->value("config/password", "").toString();
+  int port = _config->value("config/port", "4243").toInt();
+
+  _proxyServer->password(password.toAscii());
+  _proxyServer->port(port);
 
   connect(_proxyServer, SIGNAL(displayMessage(const QString &)),
 	  SLOT(displayMessage(const QString &)));
@@ -79,7 +88,7 @@ bool EventHandler::proxyCommand(const QString &args) {
 
   if (args.isEmpty()) {
     unsigned int j = 1;
-    QString message("#\tIP\tConnection\n");
+    QString message("#\tIP\tConnection\r\n");
     ProxyConnections::const_iterator i = map.constBegin();
     while (i != map.constEnd()) {
       QString state;
@@ -94,7 +103,7 @@ bool EventHandler::proxyCommand(const QString &args) {
 	state = "Disconnected";
 	break;
       };
-      message += QString("%1\t%2\t%3\t%4\n")
+      message += QString("%1\t%2\t%3\t%4\r\n")
 	.arg(QString::number(j++))
 	.arg(i.value()->peerAddress())
 	.arg(i.key().toString())

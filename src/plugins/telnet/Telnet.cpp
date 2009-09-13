@@ -1,4 +1,6 @@
 #include "Telnet.h"
+
+#include "PluginSession.h"
 #include "EventHandler.h"
 
 Q_EXPORT_PLUGIN2(telnet, Telnet)
@@ -23,28 +25,18 @@ Telnet::~Telnet() {
 }
 
 
-bool Telnet::loadSettings() {
-  return true;
-}
-
-
-bool Telnet::saveSettings() const {
-  return true;
-}
-
-
 void Telnet::configure() {
 }
 
 
-bool Telnet::startSession(QString s) {
-  _eventHandlers[s] = new EventHandler;
+bool Telnet::startSession(PluginSession *ps) {
+  _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool Telnet::stopSession(QString s) {
-  delete _eventHandlers[s];
+bool Telnet::stopSession(PluginSession *ps) {
+  delete _eventHandlers[ps->session()];
   return true;
 }
 

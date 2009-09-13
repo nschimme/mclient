@@ -10,7 +10,8 @@
 #include "PluginSession.h"
 #include "CommandProcessor.h"
 
-EventHandler::EventHandler(QObject* parent) : MClientEventHandler(parent) {
+EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+  : MClientEventHandler(ps, mp) {
 }
 
 

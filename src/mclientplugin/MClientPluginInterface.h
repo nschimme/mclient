@@ -5,6 +5,7 @@
 #include <QHash>
 
 class PluginManager;
+class PluginSession;
 class MClientEventHandler;
 class CommandEntry;
 
@@ -40,20 +41,11 @@ class MClientPluginInterface {
         // If so, we need to implement this
         virtual void configure()=0;
 
-        // Also, all plugins need to have the ability to load settings.
-        virtual bool loadSettings()=0;
-
-        // And also they need to save them.
-        virtual bool saveSettings() const=0;
-
         // Create objects local to one session
-        virtual bool startSession(QString s)=0;
+        virtual bool startSession(PluginSession *ps)=0;
 
         // Destroy objects local to one session
-        virtual bool stopSession(QString s)=0;
-
-	// Post the plugin manager
-	virtual void setPluginManager(PluginManager *pm)=0;
+        virtual bool stopSession(PluginSession *ps)=0;
 
 	// Grab the event handler
 	virtual MClientEventHandler* getEventHandler(QString s)=0;
