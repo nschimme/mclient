@@ -17,7 +17,7 @@ MMapperPlugin::MMapperPlugin(QObject* parent)
     _description = "An implementation of MMapper as a plugin for mClient";
     //_dependencies.insert("commandmanager", 10);
     //_implemented.insert("socketmanager",10);
-    _receivesDataTypes << "XMLAll"
+    _receivesDataTypes << "XMLAll" << "XMLMove"
       /*
 		       << "XMLName" << "XMLDescription"
 		       << "XMLDynamicDescription" << "XMLExits" << "XMLPrompt"

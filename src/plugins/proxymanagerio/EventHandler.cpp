@@ -22,9 +22,7 @@ EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
 
   _proxyServer->password(password.toAscii());
   _proxyServer->port(port);
-
-  connect(_proxyServer, SIGNAL(displayMessage(const QString &)),
-	  SLOT(displayMessage(const QString &)));
+  _proxyServer->start();
 
   connect(this, SIGNAL(removeProxyConnection(ProxyConnection *)),
 	  _proxyServer, SLOT(removeProxyConnection(ProxyConnection *)));

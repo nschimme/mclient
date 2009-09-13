@@ -27,7 +27,9 @@ class ProxyServer : public QTcpServer {
         const int& port() const { return _port; }
         const QByteArray& password() const { return _password; }
 	
-	const ProxyConnections& getConnections() const { return _proxyConnections; }
+	const ProxyConnections& getConnections() const {
+	  return _proxyConnections;
+	}
 
 public slots:
         void removeProxyConnection(ProxyConnection *);

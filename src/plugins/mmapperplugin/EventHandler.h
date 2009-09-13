@@ -6,6 +6,8 @@
 class QEvent;
 class MapperManager;
 class PluginSession;
+class QAction;
+class QActionGroup;
 
 class EventHandler : public MClientDisplayHandler {
     Q_OBJECT
@@ -17,6 +19,8 @@ class EventHandler : public MClientDisplayHandler {
         void customEvent(QEvent* e);
 
 	QWidget* createWidget();
+
+	const MenuData& createMenus();
 
 public slots:
 	void displayMessage(const QByteArray &);
@@ -42,6 +46,57 @@ public slots:
 	
  private:
 	MapperManager *_mapper;
+
+	// Mapper actions
+    QAction *newAct;
+    QAction *openAct;
+    QAction *mergeAct;
+    QAction *reloadAct;
+    QAction *saveAct;
+    QAction *saveAsAct;
+    QAction *prevWindowAct;
+    QAction *nextWindowAct;
+    QAction *zoomInAct;
+    QAction *zoomOutAct;
+
+    QAction *layerUpAct;
+    QAction *layerDownAct;
+
+    QAction *modeConnectionSelectAct;
+    QAction *modeRoomSelectAct;
+    QAction *modeMoveSelectAct;
+    QAction *modeInfoMarkEditAct;
+
+    QAction *createRoomAct;
+    QAction *createConnectionAct;
+    QAction *createOnewayConnectionAct;
+
+    QAction *playModeAct;
+    QAction *mapModeAct;
+    QAction *offlineModeAct;
+
+    QActionGroup *mapModeActGroup;
+    QActionGroup *modeActGroup;
+    QActionGroup *roomActGroup;
+    QActionGroup *connectionActGroup;
+    QActionGroup *groupManagerGroup;
+
+    QAction *editRoomSelectionAct;
+    QAction *editConnectionSelectionAct;
+    QAction *deleteRoomSelectionAct;
+    QAction *deleteConnectionSelectionAct;
+
+    QAction *moveUpRoomSelectionAct;
+    QAction *moveDownRoomSelectionAct;
+    QAction *mergeUpRoomSelectionAct;
+    QAction *mergeDownRoomSelectionAct;
+    QAction *connectToNeighboursRoomSelectionAct;
+
+    QAction *findRoomsAct;
+
+    QAction *forceRoomAct;
+    QAction *releaseAllPathsAct;
+
 };
 
 

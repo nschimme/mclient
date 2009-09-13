@@ -153,15 +153,6 @@ void MainWindow::initDisplay(PluginSession *ps) {
       MClientEventHandler *eh = pi->getEventHandler(session);
 
       if (eh) {
-	// Create menus
-	MenuData menus = eh->createMenus();
-	if (!menus.isEmpty()) {
-	  qDebug() << "* Display found menus for plugin"
-		   << pi->shortName() << menus;
-	  
-          static_cast<SmartMenuBar*>(menuBar())->addMenu(menus);
-	}
-
 	// Create the widgets outside of the threads
         MClientDisplayHandler *dh = dynamic_cast<MClientDisplayHandler*>(eh);
 	if (dh) {
@@ -171,6 +162,15 @@ void MainWindow::initDisplay(PluginSession *ps) {
 	  widgetList << pair;
 	  
         } else qDebug() << "! Display unable to cast DisplayHandler" << eh;
+
+	// Create menus
+	MenuData menus = eh->createMenus();
+	if (!menus.isEmpty()) {
+	  qDebug() << "* Display found menus for plugin"
+		   << pi->shortName() << menus;
+	  
+          static_cast<SmartMenuBar*>(menuBar())->addMenu(menus);
+	}
 
       } else qDebug() << "! Display unable to cast EventHandler" << pi;
 

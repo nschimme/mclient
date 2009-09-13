@@ -18,15 +18,15 @@ ProxyManagerIO::ProxyManagerIO(QObject* parent) : MClientPlugin(parent) {
   // _deliversDataTypes << "SendToUser";
   _configurable = false;
 
-    // Command: proxy
-    CommandEntry *proxycmd = new CommandEntry();
-    proxycmd->pluginName(shortName());
-    proxycmd->command("proxy");
-    proxycmd->help("list/kill proxy connections");
-    proxycmd->dataType("ProxyCommand");
-
-    // For registering commands
-    _commandEntries << proxycmd;
+  // Command: proxy
+  CommandEntry *proxycmd = new CommandEntry();
+  proxycmd->pluginName(shortName());
+  proxycmd->command("proxy");
+  proxycmd->help("list/kill proxy connections");
+  proxycmd->dataType("ProxyCommand");
+  
+  // For registering commands
+  _commandEntries << proxycmd;
 
 }
 

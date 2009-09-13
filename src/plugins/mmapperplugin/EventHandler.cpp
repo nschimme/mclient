@@ -12,6 +12,12 @@
 
 #include "MapperManager.h"
 #include "mapwindow.h" // for grabbing the QWidget
+#include "mmapper2pathmachine.h" // for menus
+#include "mapcanvas.h" // for menus
+
+// for menus
+#include "SmartMenu.h"
+#include <QAction>
 
 EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
   : MClientDisplayHandler(ps, mp) {
@@ -57,10 +63,7 @@ void EventHandler::customEvent(QEvent *e) {
 	  
       } else if (me->dataTypes().contains("XMLPrompt")) {
 	emit prompt(me->payload()->toString());
-	  
-      } else if (me->dataTypes().contains("XMLMove")) {
-	emit move(me->payload()->toString());
-	  
+	  	  
       } else if (me->dataTypes().contains("XMLTerrain")) {
 	emit terrain(me->payload()->toString());
        
@@ -72,10 +75,13 @@ void EventHandler::customEvent(QEvent *e) {
 	QCoreApplication::postEvent(_pluginSession->
 				    getCommand()->
 				    getAction(), nme);
-	qDebug() << "* forwarding to CommandProcessor";
+	//qDebug() << "* forwarding to CommandProcessor";
 	
       }
 
+    } else if (me->dataTypes().contains("XMLMove")) {
+      emit move(me->payload()->toString());
+    
     }
     else if(me->dataTypes().contains("MMapperInput")) {
       emit userInput(me->payload()->toString());
@@ -132,4 +138,231 @@ void EventHandler::postCommand(const QByteArray &input) {
   QCoreApplication::postEvent(_pluginSession->getCommand()->getUserInput(),
 			      me);
 
+}
+
+
+const MenuData& EventHandler::createMenus() {
+  newAct = new QAction(QIcon(":/icons/new.png"), tr("&New"), this);
+  newAct->setShortcut(tr("Ctrl+N"));
+  newAct->setStatusTip(tr("Create a new file"));
+  connect(newAct, SIGNAL(triggered()), _mapper, SLOT(newFile()));
+
+  openAct = new QAction(QIcon(":/icons/open.png"), tr("&Open..."), this);
+  openAct->setShortcut(tr("Ctrl+O"));
+  openAct->setStatusTip(tr("Open an existing file"));
+  connect(openAct, SIGNAL(triggered()), _mapper, SLOT(open()));
+
+  reloadAct = new QAction(QIcon(":/icons/reload.png"), tr("&Reload"), this);
+  reloadAct->setShortcut(tr("Ctrl+R"));
+  reloadAct->setStatusTip(tr("Reload the current map"));
+  connect(reloadAct, SIGNAL(triggered()), _mapper, SLOT(reload()));
+
+  saveAct = new QAction(QIcon(":/icons/save.png"), tr("&Save"), this);
+  saveAct->setShortcut(tr("Ctrl+S"));
+  saveAct->setStatusTip(tr("Save the document to disk"));
+  connect(saveAct, SIGNAL(triggered()), _mapper, SLOT(save()));
+
+  saveAsAct = new QAction(tr("Save &As..."), this);
+  saveAsAct->setStatusTip(tr("Save the document under a new name"));
+  connect(saveAsAct, SIGNAL(triggered()), _mapper, SLOT(saveAs()));
+
+  mergeAct = new QAction(QIcon(":/icons/merge.png"), tr("&Merge..."), this);
+  //mergeAct->setShortcut(tr("Ctrl+M"));
+  mergeAct->setStatusTip(tr("Merge an existing file into current map"));
+  connect(mergeAct, SIGNAL(triggered()), _mapper, SLOT(merge()));
+
+  zoomInAct = new QAction(QIcon(":/icons/viewmag+.png"), tr("Zoom In"), this);
+
+  zoomInAct->setStatusTip(tr("Zooms In current map"));
+  zoomOutAct = new QAction(QIcon(":/icons/viewmag-.png"), tr("Zoom Out"), this);
+  zoomOutAct->setStatusTip(tr("Zooms Out current map"));
+
+  layerUpAct = new QAction(QIcon(":/icons/layerup.png"), tr("Layer Up"), this);
+  layerUpAct->setStatusTip(tr("Layer Up"));
+  connect(layerUpAct, SIGNAL(triggered()), _mapper, SLOT(onLayerUp()));
+  layerDownAct = new QAction(QIcon(":/icons/layerdown.png"), tr("Layer Down"), this);
+  layerDownAct->setStatusTip(tr("Layer Down"));
+  connect(layerDownAct, SIGNAL(triggered()), _mapper, SLOT(onLayerDown()));
+
+  modeConnectionSelectAct = new QAction(QIcon(":/icons/connectionselection.png"), tr("Select Connection"), this);
+  modeConnectionSelectAct->setStatusTip(tr("Select Connection"));
+  modeConnectionSelectAct->setCheckable(true);
+  connect(modeConnectionSelectAct, SIGNAL(triggered()), _mapper, SLOT(onModeConnectionSelect()));
+  modeRoomSelectAct = new QAction(QIcon(":/icons/roomselection.png"), tr("Select Rooms"), this);
+  modeRoomSelectAct->setStatusTip(tr("Select Rooms"));
+  modeRoomSelectAct->setCheckable(true);
+  connect(modeRoomSelectAct, SIGNAL(triggered()), _mapper, SLOT(onModeRoomSelect()));
+  modeMoveSelectAct = new QAction(QIcon(":/icons/mapmove.png"), tr("Move map"), this);
+  modeMoveSelectAct->setStatusTip(tr("Move Map"));
+  modeMoveSelectAct->setCheckable(true);
+  connect(modeMoveSelectAct, SIGNAL(triggered()), _mapper, SLOT(onModeMoveSelect()));
+  modeInfoMarkEditAct = new QAction(QIcon(":/icons/infomarksedit.png"), tr("Edit Info Marks"), this);
+  modeInfoMarkEditAct->setStatusTip(tr("Edit Info Marks"));
+  modeInfoMarkEditAct->setCheckable(true);
+  connect(modeInfoMarkEditAct, SIGNAL(triggered()), _mapper, SLOT(onModeInfoMarkEdit()));
+
+  createRoomAct = new QAction(QIcon(":/icons/roomcreate.png"), tr("Create New Rooms"), this);
+  createRoomAct->setStatusTip(tr("Create New Rooms"));
+  createRoomAct->setCheckable(true);
+  connect(createRoomAct, SIGNAL(triggered()), _mapper, SLOT(onModeCreateRoomSelect()));
+
+  createConnectionAct = new QAction(QIcon(":/icons/connectioncreate.png"), tr("Create New Connection"), this);
+  createConnectionAct->setStatusTip(tr("Create New Connection"));
+  createConnectionAct->setCheckable(true);
+  connect(createConnectionAct, SIGNAL(triggered()), _mapper, SLOT(onModeCreateConnectionSelect()));
+
+  createOnewayConnectionAct = new QAction(QIcon(":/icons/onewayconnectioncreate.png"), tr("Create New Oneway Connection"), this);
+  createOnewayConnectionAct->setStatusTip(tr("Create New Oneway Connection"));
+  createOnewayConnectionAct->setCheckable(true);
+  connect(createOnewayConnectionAct, SIGNAL(triggered()), _mapper, SLOT(onModeCreateOnewayConnectionSelect()));
+
+  modeActGroup = new QActionGroup(this);
+  modeActGroup->setExclusive(true);
+  modeActGroup->addAction(modeMoveSelectAct);
+  modeActGroup->addAction(modeRoomSelectAct);
+  modeActGroup->addAction(modeConnectionSelectAct);
+  modeActGroup->addAction(createRoomAct);
+  modeActGroup->addAction(createConnectionAct);
+  modeActGroup->addAction(createOnewayConnectionAct);
+  modeActGroup->addAction(modeInfoMarkEditAct);
+  modeMoveSelectAct->setChecked(true);
+
+  editRoomSelectionAct = new QAction(QIcon(":/icons/roomedit.png"), tr("Edit Selected Rooms"), this);
+  editRoomSelectionAct->setStatusTip(tr("Edit Selected Rooms"));
+  connect(editRoomSelectionAct, SIGNAL(triggered()), _mapper, SLOT(onEditRoomSelection()));
+
+  deleteRoomSelectionAct = new QAction(QIcon(":/icons/roomdelete.png"), tr("Delete Selected Rooms"), this);
+  deleteRoomSelectionAct->setStatusTip(tr("Delete Selected Rooms"));
+  connect(deleteRoomSelectionAct, SIGNAL(triggered()), _mapper, SLOT(onDeleteRoomSelection()));
+
+  moveUpRoomSelectionAct = new QAction(QIcon(":/icons/roommoveup.png"), tr("Move Up Selected Rooms"), this);
+  moveUpRoomSelectionAct->setStatusTip(tr("Move Up Selected Rooms"));
+  connect(moveUpRoomSelectionAct, SIGNAL(triggered()), _mapper, SLOT(onMoveUpRoomSelection()));
+  moveDownRoomSelectionAct = new QAction(QIcon(":/icons/roommovedown.png"), tr("Move Down Selected Rooms"), this);
+  moveDownRoomSelectionAct->setStatusTip(tr("Move Down Selected Rooms"));
+  connect(moveDownRoomSelectionAct, SIGNAL(triggered()), _mapper, SLOT(onMoveDownRoomSelection()));
+  mergeUpRoomSelectionAct = new QAction(QIcon(":/icons/roommergeup.png"), tr("Merge Up Selected Rooms"), this);
+  mergeUpRoomSelectionAct->setStatusTip(tr("Merge Up Selected Rooms"));
+  connect(mergeUpRoomSelectionAct, SIGNAL(triggered()), _mapper, SLOT(onMergeUpRoomSelection()));
+  mergeDownRoomSelectionAct = new QAction(QIcon(":/icons/roommergedown.png"), tr("Merge Down Selected Rooms"), this);
+  mergeDownRoomSelectionAct->setStatusTip(tr("Merge Down Selected Rooms"));
+  connect(mergeDownRoomSelectionAct, SIGNAL(triggered()), _mapper, SLOT(onMergeDownRoomSelection()));
+  connectToNeighboursRoomSelectionAct = new QAction(QIcon(":/icons/roomconnecttoneighbours.png"), tr("Connect room(s) to its neighbour rooms"), this);
+  connectToNeighboursRoomSelectionAct->setStatusTip(tr("Connect room(s) to its neighbour rooms"));
+  connect(connectToNeighboursRoomSelectionAct, SIGNAL(triggered()), _mapper, SLOT(onConnectToNeighboursRoomSelection()));
+
+  findRoomsAct = new QAction(QIcon(":/icons/roomfind.png"), tr("&Find Rooms"), this);
+  findRoomsAct->setStatusTip(tr("Find Matching Rooms"));
+  findRoomsAct->setShortcut(tr("Ctrl+F"));
+  connect(findRoomsAct, SIGNAL(triggered()), _mapper, SLOT(onFindRoom()));
+
+  releaseAllPathsAct = new QAction(QIcon(":/icons/cancel.png"), tr("Release All Paths"), this);
+  releaseAllPathsAct->setStatusTip(tr("Release All Paths"));
+  releaseAllPathsAct->setCheckable(false);
+  connect(releaseAllPathsAct, SIGNAL(triggered()), _mapper->getPathMachine(), SLOT(releaseAllPaths()));
+
+  forceRoomAct = new QAction(QIcon(":/icons/force.png"), tr("Force Path Machine to selected Room"), this);
+  forceRoomAct->setStatusTip(tr("Force Path Machine to selected Room"));
+  forceRoomAct->setCheckable(false);
+  forceRoomAct->setEnabled(FALSE);
+  connect(forceRoomAct, SIGNAL(triggered()), _mapper->getMapWindow()->getCanvas(), SLOT(forceMapperToRoom()));
+
+  roomActGroup = new QActionGroup(this);
+  roomActGroup->setExclusive(false);
+  roomActGroup->addAction(editRoomSelectionAct);
+  roomActGroup->addAction(deleteRoomSelectionAct);
+  roomActGroup->addAction(moveUpRoomSelectionAct);
+  roomActGroup->addAction(moveDownRoomSelectionAct);
+  roomActGroup->addAction(mergeUpRoomSelectionAct);
+  roomActGroup->addAction(mergeDownRoomSelectionAct);
+  roomActGroup->addAction(connectToNeighboursRoomSelectionAct);
+  roomActGroup->setEnabled(FALSE);
+
+  deleteConnectionSelectionAct = new QAction(QIcon(":/icons/connectiondelete.png"), tr("Delete Selected Connection"), this);
+  deleteConnectionSelectionAct->setStatusTip(tr("Delete Selected Connection"));
+  connect(deleteConnectionSelectionAct, SIGNAL(triggered()), _mapper, SLOT(onDeleteConnectionSelection()));
+
+  connectionActGroup = new QActionGroup(this);
+  connectionActGroup->setExclusive(false);
+  //connectionActGroup->addAction(editConnectionSelectionAct);
+  connectionActGroup->addAction(deleteConnectionSelectionAct);
+  connectionActGroup->setEnabled(FALSE);
+
+  playModeAct = new QAction(QIcon(":/icons/online.png"), tr("Switch to play mode"), this);
+  playModeAct->setStatusTip(tr("Switch to play mode - no new rooms are created"));
+  playModeAct->setCheckable(true);
+  connect(playModeAct, SIGNAL(triggered()), _mapper, SLOT(onPlayMode()));
+
+  mapModeAct = new QAction(QIcon(":/icons/map.png"), tr("Switch to mapping mode"), this);
+  mapModeAct->setStatusTip(tr("Switch to mapping mode - new rooms are created when moving"));
+  mapModeAct->setCheckable(true);
+  connect(mapModeAct, SIGNAL(triggered()), _mapper, SLOT(onMapMode()));
+
+  offlineModeAct = new QAction(QIcon(":/icons/play.png"), tr("Switch to offline emulation mode"), this);
+  offlineModeAct->setStatusTip(tr("Switch to offline emulation mode - you can learn areas offline"));
+  offlineModeAct->setCheckable(true);
+  connect(offlineModeAct, SIGNAL(triggered()), _mapper, SLOT(onOfflineMode()));
+
+  mapModeActGroup = new QActionGroup(this);
+  mapModeActGroup->setExclusive(true);
+  mapModeActGroup->addAction(playModeAct);
+  mapModeActGroup->addAction(mapModeAct);
+  mapModeActGroup->addAction(offlineModeAct);
+  mapModeActGroup->setEnabled(true);
+
+  SmartMenu *mapperMenu = new SmartMenu(tr("&Mapper"), 5, 2);
+  SmartMenu *viewMenu = new SmartMenu(tr("&View"), 5, 2);
+  SmartMenu *fileMenu = new SmartMenu(tr("&File"), 2, 0);
+  QMenu *roomMenu = mapperMenu->addMenu(tr("&Rooms"));
+  QMenu *connectionMenu = mapperMenu->addMenu(tr("&Connections"));
+
+  fileMenu->addSeparator();
+  fileMenu->addAction(newAct);
+  fileMenu->addAction(openAct);
+  fileMenu->addAction(reloadAct);
+  fileMenu->addAction(saveAct);
+  fileMenu->addAction(saveAsAct);
+  fileMenu->addAction(mergeAct);
+  fileMenu->addSeparator();
+
+  mapperMenu->addSeparator();
+  mapperMenu->addAction(playModeAct);
+  mapperMenu->addAction(mapModeAct);
+  mapperMenu->addAction(offlineModeAct);
+  mapperMenu->addSeparator();
+  mapperMenu->addAction(modeRoomSelectAct);
+  mapperMenu->addAction(modeConnectionSelectAct);
+  mapperMenu->addAction(modeMoveSelectAct);
+  mapperMenu->addAction(modeInfoMarkEditAct);
+
+  roomMenu->addAction(findRoomsAct);
+  roomMenu->addSeparator();
+  roomMenu->addAction(createRoomAct);
+  roomMenu->addAction(editRoomSelectionAct);
+  roomMenu->addAction(deleteRoomSelectionAct);
+  roomMenu->addAction(moveUpRoomSelectionAct);
+  roomMenu->addAction(moveDownRoomSelectionAct);
+  roomMenu->addAction(mergeUpRoomSelectionAct);
+  roomMenu->addAction(mergeDownRoomSelectionAct);
+  roomMenu->addAction(connectToNeighboursRoomSelectionAct);
+
+  connectionMenu->addAction(createConnectionAct);
+  connectionMenu->addAction(createOnewayConnectionAct);
+  //connectionMenu->addAction(editConnectionSelectionAct);
+  connectionMenu->addAction(deleteConnectionSelectionAct);
+
+  viewMenu->addSeparator();
+  viewMenu->addAction(zoomInAct);
+  viewMenu->addAction(zoomOutAct);
+  viewMenu->addSeparator();
+  viewMenu->addAction(layerUpAct);
+  viewMenu->addAction(layerDownAct);
+  viewMenu->addAction(releaseAllPathsAct);
+  viewMenu->addSeparator();
+
+  _menus.insert(fileMenu);
+  _menus.insert(mapperMenu);
+  _menus.insert(viewMenu);
+
+  return _menus;
 }

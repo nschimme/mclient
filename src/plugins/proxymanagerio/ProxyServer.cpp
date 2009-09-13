@@ -13,8 +13,6 @@ ProxyServer::ProxyServer(EventHandler *eh, QObject *parent)
 
   setMaxPendingConnections(_maxConnections + 1); // Allow one more for
 						 // max connection info
-  listen(QHostAddress::Any, _port);
-  qDebug() << "* Created new proxy on port" << _port;
 }
 
 
@@ -23,6 +21,12 @@ ProxyServer::~ProxyServer() {
   close();
 
   // Delete all connections
+}
+
+
+void ProxyServer::start() {
+  listen(QHostAddress::Any, _port);
+  qDebug() << "* Created new proxy on port" << _port;
 }
 
 

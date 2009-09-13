@@ -322,8 +322,10 @@ void PluginSession::customEvent(QEvent* e) {
 	//qDebug() << "* copied payload to" << nme->payload();
 	// Need to make a copy, since the original event
 	// will be deleted when this function returns
+	/*
 	qDebug() << "* posting" << nme->dataTypes() << "to" 
 		 << it.value() << "with" << me->payload();
+	*/
 	
 	// Post the event
 	QCoreApplication::postEvent(it.value(), nme);
