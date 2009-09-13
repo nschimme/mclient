@@ -579,7 +579,7 @@ void EventHandler::socketRead (const QByteArray &data) {
     if (d->recvdGA) {
       //prepend a newline, if needed
       if (d->prependGANewLine) {
-	_cleanData.prepend("\n");
+	_cleanData.prepend("\r\n");
 	d->prependGANewLine = false;
       }
 
@@ -589,7 +589,7 @@ void EventHandler::socketRead (const QByteArray &data) {
       QVariant* qv = new QVariant(unicodeData);
       QStringList sl("TelnetData");
       postSession(qv, sl);
-      qDebug() << "TelnetData(WITH GA):" << unicodeData;
+      //qDebug() << "TelnetData(WITH GA):" << unicodeData;
 
       // Post a GO-AHEAD
       qv = new QVariant();
@@ -615,7 +615,7 @@ void EventHandler::socketRead (const QByteArray &data) {
     QVariant *qv = new QVariant(unicodeData);
     QStringList sl("TelnetData");
     postSession(qv, sl);
-    qDebug() << "Telnet(SUPPRESSED-GA):" << _cleanData;
+    //qDebug() << "Telnet(SUPPRESSED-GA):" << _cleanData;
 
     // clean the buffer
     _cleanData.clear();

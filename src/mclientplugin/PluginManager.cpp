@@ -25,9 +25,9 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
     /** Connect Other Necessary Objects */
     connect(this, SIGNAL(doneLoading()), _mainWindow, SLOT(start()));
     connect(_mainWindow, SIGNAL(startSession(const QString&)),
-	    this, SLOT(initSession(const QString&)));
+	    SLOT(initSession(const QString&)));
     connect(_mainWindow, SIGNAL(stopSession(const QString&)),
-	    this, SLOT(stopSession(const QString&)));
+	    SLOT(stopSession(const QString&)));
 
     qDebug() << "* PluginManager is reading settings...";
     QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
@@ -69,6 +69,9 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
 
 
 PluginManager::~PluginManager() {
+  foreach(PluginSession *ps, _pluginSessions) {
+    stopSession(ps->session());
+  }
 
   // Remove entries in the available plugins list
   foreach(PluginEntry *pe, _availablePlugins) {

@@ -30,9 +30,9 @@ void MMapperPluginParser::name(QString text) {
 
 
 void MMapperPluginParser::description(const QString &text) {
-  if (m_descriptionReady) submit();
+  // if (m_descriptionReady) submit();
 
-  m_staticRoomDesc = text;
+  m_staticRoomDesc = QString(text).remove(QChar('\r'));
   m_descriptionReady = true;
   m_readingRoomDesc = true;
 }
@@ -51,7 +51,7 @@ void MMapperPluginParser::exits(QString text) {
 
 void MMapperPluginParser::prompt(QString text) {
   if (m_readingRoomDesc) {
-    qDebug() << "### emulating exits!" << QThread::currentThread();
+    qDebug() << "### in prompt, emulating exits!";
     emulateExits();
     m_readingRoomDesc = false;
   }
@@ -101,6 +101,7 @@ void MMapperPluginParser::submit() {
   
   // non standard end of description parsed (fog, dark or so ...)
   if (Patterns::matchNoDescriptionPatterns(m_roomName)) {
+    qDebug() << "* fog, dark or so ..., nulling strings";
     m_roomName = nullString;
     m_dynamicRoomDesc = nullString;
     m_staticRoomDesc = nullString;
@@ -147,6 +148,7 @@ void MMapperPluginParser::mudOutput(const QString &text) {
       emit showPath(queue, true);
       return;
     }
+    /*
     else if (text.startsWith("You flee head")) {
       queue.enqueue(_move);
     }
@@ -154,6 +156,7 @@ void MMapperPluginParser::mudOutput(const QString &text) {
       queue.enqueue(_move);
       return;
     }
+    */
     else if (text.startsWith("You quietly scout")) {
       queue.prepend(CID_SCOUT);
       return;

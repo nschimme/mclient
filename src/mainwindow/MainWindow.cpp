@@ -71,8 +71,9 @@ MainWindow::MainWindow(PluginManager *pm) {
 
 
 MainWindow::~MainWindow() {
-  getPluginManager()->getConfig()->~ConfigManager();
-  getPluginManager()->~PluginManager();
+  delete menuBar();
+  //getPluginManager()->getConfig()->~ConfigManager();
+  //getPluginManager()->~PluginManager();
   qDebug() << "* MainWindow destroyed";
 }
 

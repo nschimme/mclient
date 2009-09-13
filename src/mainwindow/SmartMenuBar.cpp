@@ -14,6 +14,25 @@ SmartMenuBar::SmartMenuBar(QWidget *parent) : QMenuBar(parent) {
 
 
 SmartMenuBar::~SmartMenuBar() {
+  foreach(QMenu *menu, _mergedMenus) {
+    delete menu;
+  }
+
+  PositionSmartMap::const_iterator i = _smartMenus.constBegin();
+  while (i != _smartMenus.constEnd()) {
+    NameSmartHash::const_iterator j = i.value()->constBegin();
+    while (j != i.value()->constEnd()) {
+      PrioritySmartMap::const_iterator k = j.value()->constBegin();
+      while (k != j.value()->constEnd()) {
+	delete k.value();
+	++k;
+      }
+      ++j;
+    }
+    ++i;
+  }
+
+  qDebug() << "* SmartMenuBar destroyed";
 }
 
 

@@ -67,7 +67,7 @@ void EventHandler::customEvent(QEvent *e) {
       } else if (me->dataTypes().contains("XMLTerrain")) {
 	emit terrain(me->payload()->toString());
        
-      }  
+      }
 
       if (display) {
 	// These tags get forwarded to the CommandProcessor
@@ -79,7 +79,8 @@ void EventHandler::customEvent(QEvent *e) {
 	
       }
 
-    } else if (me->dataTypes().contains("XMLMove")) {
+    }
+    else if (me->dataTypes().contains("XMLMove")) {
       emit move(me->payload()->toString());
     
     }
@@ -172,10 +173,11 @@ const MenuData& EventHandler::createMenus() {
   connect(mergeAct, SIGNAL(triggered()), _mapper, SLOT(merge()));
 
   zoomInAct = new QAction(QIcon(":/icons/viewmag+.png"), tr("Zoom In"), this);
-
   zoomInAct->setStatusTip(tr("Zooms In current map"));
-  zoomOutAct = new QAction(QIcon(":/icons/viewmag-.png"), tr("Zoom Out"), this);
-  zoomOutAct->setStatusTip(tr("Zooms Out current map"));
+  connect(zoomInAct, SIGNAL(triggered()), _mapper->getMapWindow()->getCanvas(), SLOT(zoomIn()));
+
+  zoomOutAct = new QAction(QIcon(":/icons/viewmag-.png"), tr("Zoom Out"), this);  zoomOutAct->setStatusTip(tr("Zooms Out current map"));
+  connect(zoomOutAct, SIGNAL(triggered()), _mapper->getMapWindow()->getCanvas(), SLOT(zoomOut()));
 
   layerUpAct = new QAction(QIcon(":/icons/layerup.png"), tr("Layer Up"), this);
   layerUpAct->setStatusTip(tr("Layer Up"));
@@ -309,6 +311,7 @@ const MenuData& EventHandler::createMenus() {
   mapModeActGroup->addAction(mapModeAct);
   mapModeActGroup->addAction(offlineModeAct);
   mapModeActGroup->setEnabled(true);
+  offlineModeAct->setChecked(true);
 
   SmartMenu *mapperMenu = new SmartMenu(tr("&Mapper"), 5, 2);
   SmartMenu *viewMenu = new SmartMenu(tr("&View"), 5, 2);
@@ -357,7 +360,9 @@ const MenuData& EventHandler::createMenus() {
   viewMenu->addSeparator();
   viewMenu->addAction(layerUpAct);
   viewMenu->addAction(layerDownAct);
+  viewMenu->addSeparator();
   viewMenu->addAction(releaseAllPathsAct);
+  viewMenu->addAction(forceRoomAct);
   viewMenu->addSeparator();
 
   _menus.insert(fileMenu);

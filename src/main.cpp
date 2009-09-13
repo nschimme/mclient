@@ -23,7 +23,9 @@ int main(int argc, char** argv) {
       }
     }
 
-    new PluginManager;
+    PluginManager *pluginManager = new PluginManager;
+    int ret = app.exec();
+    pluginManager->~PluginManager();
 
-    return app.exec();
+    return ret;
 }

@@ -23,4 +23,7 @@ SmartMenu::SmartMenu(QMenu *menu, int pr, int pos, QWidget *parent)
 
 
 SmartMenu::~SmartMenu() {
+  foreach (QAction *action, actions())
+    delete action;
+  qDebug() << "* SmartMenu" << title() << "destroyed";
 }

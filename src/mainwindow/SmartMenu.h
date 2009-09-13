@@ -10,7 +10,7 @@ class SmartMenu : public QMenu {
     SmartMenu(int priority =5, int position =5, QWidget *parent=0);
     SmartMenu(const QString &title, int priority =5, int position =5, QWidget *parent=0);
     SmartMenu(QMenu *menu, int priority =5, int position =5, QWidget *parent=0);
-    virtual ~SmartMenu();
+    ~SmartMenu();
 
     int priority() const { return _priority; }
     int position() const { return _position; }
