@@ -187,21 +187,32 @@ void MainWindow::initDisplay(PluginSession *ps) {
   layout->setSpacing(0);
   layout->setContentsMargins(0, 0, 0, 0);
 
+  // Add the primary widgets to the smart splitter
+  // TODO: Make it smart and resizable upon request of the widget!
+  SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical);
+  _tabWidget->addTab(_splitter, _currentProfile);
+
   QPointer<QWidget> display, input;
-  bool displaySet, inputSet = false;
+  bool displaySet = false, inputSet = false;
   for (int i = 0; i < widgetList.size(); ++i) {
     int position = widgetList.at(i).first;
 
-    qDebug() << "* looking at" << widgetList.at(i).second;
+    qDebug() << "* looking at" << widgetList[i].second;
     // Differentiate between the types
     if (ISSET(position, DL_DISPLAY) && !displaySet) {
       // Primary Display Widget
-      display = widgetList.at(i).second;
+      display = widgetList[i].second;
+      qDebug() << "* display is" << display;
+      _splitter->addWidget(display);
+      _splitter->setCollapsible(_splitter->indexOf(display), false);
       displaySet = true;
 
     } else if (ISSET(position, DL_INPUT) && !inputSet) {
       // Primary Input Widget
-      input = widgetList.at(i).second;
+      input = widgetList[i].second;
+      qDebug() << "* input is" << input;
+      _splitter->addWidget(input);
+      _splitter->setCollapsible(_splitter->indexOf(input), false);
       inputSet = true;
 
     } else {
@@ -211,7 +222,7 @@ void MainWindow::initDisplay(PluginSession *ps) {
       dockWidget->setFeatures(QDockWidget::DockWidgetMovable |
 			      QDockWidget::DockWidgetFloatable |
 			      QDockWidget::DockWidgetClosable);
-      dockWidget->setWidget(widgetList.at(i).second);
+      dockWidget->setWidget(widgetList[i].second);
       dockWidget->setFloating(false);
       addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
       _dockWidgets.insert("test", dockWidget);
@@ -219,24 +230,6 @@ void MainWindow::initDisplay(PluginSession *ps) {
       
     }
 
-  }
-  qDebug() << "* MainWindow has collected all widgets, displaying them...";
-
-  // Add the primary widgets to the smart splitter
-  // TODO: Make it smart and resizable upon request of the widget!
-  SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical);
-  _tabWidget->addTab(_splitter, _currentProfile);
-
-  // Add the widgets
-  if (displaySet) {
-    qDebug() << "* display is" << display;
-    _splitter->addWidget(display);
-    _splitter->setCollapsible(_splitter->indexOf(display), false);
-  }
-  if (inputSet) {
-    qDebug() << "* input is" << input;
-    _splitter->addWidget(input);
-    _splitter->setCollapsible(_splitter->indexOf(input), false);
   }
 
   // Display Main Window

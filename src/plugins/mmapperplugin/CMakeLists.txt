@@ -49,7 +49,7 @@ QT4_ADD_RESOURCES(mmapperplugin_RCC_SRCS ${mmapperplugin_RCS})
 add_library(mmapperplugin SHARED ${mmapperplugin_SRCS}
     ${mmapperplugin_MOC_SRCS} ${mmapperplugin_RCC_SRCS}
     ${mmapperplugin_UIS_H})
-target_link_libraries(mmapperplugin mclientplugin ${QT_LIBRARIES})
+target_link_libraries(mmapperplugin mclientplugin mainwindow ${QT_LIBRARIES})
 
 INSTALL(TARGETS mmapperplugin
   RUNTIME DESTINATION "${PLUGINS_DIR}"
