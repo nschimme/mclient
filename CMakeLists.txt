@@ -11,8 +11,9 @@ set(QT_USE_QTOPENGL TRUE)
 include(${QT_USE_FILE})
 
 # mClient's version number
-set(MCLIENT_VERSION "Alpha")
+set(MCLIENT_VERSION "pre-release alpha")
 add_definitions(-DMCLIENT_VERSION="${MCLIENT_VERSION}")
+message(STATUS "mClient version ${MCLIENT_VERSION} (${CMAKE_BUILD_TYPE} distribution)")
 
 # Get SVN revision number
 find_package(Subversion)
@@ -52,6 +53,13 @@ if (APPLE)
     #set(CMAKE_OSX_SYSROOT /Developer/SDKs/MacOSX10.4u.sdk)
     #set(CMAKE_FIND_ROOT_PATH /Developer/SDKs/MacOSX10.4u.sdk)
 endif (APPLE)
+
+# Visual C++ Parallel Builds
+if ("$ENV{QMAKESPEC}" MATCHES "win32-msvc")
+    message(STATUS "Enabling parallel builds with the -MP CFLAG")
+    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -MP")
+    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -MP")
+endif ("$ENV{QMAKESPEC}" MATCHES "win32-msvc")
 
 # Add the rest of the sources
 add_subdirectory(src)

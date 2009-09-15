@@ -1,8 +1,27 @@
-To make it go, run ./build.sh.  If everything builds smoothly, 
+Installing
+==========
+To make it go, run ./build.sh (Linux/Mac) or winbuild.bat (Windows).
 
-cd build
-bin/plugin_skeleton
+If everything builds smoothly the binary should be located within
+the build or winbuild directories.
 
 
-It *might* not work on windows due to how I've handled library names (*.so),
-but I intend to fix this so that it's platform-independent.
+MingW Problems
+==============
+Install zlib with MSYS and then copy the files in MSYS' /mingw to the
+MingW installation in the Qt directory.
+
+
+Visual C++ Problems
+===================
+A simple batch file like this fixed most of my issues:
+
+@ECHO OFF
+SET QMAKESPEC=win32-msvc2008
+SET PATH=%PATH%;C:\Qt\2009.03-msvc\bin
+SET ZLIB_LIBRARY=C:\Dev\zlib-1.2.3
+SET ZLIB_INCLUDE_DIR=C:\Dev\zlib-1.2.3
+
+
+Additionally, it is possible to speed up the Qt installation process with Visual C++ using JOM. JOM is available at:
+http://labs.trolltech.com/blogs/2009/03/27/speeding-up-visual-c-qt-builds/

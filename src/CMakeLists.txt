@@ -53,7 +53,12 @@ QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
 QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
 QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
-add_executable(mclient #MACOSX_BUNDLE #WIN32
+# Build the executable
+if (CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(EXECUTABLE_FLAGS MACOSX_BUNDLE WIN32)
+endif (CMAKE_BUILD_TYPE STREQUAL "Release")
+
+add_executable(mclient ${EXECUTABLE_FLAGS}
     ${mclient_SRCS}
     ${mclient_MOC_SRCS}
     ${mclient_UIS_H}
@@ -89,27 +94,36 @@ if (WIN32)
     # Install Library Files
     # Note: this is not necessary if Qt is compiled statically
     message(STATUS "Qt libraries are at ${QT_LIBRARY_DIR}")
-    install(FILES
-        "${QT_LIBRARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtGui${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtNetwork${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtXml${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtOpenGL${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtWebKit${QT_VERSION_MAJOR}.dll"
-        DESTINATION .
-	COMPONENT libraries
-    )
-    # Debug Libraries (not necessary if compiling for release)
-    install(FILES
-        "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtGuid${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtNetworkd${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtXmld${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtOpenGLd${QT_VERSION_MAJOR}.dll"
-        "${QT_LIBRARY_DIR}/QtWebKitd${QT_VERSION_MAJOR}.dll"
-        DESTINATION .
-	COMPONENT libraries
-    )
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
+       if (NOT EXISTS "${QT_LIBRARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll")
+           set (QT_LIBRARY_DIR ${QT_LIBRARY_DIR}/../bin)
+       endif (NOT EXISTS "${QT_LIBRARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll")
+       install(FILES
+           "${QT_LIBRARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtGui${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtNetwork${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtXml${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtOpenGL${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtWebKit${QT_VERSION_MAJOR}.dll"
+           DESTINATION .
+           COMPONENT libraries
+       )
+    else (CMAKE_BUILD_TYPE STREQUAL "Release")
+       # Debug Libraries (not necessary if compiling for release)
+       if (NOT EXISTS "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll")
+           set (QT_LIBRARY_DIR ${QT_LIBRARY_DIR}/../bin)
+       endif (NOT EXISTS "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll")
+       install(FILES
+           "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtGuid${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtNetworkd${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtXmld${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtOpenGLd${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/QtWebKitd${QT_VERSION_MAJOR}.dll"
+           DESTINATION .
+           COMPONENT libraries
+       )
+    endif (CMAKE_BUILD_TYPE STREQUAL "Release")
     # MingW Library
     if (MINGW)
 	string(REGEX REPLACE "[\\|/][^\\/]+exe$" ""
@@ -156,7 +170,7 @@ if (APPLE)
     set(CPACK_COMPONENT_LIBRARIES_HIDDEN TRUE)
 
     # Bundle Properties
-    #SET(MACOSX_BUNDLE_ICON_FILE icon.icns)
+    #SET(MACOSX_BUNDLE_ICON_FILE resources/macosx/mclient.icns)
     SET(MACOSX_BUNDLE_BUNDLE_NAME mClient)
     SET(MACOSX_BUNDLE_BUNDLE_VERSION ${VERSION})
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING ${VERSION})

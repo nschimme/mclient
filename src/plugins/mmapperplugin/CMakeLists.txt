@@ -1,5 +1,11 @@
 # mmapperplugin
 
+if (NOT MINGW)
+    find_package(ZLIB REQUIRED)
+else (NOT MINGW)
+    message(STATUS "Warning: MingW requires zlib to be installed manually")
+endif (NOT MINGW)
+
 # Source Files
 file(GLOB_RECURSE mmapperplugin_SRCS
      RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -40,8 +46,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
     ${CMAKE_CURRENT_SOURCE_DIR}/pathmachine
     ${CMAKE_CURRENT_SOURCE_DIR}/preferences
+    ${ZLIB_INCLUDE_DIR}
 )
-  
+
 QT4_WRAP_CPP(mmapperplugin_MOC_SRCS ${mmapperplugin_MOC_HDRS})
 QT4_WRAP_UI(mmapperplugin_UIS_H ${mmapperplugin_UIS})
 QT4_ADD_RESOURCES(mmapperplugin_RCC_SRCS ${mmapperplugin_RCS})
@@ -49,7 +56,11 @@ QT4_ADD_RESOURCES(mmapperplugin_RCC_SRCS ${mmapperplugin_RCS})
 add_library(mmapperplugin SHARED ${mmapperplugin_SRCS}
     ${mmapperplugin_MOC_SRCS} ${mmapperplugin_RCC_SRCS}
     ${mmapperplugin_UIS_H})
-target_link_libraries(mmapperplugin mclientplugin mainwindow ${QT_LIBRARIES})
+target_link_libraries(mmapperplugin
+     mclientplugin
+     mainwindow
+     ${QT_LIBRARIES}
+)
 
 INSTALL(TARGETS mmapperplugin
   RUNTIME DESTINATION "${PLUGINS_DIR}"
