@@ -150,8 +150,6 @@ const MenuData& EventHandler::createMenus() {
     QAction *reloadAct;
     QAction *saveAct;
     QAction *saveAsAct;
-    QAction *prevWindowAct;
-    QAction *nextWindowAct;
     QAction *zoomInAct;
     QAction *zoomOutAct;
 
@@ -175,10 +173,9 @@ const MenuData& EventHandler::createMenus() {
     QActionGroup *modeActGroup;
     QActionGroup *roomActGroup;
     QActionGroup *connectionActGroup;
-    QActionGroup *groupManagerGroup;
 
     QAction *editRoomSelectionAct;
-    QAction *editConnectionSelectionAct;
+    //QAction *editConnectionSelectionAct;
     QAction *deleteRoomSelectionAct;
     QAction *deleteConnectionSelectionAct;
 
