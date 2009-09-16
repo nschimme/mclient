@@ -8,6 +8,8 @@
 #include <QTextCharFormat>
 #include <QBrush>
 
+#include <QFontDialog>
+
 ClientTextEdit::ClientTextEdit(QWidget* parent) : QTextEdit(parent) {
     setReadOnly(true);
     setOverwriteMode(true);
@@ -43,6 +45,7 @@ ClientTextEdit::ClientTextEdit(QWidget* parent) : QTextEdit(parent) {
     // Default Fonts
     _serverOutputFont = QFont("Monospace", 10);
     _inputLineFont = QFont("Monospace", 10); //QApplication::font();
+    _serverOutputFont.setStyleHint(QFont::TypeWriter, QFont::PreferAntialias);
 
     QTextFrameFormat frameFormat = frame->frameFormat();
     frameFormat.setBackground(_backgroundColor);
@@ -53,8 +56,6 @@ ClientTextEdit::ClientTextEdit(QWidget* parent) : QTextEdit(parent) {
     setDefaultFormat(_format);
     _defaultFormat = _format;
     _cursor.setCharFormat(_format);
-
-    _cursor.insertText("Type #help for help.\n", _format);
 
     QFontMetrics fm(_serverOutputFont);
     setTabStopWidth(fm.width(" ") * 8); // A tab is 8 spaces wide
@@ -377,4 +378,17 @@ void ClientTextEdit::updateFormatBoldColor(QTextCharFormat& format) {
 
 void ClientTextEdit::splitterResized() {
   ensureCursorVisible();
+}
+
+
+void ClientTextEdit::changeFont() {
+  bool ok;
+  QFont font
+    = QFontDialog::getFont(&ok, _serverOutputFont, this);
+  if (ok) {
+    _serverOutputFont = font;
+    _defaultFormat.setFont(_serverOutputFont);
+    _cursor.setCharFormat(_defaultFormat);
+    _format = _defaultFormat;
+  }
 }

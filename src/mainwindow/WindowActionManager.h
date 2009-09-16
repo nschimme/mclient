@@ -34,15 +34,20 @@ class WindowActionManager: public QObject {
     void createToolBars();
     void createStatusBar();
 
+    QAction *cutAct;
+    QAction *copyAct;
+    QAction *pasteAct;
+
 public slots:
     void about();
     void clientHelp();
     void alwaysOnTop();
     void fullScreen();
 
-    void connectSession();
-    void disconnectSession();
-    void reconnectSession();
+    void openMumeWebsite();
+    void openMumeForum();
+    void openMumeWiki();
+    void newbieHelp();
 
  protected:
     WindowActionManager(MainWindow*);
@@ -58,26 +63,15 @@ public slots:
 
     /* MainWindow (i.e. Normal) Actions */
     QAction *exitAct;
-    QAction *cutAct;
-    QAction *copyAct;
-    QAction *pasteAct;
     QAction *clientHelpAct;
-    QAction *mumeHelpAct;
-    QAction *wikiAct;
-    QAction *forumAct;
+
+    QAction *mumeWebsiteAct;
+    QAction *mumeWikiAct;
+    QAction *mumeForumAct;
+    QAction *newbieHelpAct;
 
     QAction *aboutAct;
     QAction *aboutQtAct;
-
-    QAction *profileAct;
-    QAction *settingsAct;
-    QAction *aliasAct;
-
-    /*
-    QAction *connectAct;
-    QAction *disconnectAct;
-    QAction *reconnectAct;
-    */
 
     QAction *alwaysOnTopAct;
     QAction *fullScreenAct;
@@ -86,7 +80,8 @@ public slots:
     QMenu *viewMenu;
     QMenu *editMenu;
     QMenu *helpMenu;
-    QMenu *settingsMenu;
+    QMenu *newbieMenu;
+    QMenu *mumeMenu;
 
     QToolBar *editToolBar;
     QToolBar *connectToolBar;

@@ -17,6 +17,7 @@ class ClientTextEdit : public QTextEdit {
         void moveCursor(const int& diff);
         void scrollBarReleased();
 	void splitterResized();
+	void changeFont();
 
     protected:
         QTextCursor _cursor;

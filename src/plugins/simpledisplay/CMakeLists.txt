@@ -31,6 +31,7 @@ add_library(simpledisplay SHARED
 target_link_libraries(
     simpledisplay
     mclientplugin
+    mainwindow
     ${QT_LIBRARIES}
 )
 

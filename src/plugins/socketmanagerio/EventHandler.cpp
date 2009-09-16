@@ -22,6 +22,7 @@ EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
   // Host settings
   QString host = _config->value(cfg+"connection/host", "mume.org").toString();
   int port = _config->value(cfg+"connection/port", "4242").toInt();
+  _autoConnect = _config->value(cfg+"connection/autoconnect", true).toBool();
   
   // Proxy settings
   QString proxy_host = _config->value(cfg+"proxy/host",
@@ -93,6 +94,10 @@ void EventHandler::customEvent(QEvent *e) {
       //do not allow server to suppress go-aheads (MUME is backwards)
       sendData(QByteArray("~$#EP2\nG\n"));
       
+    } else if (me->dataTypes().contains("DoneLoading")) {
+      // auto connect on session start
+      if (_autoConnect) connectDevice();
+
     }
 
     

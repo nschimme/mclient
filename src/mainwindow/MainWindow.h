@@ -29,6 +29,7 @@
 class PluginManager;
 class PluginSession;
 class QuickConnectDialog;
+class WindowActionManager;
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -61,9 +62,11 @@ private slots:
     QTabWidget *_tabWidget;
     QHash<QString, QDockWidget*> _dockWidgets;
     PluginManager *_pluginManager;
+    WindowActionManager *_actMgr;
 
     QPointer<QuickConnectDialog> _quickConnectDlg;
     QPointer<QSplashScreen> _splash;
+    QPointer<QWidget> _display, _input;
 
     void readSettings();
     void writeSettings();
@@ -72,7 +75,7 @@ private slots:
    signals:
     void startSession(const QString &s);
     void stopSession(const QString &s);
-
+    void doneLoading();
 };
 
 #endif

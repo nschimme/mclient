@@ -47,11 +47,11 @@ MainWindow::MainWindow(PluginManager *pm) {
   delete menuBar();
   setMenuBar(new SmartMenuBar(this));
   // Initialize WindowActionManager
-  WindowActionManager *actMgr = WindowActionManager::instance(this);
-  actMgr->createActions();
-  actMgr->createMenus();
-  actMgr->createToolBars();
-  actMgr->createStatusBar();
+  _actMgr = WindowActionManager::instance(this);
+  _actMgr->createActions();
+  _actMgr->createMenus();
+  _actMgr->createToolBars();
+  _actMgr->createStatusBar();
 
   /** Create Primary Display Widgets */
   _tabWidget = new SmartTabWidget;
@@ -193,7 +193,6 @@ void MainWindow::initDisplay(PluginSession *ps) {
   SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical);
   _tabWidget->addTab(_splitter, _currentProfile);
 
-  QPointer<QWidget> display, input;
   bool displaySet = false, inputSet = false;
   for (int i = 0; i < widgetList.size(); ++i) {
     int position = widgetList.at(i).first;
@@ -202,30 +201,31 @@ void MainWindow::initDisplay(PluginSession *ps) {
     // Differentiate between the types
     if (ISSET(position, DL_DISPLAY) && !displaySet) {
       // Primary Display Widget
-      display = widgetList[i].second;
-      qDebug() << "* display is" << display;
-      _splitter->addWidget(display);
-      _splitter->setCollapsible(_splitter->indexOf(display), false);
+      _display = widgetList[i].second;
+      qDebug() << "* display is" << _display;
+      _splitter->addWidget(_display);
+      _splitter->setCollapsible(_splitter->indexOf(_display), false);
       displaySet = true;
 
     } else if (ISSET(position, DL_INPUT) && !inputSet) {
       // Primary Input Widget
-      input = widgetList[i].second;
-      qDebug() << "* input is" << input;
-      _splitter->addWidget(input);
-      _splitter->setCollapsible(_splitter->indexOf(input), false);
+      _input = widgetList[i].second;
+      qDebug() << "* input is" << _input;
+      _splitter->addWidget(_input);
+      _splitter->setCollapsible(_splitter->indexOf(_input), false);
       inputSet = true;
 
     } else {
       // Display the widget if it floats (or is unsupported)
       QDockWidget *dockWidget = new QDockWidget(this);
       dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
-      dockWidget->setFeatures(QDockWidget::DockWidgetMovable |
-			      QDockWidget::DockWidgetFloatable |
-			      QDockWidget::DockWidgetClosable);
+      dockWidget->setFeatures(QDockWidget::DockWidgetMovable
+			      | QDockWidget::DockWidgetFloatable
+			      /* | QDockWidget::DockWidgetClosable */
+			      );
       dockWidget->setWidget(widgetList[i].second);
       dockWidget->setFloating(false);
-      addDockWidget(Qt::LeftDockWidgetArea, dockWidget);
+      addDockWidget(Qt::RightDockWidgetArea, dockWidget);
       _dockWidgets.insert("test", dockWidget);
       //widgetList.at(i).second->show();
       
@@ -239,9 +239,23 @@ void MainWindow::initDisplay(PluginSession *ps) {
 
   // Connect the signals/slots
   if (displaySet && inputSet) {
-    display->setFocusProxy(input);
-    input->setFocus();
+    _display->setFocusProxy(_input);
+    _input->setFocus();
+
+    connect(_actMgr->copyAct, SIGNAL(triggered()),
+	    _display, SLOT(copy()));
+    connect(_actMgr->pasteAct, SIGNAL(triggered()),
+	    _input, SLOT(paste()));    
+    connect(_display, SIGNAL(copyAvailable(bool)),
+	    _actMgr->cutAct, SLOT(setEnabled(bool)));
+    connect(_display, SIGNAL(copyAvailable(bool)),
+	    _actMgr->copyAct, SLOT(setEnabled(bool)));
+    connect(_actMgr->cutAct, SIGNAL(triggered()),
+	    _display, SLOT(cut()));
+
   }
+  
+  emit doneLoading();
 
 }
 
@@ -249,9 +263,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
   qDebug() << "MainWindow received closeEvent";
   if (maybeSave()) {
-    emit stopSession(currentSession());
     writeSettings();
-    deleteLater();
+    //deleteLater();
     event->accept();
   } else {
     event->ignore();

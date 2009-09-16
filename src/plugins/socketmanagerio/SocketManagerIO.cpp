@@ -23,7 +23,8 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
     _implemented.insert("socketmanager",10);
     _receivesDataTypes << "SendToSocketData" << "ConnectToHost"
 		       << "DisconnectFromHost"
-		       << "MUMEPromptGARequest";
+		       << "MUMEPromptGARequest"
+		       << "DoneLoading";
     /*
     _deliversDataTypes << "SocketReadData" << "SocketConnected"
 		       << "SocketDisconnected" << "DisplayData";

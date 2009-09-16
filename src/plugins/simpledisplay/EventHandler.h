@@ -18,6 +18,8 @@ class EventHandler : public MClientDisplayHandler {
 
 	QWidget* createWidget();
 
+	const MenuData& createMenus();
+
  signals:
 	void displayText(const QString&);
 	void userInput(const QString&);

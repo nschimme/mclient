@@ -53,6 +53,8 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
   connect(this, SIGNAL(doneLoading(PluginSession *)),
 	  _pluginManager->getMainWindow(),
 	  SLOT(initDisplay(PluginSession *)));
+  connect(_pluginManager->getMainWindow(), SIGNAL(doneLoading()),
+	  SLOT(doneLoading()));
 
   qDebug() << "* PluginSession" << _session
 	   << "created with thread:" << QThread::currentThread();
@@ -355,4 +357,12 @@ void PluginSession::customEvent(QEvent* e) {
 
 ConfigEntry* PluginSession::retrievePluginSettings(const QString &pluginName) const {
   return _pluginManager->getConfig()->pluginSettings(_session, pluginName);
+}
+
+void PluginSession::doneLoading() {
+  QVariant *payload = new QVariant();
+  QStringList sl("DoneLoading");
+  MClientEventData *med = new MClientEventData(payload, sl, _session);
+  MClientEvent* me = new MClientEvent(med);
+  customEvent(me);
 }

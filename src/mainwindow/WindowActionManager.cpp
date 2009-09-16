@@ -47,21 +47,7 @@ WindowActionManager::~WindowActionManager() {
 }
 
 void WindowActionManager::createActions() {
-  /*
-  connectAct = new QAction(QIcon(":/mainwindow/connect.png"), tr("&Connect..."), this);
-  connectAct->setStatusTip(tr("Load a new session and connect to the remote host"));
-  connect(connectAct, SIGNAL(triggered()), SLOT(connectSession()) );
-  
-  disconnectAct = new QAction(QIcon(":/mainwindow/disconnect.png"), tr("&Disconnect"), this);
-  disconnectAct->setStatusTip(tr("Disconnect from the current session"));
-  connect(disconnectAct, SIGNAL(triggered()), SLOT(disconnectSession()) );
-
-  reconnectAct = new QAction(QIcon(":/mainwindow/reconnect.png"), tr("&Reconnect"), this);
-  reconnectAct->setStatusTip(tr("Reconnect to the current session's remote host"));
-  connect(reconnectAct, SIGNAL(triggered()), SLOT(reconnectSession()) );
-  */
-
-  exitAct = new QAction(QIcon(":/mainwindow/exit.png"), tr("E&xit"), this);
+  exitAct = new QAction(/*QIcon(":/mainwindow/exit.png"),*/ tr("E&xit"), this);
   exitAct->setStatusTip(tr("Exit the application"));
   connect(exitAct, SIGNAL(triggered()), _mainWindow, SLOT(close()));
 
@@ -69,19 +55,16 @@ void WindowActionManager::createActions() {
   cutAct->setShortcut(tr("Ctrl+X"));
   cutAct->setStatusTip(tr("Cut the current selection's contents to the "
       "clipboard"));
-  //connect(cutAct, SIGNAL(triggered()), cliMgr->getTextEdit(), SLOT(cut()));
 
   copyAct = new QAction(QIcon(":/mainwindow/copy.png"), tr("&Copy"), this);
   copyAct->setShortcut(tr("Ctrl+C"));
   copyAct->setStatusTip(tr("Copy the current selection's contents to the "
       "clipboard"));
-  //connect(copyAct, SIGNAL(triggered()), cliMgr->getTextEdit(), SLOT(copy()));
 
   pasteAct = new QAction(QIcon(":/mainwindow/paste.png"), tr("&Paste"), this);
   pasteAct->setShortcut(tr("Ctrl+V"));
   pasteAct->setStatusTip(tr("Paste the clipboard's contents into the current "
       "selection"));
-  //connect(pasteAct, SIGNAL(triggered()), cliMgr->getLineEdit(), SLOT(paste()));
 
   alwaysOnTopAct = new QAction(tr("&Always on Top"), this);
   alwaysOnTopAct->setCheckable(true);
@@ -94,33 +77,21 @@ void WindowActionManager::createActions() {
   fullScreenAct->setStatusTip(tr("Toggle full screen mode"));
   connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(fullScreen()));
 
-
-  profileAct = new QAction(QIcon(":/mainwindow/profile.png"), tr("Profile &Manager..."), this);
-  profileAct->setStatusTip(tr("Manage mClient profile settings"));
-  connect(profileAct, SIGNAL(triggered()), _mainWindow, SLOT(manageProfiles()));
-
-  settingsAct = new QAction(QIcon(":/mainwindow/settings.png"), tr("&Preferences..."), this);
-  settingsAct->setStatusTip(tr("Change mClient settings"));
-  connect(settingsAct, SIGNAL(triggered()), _mainWindow, SLOT(changeConfiguration()) );
-
-  aliasAct = new QAction(tr("&Alias"), this);
-  aliasAct->setStatusTip(tr("Manage mClient aliases"));
-  connect(aliasAct, SIGNAL(triggered()), _mainWindow, SLOT(aliasEditor()));
-
-  mumeHelpAct = new QAction(tr("M&ume"), this);
-  mumeHelpAct->setStatusTip(tr("MUME Website"));
-
-  wikiAct = new QAction(tr("&Wiki"), this);
-  wikiAct->setStatusTip(tr("Visit the MUME Wiki"));
-
-  forumAct = new QAction(tr("&Forum"), this);
-  forumAct->setStatusTip(tr("Visit the MUME Forum"));
+  mumeWebsiteAct = new QAction(tr("&Website"), this);
+  mumeWebsiteAct->setStatusTip(tr("The official MUME website"));
+  connect(mumeWebsiteAct, SIGNAL(triggered()), this, SLOT(openMumeWebsite()));
+  mumeForumAct = new QAction(tr("&Forum"), this);
+  mumeForumAct->setStatusTip(tr("Talk to other MUMErs"));
+  connect(mumeForumAct, SIGNAL(triggered()), this, SLOT(openMumeForum()));
+  mumeWikiAct = new QAction(tr("W&iki"), this);
+  mumeWikiAct->setStatusTip(tr("View the MUME help files"));
+  connect(mumeWikiAct, SIGNAL(triggered()), this, SLOT(openMumeWiki()));
 
   clientHelpAct = new QAction(QIcon(":/mainwindow/help.png"), tr("mClient &Help"), this);
-  clientHelpAct->setStatusTip(tr("View the mClient/Powwow help file"));
+  clientHelpAct->setStatusTip(tr("View the mClient help file"));
   connect(clientHelpAct, SIGNAL(triggered()), this, SLOT(clientHelp()));
 
-  aboutAct = new QAction(QIcon(":/mainwindow/m.png"), tr("About &mClient"), this);
+  aboutAct = new QAction(QIcon(":/mainwindow/m.png"), tr("About &mClient Lite"), this);
   aboutAct->setStatusTip(tr("Show the application's About box"));
   connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -128,12 +99,12 @@ void WindowActionManager::createActions() {
   aboutQtAct->setStatusTip(tr("Show the Qt library's About box"));
   connect(aboutQtAct, SIGNAL(triggered()), qApp, SLOT(aboutQt()));
 
+  newbieHelpAct = new QAction(tr("&Information for Newcomers"), this);
+  newbieHelpAct->setStatusTip("Newbie help on the MUME website");
+  connect(newbieHelpAct, SIGNAL(triggered()), this, SLOT(newbieHelp()));
+
   cutAct->setEnabled(false);
   copyAct->setEnabled(false);
-//   connect(ClientManager::self()->getTextEdit(), SIGNAL(copyAvailable(bool)),
-//           cutAct, SLOT(setEnabled(bool)));
-//   connect(ClientManager::self()->getTextEdit(), SIGNAL(copyAvailable(bool)),
-//           copyAct, SLOT(setEnabled(bool)));
 }
 
 
@@ -160,11 +131,6 @@ void WindowActionManager::createMenus() {
   SmartMenuBar *menuBar = static_cast<SmartMenuBar*>(_mainWindow->menuBar());
 
   fileMenu = menuBar->addMenu(tr("&File"));
-  /*
-  fileMenu->addAction(connectAct);
-  fileMenu->addAction(disconnectAct);
-  fileMenu->addAction(reconnectAct);
-  */
   fileMenu->addSeparator();
   fileMenu->addAction(exitAct);
 
@@ -177,41 +143,35 @@ void WindowActionManager::createMenus() {
   viewMenu->addAction(alwaysOnTopAct);
   viewMenu->addAction(fullScreenAct);
 
-  settingsMenu = menuBar->addMenu(tr("&Settings"));
-  settingsMenu->addAction(settingsAct);
-  settingsMenu->addAction(profileAct);
-  settingsMenu->addAction(aliasAct);
-
   menuBar->addSeparator();
 
   helpMenu = menuBar->addMenu(tr("&Help"));
-  helpMenu->addAction(mumeHelpAct);
-  helpMenu->addAction(forumAct);
-  helpMenu->addAction(wikiAct);
-  helpMenu->addSeparator();
   helpMenu->addAction(clientHelpAct);
+  helpMenu->addSeparator();
+  newbieMenu = helpMenu->addMenu(tr("&Newbie Tutorials"));  
+  newbieMenu->addAction(newbieHelpAct);
+  helpMenu->addSeparator();
+  mumeMenu = helpMenu->addMenu(tr("M&UME"));
+  mumeMenu->addAction(mumeWebsiteAct);
+  mumeMenu->addAction(mumeForumAct);
+  mumeMenu->addAction(mumeWikiAct);
   helpMenu->addSeparator();
   helpMenu->addAction(aboutAct);
   helpMenu->addAction(aboutQtAct);
+
+
 }
 
 
 void WindowActionManager::createToolBars() {
   /*
-  connectToolBar = _mainWindow->addToolBar(tr("Connection"));
-  connectToolBar->setObjectName("ToolBarConnect");
-  connectToolBar->addAction(connectAct);
-  connectToolBar->addAction(disconnectAct);
-  connectToolBar->addAction(reconnectAct);
-  connectToolBar->setVisible(false);
-  */
-
   editToolBar = _mainWindow->addToolBar(tr("Edit"));
   editToolBar->setObjectName("ToolBarEdit");
   editToolBar->addAction(cutAct);
   editToolBar->addAction(copyAct);
   editToolBar->addAction(pasteAct);
   editToolBar->setVisible(false);
+  */
 }
 
 
@@ -228,8 +188,18 @@ void WindowActionManager::alwaysOnTop() {
 
 
 void WindowActionManager::fullScreen() {
-  if (_mainWindow->isFullScreen()) _mainWindow->showNormal();
-  else _mainWindow->showFullScreen();
+  if (_mainWindow->isFullScreen()) {
+    _mainWindow->showNormal();
+  }
+  else {
+    _mainWindow->showFullScreen();
+  }
+
+  // Ensure alwaysOnTop is NOT set
+  if (_mainWindow->windowFlags() & Qt::WindowStaysOnTopHint) {
+    alwaysOnTop();
+    alwaysOnTopAct->setChecked(false);
+  }
 }
 
 
@@ -239,41 +209,23 @@ void WindowActionManager::about() {
     tr("<b>Subversion Revision ") + QString::number(SVN_REVISION)
 #else
 #ifdef MCLIENT_VERSION
-    tr("<b>mClient Release ") + QString(MCLIENT_VERSION)
+    tr("<b>mClient ") + QString(MCLIENT_VERSION)
 #else
     tr("<b>Unknown Release")
 #endif
 #endif
     + tr("</b><br><br>");
-  QMessageBox::about(_mainWindow, tr("About mClient"),
-                     tr("<FONT SIZE=\"+1\"><B>mClient ") +
-		     version +
+  QMessageBox::about(_mainWindow, tr("About mClient Lite"),
+                     tr("<FONT SIZE=\"+1\"><B>") + version +
 		     tr("</B></FONT><P>"
 			"Copyright \251 2008 by Jahara<P>"
 			"Visit the <A HREF=\"http://code.google.com/p/mclient-mume/\">mClient website</A> "
-			"for more information."));
+			"to upgrade to the full mClient."));
 }
 
 void WindowActionManager::clientHelp() {
   if (!QDesktopServices::openUrl(QUrl::fromEncoded("http://mume.org/wiki/index.php/mClient_Help")))
     qWarning() << "Failed to open web browser";
-}
-
-void WindowActionManager::connectSession() {
-  QVariant *payload = new QVariant();
-  QStringList tags("ConnectToHost");
-  postEvent(payload, tags);
-}
-
-void WindowActionManager::disconnectSession() {
-  QVariant *payload = new QVariant();
-  QStringList tags("DisconnectFromHost");
-  postEvent(payload, tags);  
-}
-
-void WindowActionManager::reconnectSession() {
-  disconnectSession();
-  connectSession();
 }
 
 void WindowActionManager::postEvent(QVariant *payload, const QStringList& tags) {
@@ -285,4 +237,24 @@ void WindowActionManager::postEvent(QVariant *payload, const QStringList& tags) 
   MClientEvent *me
     = new MClientEvent(new MClientEventData(payload, tags, session));
   QCoreApplication::postEvent(ps, me);
+}
+
+void WindowActionManager::openMumeWebsite()
+{
+        QDesktopServices::openUrl(QUrl("http://mume.org/"));
+}
+
+void WindowActionManager::openMumeForum()
+{
+        QDesktopServices::openUrl(QUrl("http://mume.org/forum/"));
+}
+
+void WindowActionManager::openMumeWiki()
+{
+        QDesktopServices::openUrl(QUrl("http://mume.org/wiki/"));
+}
+
+
+void WindowActionManager::newbieHelp() {
+  QDesktopServices::openUrl(QUrl("http://mume.org/newbie.php"));
 }

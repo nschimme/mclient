@@ -18,8 +18,8 @@ SimpleDisplay::SimpleDisplay(QObject* parent)
     _longName = "Simple Display";
     _description = "A simple display plugin using QTextEdit.";
 //   _dependencies.insert("terrible_test_api", 1);
-//    _implemented.insert("some_other_api",1);
-    _receivesDataTypes << "DisplayData" << "UserInput";
+    _implemented.insert("display",1);
+    _receivesDataTypes << "DisplayData" << "UserInput" << "DoneLoading";
     //_deliversDataTypes << "?";
     _configurable = false;
     _configVersion = "2.0";

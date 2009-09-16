@@ -34,7 +34,7 @@ public slots:
         void sendToSocket(const QByteArray &);
 
  private:
-	bool _openSocket;
+	bool _openSocket, _autoConnect;
         QPointer<SocketReader> _socketReader;
 	
         void sendData(const QByteArray&);
