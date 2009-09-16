@@ -1,6 +1,9 @@
 #ifndef MCLIENTEVENTHANDLER_H
 #define MCLIENTEVENTHANDLER_H
 
+#include "MClientEventHandlerInterface.h"
+#include "MClientDefinitions.h"
+
 #include <QObject>
 #include <QMultiHash>
 #include <QStringList>
@@ -13,10 +16,9 @@ class ConfigEntry;
 class SmartMenu;
 class MClientEventData;
 
-typedef QSet<SmartMenu*> MenuData;
-
-class MClientEventHandler : public QObject {
+class MClientEventHandler : public QObject, public MClientEventHandlerInterface {
     Q_OBJECT
+    Q_INTERFACES(MClientEventHandlerInterface)
     
     public:
         MClientEventHandler(PluginSession *ps, MClientPlugin *pl);

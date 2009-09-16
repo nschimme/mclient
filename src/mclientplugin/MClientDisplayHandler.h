@@ -1,16 +1,17 @@
 #ifndef MCLIENTDISPLAYHANDLER_H
 #define MCLIENTDISPLAYHANDLER_H
 
+#include "MClientDisplayHandlerInterface.h"
 #include "MClientEventHandler.h"
-#include "MClientDefinitions.h"
 #include <QWidget>
 
 class PluginSession;
 class MClientPlugin;
 class QEvent;
 
-class MClientDisplayHandler : public MClientEventHandler {
+class MClientDisplayHandler : public MClientEventHandler, public MClientDisplayHandlerInterface {
     Q_OBJECT
+    Q_INTERFACES(MClientDisplayHandlerInterface)
 
     public:
         MClientDisplayHandler(PluginSession *ps, MClientPlugin *mp);
@@ -20,7 +21,7 @@ class MClientDisplayHandler : public MClientEventHandler {
         virtual void customEvent(QEvent* e);
 
         // The field of possible display locations
-        virtual const MClientDisplayLocations& displayLocations() const;
+        const MClientDisplayLocations& displayLocations() const;
 
         // Display members
 	virtual QWidget* createWidget();

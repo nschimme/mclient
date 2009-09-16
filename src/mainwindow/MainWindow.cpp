@@ -152,17 +152,18 @@ void MainWindow::initDisplay(PluginSession *ps) {
     if (pi) {
 
       MClientEventHandler *eh = pi->getEventHandler(session);
-
       if (eh) {
 	// Create the widgets outside of the threads
-        MClientDisplayHandler *dh = dynamic_cast<MClientDisplayHandler*>(eh);
+        MClientDisplayHandlerInterface *dh
+	  = qobject_cast<MClientDisplayHandlerInterface*>(eh);
 	if (dh) {
 	  // Initialize the display
 	  QPair<int, QWidget*> pair(dh->displayLocations(),
 				    dh->createWidget());
 	  widgetList << pair;
 	  
-        } else qDebug() << "! Display unable to cast DisplayHandler" << eh;
+        } else qDebug() << "! Display unable to cast DisplayHandler"
+			<< pi->shortName();
 
 	// Create menus
 	MenuData menus = eh->createMenus();

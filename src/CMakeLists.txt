@@ -40,6 +40,14 @@ if (MINGW)
 else (MINGW)
     set(mclient_WINRC resources/win32/mclient.rc)
 endif (MINGW)
+if (APPLE)
+    set(mclient_SRCS ${mclient_SRCS} resources/macosx/mclient.icns)
+    set_source_files_properties(resources/macosx/mclient.icns PROPERTIES
+    	MACOSX_PACKAGE_LOCATION Resources
+    )
+    set(MACOSX_BUNDLE_ICON_FILE mclient.icns)
+ endif (APPLE)
+
 
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
@@ -55,10 +63,10 @@ QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
 # Build the executable
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(EXECUTABLE_FLAGS MACOSX_BUNDLE WIN32)
+    set(EXECUTABLE_FLAGS WIN32)
 endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
-add_executable(mclient ${EXECUTABLE_FLAGS}
+add_executable(mclient ${EXECUTABLE_FLAGS} #MACOSX_BUNDLE
     ${mclient_SRCS}
     ${mclient_MOC_SRCS}
     ${mclient_UIS_H}
@@ -154,7 +162,7 @@ if (APPLE)
     # Install Executables
     install(
         TARGETS mclient
-	#BUNDLE DESTINATION .
+	BUNDLE DESTINATION .
 	RUNTIME DESTINATION .
 	COMPONENT applications
     )
@@ -163,14 +171,13 @@ if (APPLE)
     #set(CPACK_OSX_PACKAGE_VERSION 10.4)
 
     # Package Settings
-    set(CPACK_GENERATOR "PackageMaker")
+    set(CPACK_GENERATOR "DragNDrop")
     set(CPACK_SOURCE_GENERATOR "TGZ")
 
     # Libraries are bundled directly
     set(CPACK_COMPONENT_LIBRARIES_HIDDEN TRUE)
 
     # Bundle Properties
-    #SET(MACOSX_BUNDLE_ICON_FILE resources/macosx/mclient.icns)
     SET(MACOSX_BUNDLE_BUNDLE_NAME mClient)
     SET(MACOSX_BUNDLE_BUNDLE_VERSION ${VERSION})
     SET(MACOSX_BUNDLE_SHORT_VERSION_STRING ${VERSION})
