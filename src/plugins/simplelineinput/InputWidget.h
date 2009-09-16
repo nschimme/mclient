@@ -3,13 +3,11 @@
 
 #include <QLineEdit>
 
-class SimpleLineInput;
-
 class InputWidget : public QLineEdit {
     Q_OBJECT
     
     public:
-        InputWidget(QString s, SimpleLineInput *sli, QWidget* parent=0);
+        InputWidget(QWidget* parent=0);
         ~InputWidget();
 
 public slots:
@@ -19,8 +17,6 @@ protected slots:
         void gotInput();
 
     private:
-	QString _session;
-	SimpleLineInput* _sli;
 	bool _echoMode;
 
  signals:

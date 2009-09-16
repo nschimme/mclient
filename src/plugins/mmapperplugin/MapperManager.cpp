@@ -12,7 +12,6 @@
 #include "MapperManager.h"
 #include "MainWindow.h"
 
-#include "ActionManager.h"
 #include "MMapperPluginParser.h"
 #include "EventHandler.h"
 

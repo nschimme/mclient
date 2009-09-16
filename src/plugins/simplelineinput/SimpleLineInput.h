@@ -1,42 +1,30 @@
 #ifndef SIMPLELINEINPUT_H
 #define SIMPLELINEINPUT_H
 
-#include "MClientDisplayPlugin.h"
+#include "MClientPlugin.h"
 
 #include <QHash>
 #include <QPointer>
 
-class InputWidget;
+class EventHandler;
 class QEvent;
 
-class SimpleLineInput : public MClientDisplayPlugin {
+class SimpleLineInput : public MClientPlugin {
     Q_OBJECT
     
     public:
-        SimpleLineInput(QWidget* parent=0);
+        SimpleLineInput(QObject* parent=0);
         ~SimpleLineInput();
 
         // Plugin members
-        void customEvent(QEvent* e);
-        void configure();
-        bool loadSettings();
-        bool saveSettings() const;
-        bool startSession(QString s);
-        bool stopSession(QString s);
+	void configure();
+        bool startSession(PluginSession *ps);
+        bool stopSession(PluginSession *ps);
 
-        // Display members
-        bool initDisplay(QString s);
-        QWidget* getWidget(QString s);
-
-public slots:
-        void sendUserInput(const QString&, bool);
+	MClientEventHandler* getEventHandler(QString s);
 
     private:
-	QString _settingsFile;
-	QPointer<InputWidget> _widget;
-
- signals:
-	void setEchoMode(bool);
+	QHash<QString, QPointer<EventHandler> > _eventHandlers;
 };
 
 

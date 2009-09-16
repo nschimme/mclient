@@ -3,23 +3,11 @@
 
 #include <QDebug>
 
-InputWidget::InputWidget(QString s, SimpleLineInput* sli, QWidget* parent) 
-    : QLineEdit(parent) {
-    _session = s;
-    _sli = sli;
-
+InputWidget::InputWidget(QWidget* parent) : QLineEdit(parent) {
     setMaxLength(255);
+    _echoMode = true;
 
-    // Connect Signals/Slots
     connect(this, SIGNAL(returnPressed()), SLOT(gotInput()));
-    connect(this, SIGNAL(sendUserInput(const QString&, bool)),
-	    _sli, SLOT(sendUserInput(const QString&, bool)));
-    connect(_sli, SIGNAL(setEchoMode(bool)),
-	    this, SLOT(toggleEchoMode(bool)));
-
-    // Debugging Information
-    qDebug() << "* SimpleLineInput thread:" << _sli->thread();
-    qDebug() << "* InputWidget thread:" << this->thread();
 }
 
 

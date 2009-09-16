@@ -39,6 +39,8 @@ void MMapperPluginParser::description(const QString &text) {
 
 
 void MMapperPluginParser::dynamicDescription(const QString &text) {
+  m_descriptionReady = true; // sometimes we don't get a description
+			     // because of spam/brief mode
   m_dynamicRoomDesc = text;
 }
 
