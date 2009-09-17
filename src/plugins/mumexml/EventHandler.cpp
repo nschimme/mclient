@@ -89,8 +89,12 @@ void EventHandler::parse(const QByteArray& line) {
     if (_readingTag) {
       if (line.at(index) == '>') {
         // Parse line according to the element's tag
-        if (!_tempTag.isEmpty())
-          element( _tempTag );
+        if (!_tempTag.isEmpty()) {
+	  // Display tags?
+	  if (!_removeXmlTags) _buffer.append("<" + _tempTag + ">");
+
+	  element( _tempTag );
+	}
 
         _tempTag.clear();
 
@@ -136,7 +140,6 @@ bool EventHandler::element(const QByteArray& line) {
   // Mint's Server ANSI tag --> ANSI Codes
   if (line.startsWith("ansi")) {
     QByteArray ansi;
-    qDebug() << "##line" << line << ansi << _buffer.length();
     ansi.append(escChar);
     ansi.append('[');
     switch (length) {
@@ -151,8 +154,6 @@ bool EventHandler::element(const QByteArray& line) {
       break;
     };
     _buffer.append(ansi);
-    qDebug() << "##ansi2" << ansi;
-    qDebug() << "##buffer" << _buffer << _buffer.length();
     return true;
   }
   
@@ -171,13 +172,23 @@ bool EventHandler::element(const QByteArray& line) {
       switch (line.at(0)) {
       case 'p':
 	if (line.startsWith("prompt")) _xmlMode = XML_PROMPT;
-	else
-          if (line.startsWith("pray")) _xmlMode = XML_PRAY;
+	else if (line.startsWith("pray")) _xmlMode = XML_PRAY;
 	break;
       case 'e':
 	if (line.startsWith("exits")) _xmlMode = XML_EXITS;
-	else
-          if (line.startsWith("emote")) _xmlMode = XML_EMOTE;
+	else if (line.startsWith("emote")) _xmlMode = XML_EMOTE;
+	else if (line.startsWith("edit")) {
+	  _xmlMode = XML_EDIT;
+
+	  // Post the XML Edit Key
+	  int i = line.length() - 1;
+	  while (line.at(i) != '=') i--;
+	  QVariant* qv = new QVariant(line.mid(i+1, line.length()-1));
+	  qDebug() << "* XML edit key" << qv->toString();
+	  QStringList sl;
+	  sl << "XMLEdit";
+	  postSession(qv, sl);
+	}
 	break;
       case 'r':
 	if (line.startsWith("room")) _xmlMode = XML_ROOM;
@@ -232,10 +243,8 @@ bool EventHandler::element(const QByteArray& line) {
 	break;
       case 's':
 	if (line.startsWith("say")) _xmlMode = XML_SAY;
-	else
-	  if (line.startsWith("song")) _xmlMode = XML_SONG;
-	  else
-	    if (line.startsWith("shout")) _xmlMode = XML_SHOUT;
+	else if (line.startsWith("song")) _xmlMode = XML_SONG;
+	else if (line.startsWith("shout")) _xmlMode = XML_SHOUT;
 	break;
       case 'n':
 	if (line.startsWith("narrate")) _xmlMode = XML_NARRATE;
@@ -249,11 +258,16 @@ bool EventHandler::element(const QByteArray& line) {
       case 'w':
 	if (line.startsWith("weather")) _xmlMode = XML_WEATHER;
 	break;
+      case 'v':
+	if (line.startsWith("view")) _xmlMode = XML_VIEW;
+	break;
       case '/':
 	if (line.startsWith("/xml")) {
 	  qDebug() << "! XML mode disabled on MUME";
 	}
 	break;
+      default:
+	qDebug() << "! Unknown XML tag:" << line;
       };
     break;
   case XML_ROOM:
@@ -358,6 +372,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_MAGIC:
     if (length > 0)
       switch (line.at(0)) {
@@ -373,6 +388,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_TELL:
     if (length > 0)
       switch (line.at(0)) {
@@ -388,6 +404,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_SAY:
     if (length > 0)
       switch (line.at(0)) {
@@ -403,6 +420,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_NARRATE:
     if (length > 0)
       switch (line.at(0)) {
@@ -418,6 +436,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_SONG:
     if (length > 0)
       switch (line.at(0)) {
@@ -433,6 +452,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_PRAY:
     if (length > 0)
       switch (line.at(0)) {
@@ -448,6 +468,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_SHOUT:
     if (length > 0)
       switch (line.at(0)) {
@@ -463,6 +484,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_YELL:
     if (length > 0)
       switch (line.at(0)) {
@@ -478,6 +500,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_EMOTE:
     if (length > 0)
       switch (line.at(0)) {
@@ -493,6 +516,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_DAMAGE:
     if (length > 0)
       switch (line.at(0)) {
@@ -508,6 +532,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_HIT:
     if (length > 0)
       switch (line.at(0)) {
@@ -523,6 +548,7 @@ bool EventHandler::element(const QByteArray& line) {
 	}
         break;
       }
+    break;
   case XML_WEATHER:
     if (length > 0)
       switch (line.at(0)) {
@@ -539,15 +565,118 @@ bool EventHandler::element(const QByteArray& line) {
         break;
       }
     break;
+  case XML_VIEW:
+    if (length > 0)
+      switch (line.at(0)) {
+      case '/':
+	if (line.startsWith("/view")) _xmlMode = XML_NONE;
+	break;
+      case 't':
+	if (line.startsWith("title")) {
+	  _xmlMode = XML_VIEW_TITLE;
+	  // TODO md5 checksum storage
+	}
+	break;
+      case 'b':
+	if (line.startsWith("body")) {
+	  _xmlMode = XML_VIEW_BODY;
+	  // TODO md5 checksum storage
+	}
+	break;
+      }
+    break;
+  case XML_VIEW_TITLE:
+    if (length > 0)
+      switch (line.at(0)) {
+      case '/':
+	if (line.startsWith("/title")) {
+	  _xmlMode = XML_VIEW;
+	  // TODO md5 checksum (requires attributes)
+	  
+	  // Post View/Title Event
+	  QStringList sl;
+	  sl << "XMLViewTitle";
+	  postBuffer(sl);
+
+	}
+	break;
+      }
+    break;
+  case XML_VIEW_BODY:
+    switch (line.at(0)) {
+    case '/':
+      if (line.startsWith("/body")) {
+	_xmlMode = XML_VIEW;
+	// TODO md5 checksum (requires attributes)
+	QByteArray fromBase64 = QByteArray::fromBase64(_buffer.toAscii());
+	_buffer = fromBase64.data();
+
+	// Post View/Body Event
+	QStringList sl;
+	sl << "XMLViewBody";
+	postBuffer(sl);
+
+      }
+      break;
+    }
+    break;
+  case XML_EDIT:
+    if (length > 0)
+      switch (line.at(0)) {
+      case '/':
+	if (line.startsWith("/edit")) _xmlMode = XML_NONE;
+	break;
+      case 't':
+	if (line.startsWith("title")) {
+	  _xmlMode = XML_EDIT_TITLE;
+	  // TODO md5 checksum storage
+	}
+	break;
+      case 'b':
+	if (line.startsWith("body")) {
+	  _xmlMode = XML_EDIT_BODY;
+	  // TODO md5 checksum storage
+	}
+	break;
+      }
+    break;
+  case XML_EDIT_TITLE:
+    if (length > 0)
+      switch (line.at(0)) {
+      case '/':
+	if (line.startsWith("/title")) {
+	  _xmlMode = XML_EDIT;
+	  // TODO md5 checksum (requires attributes)
+	  
+	  // Post View/Title Event
+	  QStringList sl;
+	  sl << "XMLEditTitle";
+	  postBuffer(sl);
+
+	}
+	break;
+      }
+    break;
+  case XML_EDIT_BODY:
+    switch (line.at(0)) {
+    case '/':
+      if (line.startsWith("/body")) {
+	_xmlMode = XML_EDIT;
+	// TODO md5 checksum (requires attributes)
+	QByteArray fromBase64 = QByteArray::fromBase64(_buffer.toAscii());
+	_buffer = fromBase64.data();
+
+	// Post View/Body Event
+	QStringList sl;
+	sl << "XMLEditBody";
+	postBuffer(sl);
+
+      }
+      break;
+    }
+    break;
   }
-  
-  // Display tags?
-  if (!_removeXmlTags) {
-    QString output = "<"+line+">";
-    QVariant *qv = new QVariant(output);
-    QStringList sl("XMLTag");
-    postSession(qv, sl);
-  }
+
   return true;
 }
 
@@ -649,6 +778,7 @@ void EventHandler::postBuffer(const QStringList &tags) {
   QVariant *qv = new QVariant(_buffer);
   postSession(qv, tags);
   _buffer.clear();
+
 }
 
 
