@@ -16,7 +16,7 @@ class EventHandler : public MClientEventHandler {
         void customEvent(QEvent* e);
 
 public slots:
-        void sendToSocket(int, const QByteArray &);
+        void sendToSocket(const QByteArray &);
 
    private:
 	int _key;
@@ -30,6 +30,8 @@ public slots:
 			 const QByteArray &body);
 	void viewSession(int key, const QByteArray &title,
 			 const QByteArray &body);
+	void sendMUMEIdentifyRequest();
+
 };
 
 

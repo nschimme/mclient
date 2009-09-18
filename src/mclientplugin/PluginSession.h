@@ -49,6 +49,8 @@ class PluginSession : public QThread {
     // For EventHandlers to easily receive the ConfigEntry
     ConfigEntry* retrievePluginSettings(const QString &pluginName) const;
 
+    bool isMUME() const { return _mume; }
+
 public slots:
     void doneLoading();
 
@@ -56,6 +58,7 @@ public slots:
     void run();
 
   private:
+    bool _mume;
     QString _session;
     PluginManager *_pluginManager;
     CommandProcessor *_commandProcessor;

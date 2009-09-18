@@ -92,7 +92,7 @@ void EventHandler::customEvent(QEvent *e) {
       
     } else if (me->dataTypes().contains("MUMEPromptGARequest")) {
       //do not allow server to suppress go-aheads (MUME is backwards)
-      sendData(QByteArray("~$#EP2\nG\n"));
+      sendMUMEGARequest();
       
     } else if (me->dataTypes().contains("DoneLoading")) {
       // auto connect on session start
@@ -179,6 +179,8 @@ void EventHandler::socketOpened() {
   QVariant* qv = new QVariant();
   QStringList sl("SocketConnected");
   postSession(qv, sl);
+  
+  if (_pluginSession->isMUME()) sendMUMEGARequest();
 }
 
 void EventHandler::socketClosed() {
@@ -186,4 +188,10 @@ void EventHandler::socketClosed() {
   QVariant* qv = new QVariant();
   QStringList sl("SocketDisconnected");
   postSession(qv, sl);
+}
+
+
+void EventHandler::sendMUMEGARequest() {
+  qDebug() << "* sent MUME prompt GA request";
+  sendData(QByteArray("~$#EP2\nG\n"));
 }

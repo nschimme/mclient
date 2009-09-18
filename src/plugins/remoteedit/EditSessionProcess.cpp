@@ -17,16 +17,16 @@
 #include "EditSessionProcess.h"
 #include <QDebug>
 #include <QDir>
-#include <QDateTime>
 #include <QCoreApplication>
 #include <QTemporaryFile>
+#include <QFileInfo>
 
 EditSessionProcess::EditSessionProcess(int key, const QByteArray &title,
 				       const QByteArray &body, QObject *parent)
   : ViewSessionProcess(key, title, body, parent) {
   // Store the file information
-  _fileInfo.setCaching(false);
-  _fileInfo.setFile(_file);
+  QFileInfo fileInfo(_file);
+  _previousTime = fileInfo.lastModified();
 }
 
 
@@ -41,13 +41,15 @@ void EditSessionProcess::onFinished(int exitCode,
 	   << exitCode;
   if (status == QProcess::NormalExit) {
     // See if the file was modified since we created it
-    QDateTime before = _fileInfo.lastModified();
-    _fileInfo.refresh();
-    QDateTime after = _fileInfo.lastModified();
-
-    // Read the file and submit it to MUME
-    if (before != after && _file.open()) {
-      _body = _file.readAll();
+    QFileInfo fileInfo(_file);
+    QDateTime currentTime = fileInfo.lastModified();
+    if (_previousTime != currentTime) {
+      // Read the file and submit it to MUME
+      qDebug() << "* Edit session" << _key << "had changes, reading";
+      if (_file.open())
+	_body = _file.readAll();
+      else
+	qWarning() << "! Edit session" << _key << "unable to read file!";
       return finishEdit();
 
     }
@@ -75,7 +77,8 @@ void EditSessionProcess::cancelEdit() {
     .arg(MPI)
     .arg(keystr.length())
     .arg(keystr);
-  emit sendToSocket(_key, buffer.toAscii());
+  qDebug() << "* Edit session" << _key << "writing to socket:" << buffer;
+  emit sendToSocket(buffer.toAscii());
   deleteLater();
 }
 
@@ -94,6 +97,7 @@ void EditSessionProcess::finishEdit() {
     .arg(keystr);
   _body.prepend(buffer.toAscii());
 
-  emit sendToSocket(_key, _body);
+  qDebug() << "* Edit session" << _key << "writing to socket:" << _body;
+  emit sendToSocket(_body);
   deleteLater();
 }

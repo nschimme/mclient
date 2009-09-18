@@ -44,12 +44,8 @@ void SocketReader::sendToSocket(const QByteArray &ba) {
       return;
     }
     
-    //     for( int i = 0; i < ba.size(); i++)
-    //       qDebug() << i << (unsigned char)ba.at(i) << ba.at(i);
-    
-    // this shouldn't be ba.data() !!
     _socket->write(ba);
-    //qDebug() << "socket" << ba.size() << "bytes written";
+    //qDebug() << "* wrote to socket" << ba.size() << ":" << ba;
   }
 }
 

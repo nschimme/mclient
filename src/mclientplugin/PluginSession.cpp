@@ -30,6 +30,9 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
 			     QObject *parent)
   : QThread(parent), _session(s), _pluginManager(pm) {
 
+  // This is usually mume
+  _mume = true;
+
   // Create alias and action managers
   _aliasManager = new AliasManager;
   _actionManager = new ActionManager;

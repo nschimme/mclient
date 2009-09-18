@@ -8,6 +8,7 @@
 #include <QDebug>
 
 #include "MClientEvent.h"
+#include "PluginSession.h"
 
 /*
 const QByteArray EventHandler::greaterThanChar(">");
@@ -72,6 +73,15 @@ void EventHandler::customEvent(QEvent *e) {
 	postFragment();
 	_buffer.clear();
 
+      }
+      else if (s.startsWith("SocketConnected")) {
+	if (_pluginSession->isMUME()) {
+	  qDebug() << "* sent mume MPI XML request";
+	  QVariant* qv = new QVariant(QByteArray("~$#EX\n"));
+	  QStringList sl("SendToSocketData");
+	  postSession(qv, sl);
+
+	}	  
       }
       
     }
@@ -181,10 +191,10 @@ bool EventHandler::element(const QByteArray& line) {
 	  _xmlMode = XML_EDIT;
 
 	  // Post the XML Edit Key
-	  int i = line.length() - 1;
-	  while (line.at(i) != '=') i--;
-	  QVariant* qv = new QVariant(line.mid(i+1, line.length()-1));
-	  qDebug() << "* XML edit key" << qv->toString();
+	  int key = -1;
+	  QRegExp rx("key=(\\d+)");
+	  if (rx.indexIn(line) != -1) key = rx.capturedTexts().at(1).toInt();
+	  QVariant* qv = new QVariant(key);
 	  QStringList sl;
 	  sl << "XMLEdit";
 	  postSession(qv, sl);
@@ -627,15 +637,19 @@ bool EventHandler::element(const QByteArray& line) {
 	if (line.startsWith("/edit")) _xmlMode = XML_NONE;
 	break;
       case 't':
-	if (line.startsWith("title")) {
-	  _xmlMode = XML_EDIT_TITLE;
-	  // TODO md5 checksum storage
-	}
+	if (line.startsWith("title")) _xmlMode = XML_EDIT_TITLE;
 	break;
       case 'b':
 	if (line.startsWith("body")) {
-	  _xmlMode = XML_EDIT_BODY;
-	  // TODO md5 checksum storage
+	  // Check whether this is a single tag	(i.e. <body ... />)
+	  if (line.at(line.size()-1) == '/') {
+	    // Post Edit/Body Event
+	    QStringList sl;
+	    sl << "XMLEditBody";
+	    postBuffer(sl);
+	    
+	  }
+	  else _xmlMode = XML_EDIT_BODY;
 	}
 	break;
       }
@@ -646,9 +660,8 @@ bool EventHandler::element(const QByteArray& line) {
       case '/':
 	if (line.startsWith("/title")) {
 	  _xmlMode = XML_EDIT;
-	  // TODO md5 checksum (requires attributes)
-	  
-	  // Post View/Title Event
+
+	  // Post Edit/Title Event
 	  QStringList sl;
 	  sl << "XMLEditTitle";
 	  postBuffer(sl);
@@ -662,11 +675,10 @@ bool EventHandler::element(const QByteArray& line) {
     case '/':
       if (line.startsWith("/body")) {
 	_xmlMode = XML_EDIT;
-	// TODO md5 checksum (requires attributes)
 	QByteArray fromBase64 = QByteArray::fromBase64(_buffer.toAscii());
 	_buffer = fromBase64.data();
 
-	// Post View/Body Event
+	// Post Edit/Body Event
 	QStringList sl;
 	sl << "XMLEditBody";
 	postBuffer(sl);

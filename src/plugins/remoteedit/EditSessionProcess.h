@@ -18,9 +18,10 @@
 #define _EDITSESSIONPROCESS_H_
 
 #include "ViewSessionProcess.h"
-#include <QFileInfo>
+#include <QDateTime>
 
-#define MPI "~$#E" // MUME protocol introducer
+// MUME protocol introducer
+#define MPI "~$#E"
 
 class EditSessionProcess: public ViewSessionProcess {
   Q_OBJECT
@@ -39,10 +40,10 @@ private slots:
     void finishEdit();
 
   private:
-    QFileInfo _fileInfo;
+    QDateTime _previousTime;
 
  signals:
-    void sendToSocket(int, const QByteArray &);
+    void sendToSocket(const QByteArray &);
 
 };
 

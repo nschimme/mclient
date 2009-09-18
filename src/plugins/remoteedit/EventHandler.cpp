@@ -6,6 +6,7 @@
 
 #include <QDebug>
 
+#include "PluginSession.h"
 #include "MClientEvent.h"
 #include "EditSessionProcess.h"
 
@@ -26,8 +27,7 @@ void EventHandler::customEvent(QEvent *e) {
   else if (e->type() == 10001) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
-    if (me->dataTypes().contains("XMLEdit") ||
-	me->dataTypes().contains("XMLView")) {
+    if (me->dataTypes().contains("XMLEdit")) {
       if (_state != NORMAL)
 	qWarning() << "! Remote editing protocol somehow received a key";
 
@@ -65,21 +65,11 @@ void EventHandler::customEvent(QEvent *e) {
       
     }
     else if (me->dataTypes().contains("XMLViewTitle")) {
-      _key = 0;
-      _title = me->payload()->toByteArray();
-      _state = RECEIVED_TITLE;
-      /*
-      if (_state == RECEIVED_KEY) {
+      if (_state == NORMAL) {
+	_key = -1;
 	_title = me->payload()->toByteArray();
 	_state = RECEIVED_TITLE;
       }
-      else {
-	qWarning() << "! Remote editing protocol never got a key"
-		   << "; discarding title";
-	_state = NORMAL;
-
-      }
-      */
       
     }
     else if (me->dataTypes().contains("XMLViewBody")) {
@@ -98,7 +88,14 @@ void EventHandler::customEvent(QEvent *e) {
       _state = NORMAL;
       
     }
-    
+    else if (me->dataTypes().contains("MUMEIdentifyRequest")) {
+      sendMUMEIdentifyRequest();
+
+    }
+    else if (me->dataTypes().contains("SocketConnected")) {
+      //if (_pluginSession->isMUME()) sendMUMEIdentifyRequest();
+
+    }
   }
   else {
     qDebug() << "! RemoteEdit somehow received the wrong kind of event...";
@@ -110,8 +107,8 @@ void EventHandler::editSession(int key, const QByteArray &title,
 			       const QByteArray &body) {
   EditSessionProcess *process = new EditSessionProcess(key, title, body, this);
 
-  connect(process, SIGNAL(sendToSocket(int, const QByteArray &)),
-	  this, SLOT(sendToSocket(int, const QByteArray &)));
+  connect(process, SIGNAL(sendToSocket(const QByteArray &)),
+	  SLOT(sendToSocket(const QByteArray &)));
 }
 
 
@@ -121,8 +118,13 @@ void EventHandler::viewSession(int key, const QByteArray &title,
 }
 
 
-void EventHandler::sendToSocket(int key, const QByteArray &data) {
-  qDebug() << "* Edit session" << key << "writing to socket" << data;
+void EventHandler::sendMUMEIdentifyRequest() {
+  qDebug() << "* sent MUME identify request";
+  sendToSocket(QByteArray("~$#EI\n"));
+}
+
+
+void EventHandler::sendToSocket(const QByteArray &data) {
   QVariant* qv = new QVariant(data);
   QStringList sl("SocketWriteData");
   postSession(qv, sl);

@@ -2,6 +2,7 @@
 
 #include "PluginSession.h"
 #include "EventHandler.h"
+#include "CommandEntry.h"
 
 #include <QDebug>
 
@@ -16,7 +17,19 @@ RemoteEdit::RemoteEdit(QObject* parent)
     _dependencies.insert("telnet", 1);
     _implemented.insert("remoteedit",1);
     _receivesDataTypes << "XMLEdit" << "XMLEditTitle" << "XMLEditBody"
-		       << "XMLView" << "XMLViewTitle" << "XMLViewBody";
+		       << "XMLView" << "XMLViewTitle" << "XMLViewBody"
+		       << "MUMEIdentifyRequest" << "SocketConnected";
+
+    // Command: identify
+    CommandEntry *identify = new CommandEntry();
+    identify->pluginName(shortName());
+    identify->command("identify");
+    identify->help("send the MUME identify request");
+    identify->dataType("MUMEIdentifyRequest");
+    
+    // For registering commands
+    _commandEntries << identify;
+
 }
 
 

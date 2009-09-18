@@ -32,10 +32,14 @@ ViewSessionProcess::ViewSessionProcess(int key, const QByteArray &title,
   connect(this, SIGNAL(error(QProcess::ProcessError)),
 	  SLOT(onError(QProcess::ProcessError)));
 
+  QString keyTemp;
+  if (key == -1) keyTemp = "view";
+  else keyTemp = QString("key%1").arg(_key);
+
   // Set the file template
-  QString fileTemplate = QString("%1mClient.key%2.pid%3.XXXXXX")
+  QString fileTemplate = QString("%1mClient.%2.pid%3.XXXXXX")
     .arg(QDir::tempPath() + QDir::separator()) // %1
-    .arg(_key)                                 // %2
+    .arg(keyTemp)                              // %2
     .arg(QCoreApplication::applicationPid());  // %3
   _file.setFileTemplate(fileTemplate);
 

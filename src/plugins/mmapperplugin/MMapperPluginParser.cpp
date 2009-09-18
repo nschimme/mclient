@@ -124,6 +124,12 @@ void MMapperPluginParser::submit() {
     characterMoved(_move, m_roomName, m_dynamicRoomDesc, m_staticRoomDesc, m_exitsFlags, m_promptFlags);
     _move = CID_LOOK;
   }
+
+  m_exitsFlags = 0;
+  m_promptFlags = 0;
+  m_roomName = nullString;
+  m_dynamicRoomDesc = nullString;
+  m_staticRoomDesc = nullString;
 }
 
 

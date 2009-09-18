@@ -38,7 +38,7 @@ public slots:
         QPointer<SocketReader> _socketReader;
 	
         void sendData(const QByteArray&);
-
+	void sendMUMEGARequest();
 };
 
 
