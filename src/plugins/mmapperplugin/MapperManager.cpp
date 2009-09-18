@@ -121,6 +121,8 @@ MapperManager::MapperManager(EventHandler *eh, QObject *parent)
 	  getParser(), SLOT(prompt(const QString&)));
   connect(_eventHandler, SIGNAL(move(const QString &)),
 	  getParser(), SLOT(move(const QString &)));
+  connect(_eventHandler, SIGNAL(terrain(const QString &)),
+	  getParser(), SLOT(terrain(const QString &)));
   
   connect(_eventHandler, SIGNAL(userInput(QString)),
 	  getParser(), SLOT(userInput(QString)),

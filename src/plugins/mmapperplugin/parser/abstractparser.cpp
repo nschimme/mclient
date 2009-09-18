@@ -1135,15 +1135,27 @@ void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
 
     bool door = false;
     bool exit = false;
-    if (ISSET(getFlags(r->exit(j)),EF_DOOR))
-    {
-      door = true;
-      etmp += " {";
-    }
-
+    bool road = false;
+    bool trail = false;
     if (ISSET(getFlags(r->exit(j)),EF_EXIT)) {
       exit = true;
-      if (!door) etmp += " ";
+      
+      if (ISSET(getFlags(r->exit(j)), EF_ROAD))
+	if (getTerrainType(r) == RTT_ROAD) {
+	  road = true;
+	  etmp += " =";
+	}
+	else {
+	  trail = true;
+	  etmp += " -";
+	}
+      else etmp += " ";
+      
+    
+      if (ISSET(getFlags(r->exit(j)),EF_DOOR)) {
+	door = true;
+	etmp += "{";
+      }
 
       switch(j)
       {
@@ -1157,18 +1169,10 @@ void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
       }
     }
 
-    if (door)
-    {
-                /*if (getDoorName(r->exit(j))!="")
-      etmp += "/"+getDoorName(r->exit(j))+"}";
-      else*/
-      etmp += "},";
-    }
-    else
-    {
-      if (exit)
-        etmp += ",";
-    }
+    if (door) etmp += "}";
+    if (road) etmp += "=";
+    else if (trail) etmp += "-";
+    if (exit) etmp += ",";
   }
   etmp = etmp.left(etmp.length()-1);
   etmp += ".";
@@ -1215,9 +1219,7 @@ void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
 
   }
 
-  qDebug() << "###displaying emulated exit" << etmp.toAscii() << cn;
   emit sendToUser(etmp.toAscii()+cn);
-
 }
 
 void AbstractParser::sendPromptSimulationToUser()
@@ -1640,7 +1642,7 @@ QString& AbstractParser::latinToAscii(QString& str) {
   int pos;
 
   for (pos = 0; pos <= str.length(); pos++) {
-    ch = str.at(pos).toLatin1();
+    ch = str[pos].toLatin1();
     if (ch > 128) {
       if (ch < 192)
         ch = 'z';

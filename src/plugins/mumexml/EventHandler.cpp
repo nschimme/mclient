@@ -175,7 +175,7 @@ bool EventHandler::element(const QByteArray& line) {
       QStringList sl;
       sl << "XMLNone" << "XMLAll";
       postBuffer(sl);
-
+      
     }
     // Match for the tag
     if (length > 0)
@@ -291,13 +291,16 @@ bool EventHandler::element(const QByteArray& line) {
 	break;
       case '/':
 	if (line.startsWith("/room")) {
-	  _xmlMode = XML_NONE;
-	  
+	  // Technically it should always move to XML_NONE, but this
+	  // ensures that we submit an empty XML_EXITS since exits
+	  // usually follow a room
+	  _xmlMode = XML_HACK;
+
 	  // Post Dynamic Description Event
 	  QStringList sl;
 	  sl << "XMLDynamicDescription" << "XMLAll";
 	  postBuffer(sl);
-	  
+
 	}
 	break;
       case 't':
@@ -685,6 +688,34 @@ bool EventHandler::element(const QByteArray& line) {
 
       }
       break;
+    }
+    break;
+  case XML_HACK:
+    switch (line.at(0)) {
+    case 'e':
+      if (line.startsWith("exits")) _xmlMode = XML_EXITS;
+      break;
+    case 'p':
+      if (line.startsWith("prompt")) {
+	_xmlMode = XML_PROMPT;
+	
+	// Post an Empty Exits Event (this tag doesn't really exist)
+	QVariant *qv = new QVariant();
+	QStringList sl;
+	sl << "XMLExits" << "XMLAll";
+	postSession(qv, sl);
+		
+      }
+      break;
+    default:
+      _xmlMode = XML_NONE;
+      qWarning() << "! XML_HACK saw an unknown tag:" << line;
+    }
+    // Post anything in the buffer
+    if (!_buffer.isEmpty()) {
+      QStringList sl;
+      sl << "XMLNone" << "XMLAll";
+      postBuffer(sl);
     }
     break;
   }

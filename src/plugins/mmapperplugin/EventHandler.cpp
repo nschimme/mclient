@@ -42,6 +42,8 @@ void EventHandler::customEvent(QEvent *e) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
     if (me->dataTypes().contains("XMLAll")) {
+
+      //qDebug() << "display:" << me->dataTypes() << me->payload()->toString();
       
       bool display = true;
       if (me->dataTypes().contains("XMLExits")) {

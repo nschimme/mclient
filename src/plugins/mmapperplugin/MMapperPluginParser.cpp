@@ -30,34 +30,31 @@ void MMapperPluginParser::name(QString text) {
 
 
 void MMapperPluginParser::description(const QString &text) {
-  // if (m_descriptionReady) submit();
-
   m_staticRoomDesc = QString(text).remove(QChar('\r'));
-  m_descriptionReady = true;
-  m_readingRoomDesc = true;
+  latinToAscii(m_staticRoomDesc);
+}
+
+
+void MMapperPluginParser::terrain(const QString &/*text*/) {
 }
 
 
 void MMapperPluginParser::dynamicDescription(const QString &text) {
-  m_descriptionReady = true; // sometimes we don't get a description
-			     // because of spam/brief mode
   m_dynamicRoomDesc = text;
 }
 
 
 void MMapperPluginParser::exits(QString text) {
-  m_readingRoomDesc = false; // to identify if we saw exits or not
-  parseExits(text);
+  m_descriptionReady = true;
+
+  if (text.isEmpty() && queue.head() != CID_SCOUT)
+    emulateExits();
+  else
+    parseExits(text);
 }
 
 
 void MMapperPluginParser::prompt(QString text) {
-  if (m_readingRoomDesc) {
-    qDebug() << "### in prompt, emulating exits!";
-    emulateExits();
-    m_readingRoomDesc = false;
-  }
-
   parsePrompt(text);
 
   if (m_descriptionReady) submit();
@@ -151,8 +148,14 @@ void MMapperPluginParser::mudOutput(const QString &text) {
       return;
     }
     else if (text.startsWith("You failed to climb")) {
-      if(!queue.isEmpty()) queue.dequeue();
+      if (!queue.isEmpty()) queue.dequeue();
       queue.prepend(CID_NONE);
+      emit showPath(queue, true);
+      return;
+    }
+    else if (text.startsWith("You are too exhausted.")) {
+      if (!queue.isEmpty()) queue.dequeue();
+      //queue.prepend(CID_NONE);
       emit showPath(queue, true);
       return;
     }

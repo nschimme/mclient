@@ -23,6 +23,7 @@ public slots:
     void prompt(QString);
     void exits(QString);
     void move(const QString &);
+    void terrain(const QString &);
     
     void userInput(QString);
     void mudOutput(const QString&);
