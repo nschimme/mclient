@@ -25,6 +25,7 @@ public slots:
  signals:
 	void setEchoMode(bool);
 	void showCommandHistory();
+	void addTabHistory(const QStringList &);
 
  private:
 	InputWidget *_widget;

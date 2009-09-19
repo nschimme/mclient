@@ -3,6 +3,11 @@
 
 #include "MClientDisplayHandler.h"
 
+#include <QActionGroup>
+#include <QAction>
+#include <QMenu>
+#include <QPointer>
+
 class QEvent;
 class MapperManager;
 class PluginSession;
@@ -24,6 +29,7 @@ public slots:
 	void displayMessage(const QByteArray &);
         void log(const QString&, const QString&);
 	void postCommand(const QByteArray &);
+	void foundDoors(const QStringList &);
 
  signals:
 	void name(QString);
@@ -32,7 +38,7 @@ public slots:
 	void prompt(QString);
 	void exits(QString);
 	void move(const QString &);
-	void terrain(QString);
+	void terrain(const QString &);
 
 	void userInput(QString);
 	void mudOutput(const QString&);
@@ -41,10 +47,58 @@ public slots:
 
 	void onPlayMode();
 	void onOfflineMode();
+
+ protected:
+	// Mapper actions
+	QPointer<QAction> newAct;
+	QPointer<QAction> openAct;
+	QPointer<QAction> mergeAct;
+	QPointer<QAction> reloadAct;
+	QPointer<QAction> saveAct;
+	QPointer<QAction> saveAsAct;
+	QPointer<QAction> zoomInAct;
+	QPointer<QAction> zoomOutAct;
+
+	QPointer<QAction> layerUpAct;
+	QPointer<QAction> layerDownAct;
+
+	QPointer<QAction> modeConnectionSelectAct;
+	QPointer<QAction> modeRoomSelectAct;
+	QPointer<QAction> modeMoveSelectAct;
+	QPointer<QAction> modeInfoMarkEditAct;
+
+	QPointer<QAction> createRoomAct;
+	QPointer<QAction> createConnectionAct;
+	QPointer<QAction> createOnewayConnectionAct;
+
+	QPointer<QAction> playModeAct;
+	QPointer<QAction> mapModeAct;
+	QPointer<QAction> offlineModeAct;
+
+	QPointer<QActionGroup> mapModeActGroup;
+	QPointer<QActionGroup> modeActGroup;
+	QPointer<QActionGroup> roomActGroup;
+	QPointer<QActionGroup> connectionActGroup;
+
+	QPointer<QAction> editRoomSelectionAct;
+	QPointer<QAction> deleteRoomSelectionAct;
+	QPointer<QAction> deleteConnectionSelectionAct;
+
+	QPointer<QAction> moveUpRoomSelectionAct;
+	QPointer<QAction> moveDownRoomSelectionAct;
+	QPointer<QAction> mergeUpRoomSelectionAct;
+	QPointer<QAction> mergeDownRoomSelectionAct;
+	QPointer<QAction> connectToNeighboursRoomSelectionAct;
+
+	QPointer<QAction> findRoomsAct;
+
+	QPointer<QAction> forceRoomAct;
+	QPointer<QAction> releaseAllPathsAct;
 	
  private:
 	MapperManager *_mapper;
 
+	friend class MapperManager;
 };
 
 

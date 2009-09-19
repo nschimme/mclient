@@ -37,6 +37,7 @@ public slots:
  signals:
     //void sendToUser(const QByteArray &);
     //void sendToMud(const QByteArray &);
+    //void foundDoors(const QStringList &);
 
 };
 

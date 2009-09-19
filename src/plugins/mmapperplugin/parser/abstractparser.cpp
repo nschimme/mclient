@@ -232,6 +232,7 @@ void AbstractParser::parseExits(QString& str)
   
   CommandQueue tmpqueue;
   bool noDoors = true;
+  QStringList doorNames;
   
   if (!queue.isEmpty())
     tmpqueue.enqueue(queue.head());
@@ -247,6 +248,7 @@ void AbstractParser::parseExits(QString& str)
       dn = m_mapData->getDoorName(c, i).toAscii();
       if ( dn != emptyByteArray )
 	{
+	  doorNames << dn;
 	  noDoors = false;
 	  switch (i)
 	    {
@@ -280,6 +282,7 @@ void AbstractParser::parseExits(QString& str)
     }
   else
     {
+      emit foundDoors(doorNames);
       cn += ".\r\n";
       
     }
@@ -1118,7 +1121,7 @@ void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
   QByteArray dn = emptyByteArray;
   QByteArray cn = " -";
   bool noDoors = true;
-
+  QStringList doorNames;
 
   QString etmp = "Exits/emulated:";
   int j;
@@ -1179,6 +1182,7 @@ void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
     dn = m_mapData->getDoorName(r->getPosition(), i).toAscii();
     if ( dn != emptyByteArray )
     {
+      doorNames << dn;
       noDoors = false;
       switch (i)
       {
@@ -1212,6 +1216,7 @@ void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
   }
   else
   {
+    emit foundDoors(doorNames);
     cn += ".\r\n";
 
   }

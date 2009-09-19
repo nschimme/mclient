@@ -105,6 +105,9 @@ signals:
   void sendPromptLineEvent(QByteArray);
   void sendGroupTellEvent(QByteArray);
 
+  //for word completion
+  void foundDoors(const QStringList &);
+
 public slots:
   //void parseNewMudInput(IncomingData&);
   //void parseNewUserInput(IncomingData&);

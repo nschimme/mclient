@@ -18,7 +18,7 @@ MultiLineInput::MultiLineInput(QObject* parent)
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
     _receivesDataTypes << "CommandHistory" << "EchoMode"
-		       << "SocketDisconnected";
+		       << "SocketDisconnected" << "AddTabHistory";
     //_deliversDataTypes << "UserInput";
     _configurable = false;
     _configVersion = "2.0";

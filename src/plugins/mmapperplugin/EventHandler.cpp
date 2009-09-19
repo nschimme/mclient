@@ -143,55 +143,16 @@ void EventHandler::postCommand(const QByteArray &input) {
 }
 
 
+void EventHandler::foundDoors(const QStringList &list) {
+  qDebug() << "* FOUND DOORS" << list;
+  QVariant* qv = new QVariant(list);
+  QStringList sl("AddTabHistory");
+  postSession(qv, sl);
+  
+}
+
+
 const MenuData& EventHandler::createMenus() {
-        // Mapper actions
-    QAction *newAct;
-    QAction *openAct;
-    QAction *mergeAct;
-    QAction *reloadAct;
-    QAction *saveAct;
-    QAction *saveAsAct;
-    QAction *zoomInAct;
-    QAction *zoomOutAct;
-
-    QAction *layerUpAct;
-    QAction *layerDownAct;
-
-    QAction *modeConnectionSelectAct;
-    QAction *modeRoomSelectAct;
-    QAction *modeMoveSelectAct;
-    QAction *modeInfoMarkEditAct;
-
-    QAction *createRoomAct;
-    QAction *createConnectionAct;
-    QAction *createOnewayConnectionAct;
-
-    QAction *playModeAct;
-    QAction *mapModeAct;
-    QAction *offlineModeAct;
-
-    QActionGroup *mapModeActGroup;
-    QActionGroup *modeActGroup;
-    QActionGroup *roomActGroup;
-    QActionGroup *connectionActGroup;
-
-    QAction *editRoomSelectionAct;
-    //QAction *editConnectionSelectionAct;
-    QAction *deleteRoomSelectionAct;
-    QAction *deleteConnectionSelectionAct;
-
-    QAction *moveUpRoomSelectionAct;
-    QAction *moveDownRoomSelectionAct;
-    QAction *mergeUpRoomSelectionAct;
-    QAction *mergeDownRoomSelectionAct;
-    QAction *connectToNeighboursRoomSelectionAct;
-
-    QAction *findRoomsAct;
-
-    QAction *forceRoomAct;
-    QAction *releaseAllPathsAct;
-
-
   newAct = new QAction(QIcon(":/icons/new.png"), tr("&New"), 0);
   newAct->setShortcut(tr("Ctrl+N"));
   newAct->setStatusTip(tr("Create a new file"));
@@ -363,7 +324,7 @@ const MenuData& EventHandler::createMenus() {
   offlineModeAct->setChecked(true);
 
   SmartMenu *mapperMenu = new SmartMenu(tr("&Mapper"), 5, 2);
-  SmartMenu *viewMenu = new SmartMenu(tr("&View"), 5, 2);
+  SmartMenu *viewMenu = new SmartMenu(tr("&View"), 10, 2);
   SmartMenu *fileMenu = new SmartMenu(tr("&File"), 2, 0);
   QMenu *roomMenu = mapperMenu->addMenu(tr("&Rooms"));
   QMenu *connectionMenu = mapperMenu->addMenu(tr("&Connections"));

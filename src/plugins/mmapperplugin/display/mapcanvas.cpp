@@ -101,8 +101,8 @@ MapCanvas::MapCanvas(const QGLFormat & fmt, QWidget * parent )
   
   m_canvasMouseMode = CMM_MOVE;
   
-  m_roomSelection = NULL;
-  m_connectionSelection = NULL;
+  m_roomSelection = 0;
+  m_connectionSelection = 0;
   
   m_mouseRightPressed = false;
   m_mouseLeftPressed = false;

@@ -831,8 +831,7 @@ void EventHandler::postFragment() {
   if (!_buffer.isEmpty()) {
     QStringList sl;
     sl << "XMLPrompt" << "XMLAll";
-    postBuffer(sl);
-    
-  } else qDebug() << "* Flushing fragment buffer, but nothing present";
+    postBuffer(sl); 
+  }
 
 }

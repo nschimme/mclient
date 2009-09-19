@@ -95,7 +95,7 @@ bool AbstractCommandTask::processStack() {
       parseArguments(current);
       qDebug() << "* writing" << current << "to socket";
 
-      QVariant* qv = new QVariant(current + "\r\n");
+      QVariant* qv = new QVariant(current + "\n");
       QStringList sl("SocketWriteData");
       postSession(qv, sl);
       
@@ -113,9 +113,10 @@ bool AbstractCommandTask::processStack() {
 const QString& AbstractCommandTask::parseArguments(QString &arguments,
 						   CommandEntryType type) {
   if (type == CMD_ONE_LINE) {
+    QRegExp rx("\r?\n");
     int lineEnd;
-    if ((lineEnd = arguments.indexOf("\r\n")) != -1) {
-      _queue.append(arguments.mid(lineEnd + 1));
+    if ((lineEnd = rx.indexIn(arguments)) != -1) {
+      _queue.append(arguments.mid(lineEnd + rx.matchedLength()));
       arguments.truncate(lineEnd);
       qDebug() << "arguments truncated to" << arguments << _queue;
     }
@@ -431,7 +432,7 @@ bool AbstractCommandTask::findAlias(const QString &name,
     }
     qDebug() << "* alias command is:" << newCommand;
     
-    displayData("[" + newCommand + "]\r\n");
+    if (_verbose) displayData("[" + newCommand + "]\r\n");
     parseUserInput(newCommand);
     return true;
 

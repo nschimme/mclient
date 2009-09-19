@@ -42,6 +42,10 @@ void EventHandler::customEvent(QEvent *e) {
       emit setEchoMode(true);
 
     }
+    else if (me->dataTypes().contains("AddTabHistory")) {
+      emit addTabHistory(me->payload()->toStringList());
+
+    }
 
   }
 }
@@ -59,6 +63,8 @@ QWidget* EventHandler::createWidget() {
 	  _widget, SLOT(toggleEchoMode(bool)));
   connect(this, SIGNAL(showCommandHistory()),
 	  _widget, SLOT(showCommandHistory()));
+  connect(this, SIGNAL(addTabHistory(const QStringList &)),
+	  _widget, SLOT(addTabHistory(const QStringList &)));
 
   return _widget;
 }

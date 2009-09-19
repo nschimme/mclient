@@ -42,8 +42,8 @@ MapperManager::MapperManager(EventHandler *eh, QObject *parent)
   qRegisterMetaType<DoorActionType>("DoorActionType");
   qRegisterMetaType<Coordinate>("Coordinate");
 
-  _roomSelection = NULL;
-  _connectionSelection = NULL;
+  _roomSelection = 0;
+  _connectionSelection = 0;
 
   connect(_eventHandler, SIGNAL(onPlayMode()), SLOT(onPlayMode()));
   connect(_eventHandler, SIGNAL(onOfflineMode()), SLOT(onOfflineMode()));
@@ -109,21 +109,24 @@ MapperManager::MapperManager(EventHandler *eh, QObject *parent)
   connect(getParser(), SIGNAL(showPath(CommandQueue, bool)),
           getPrespammedPath(), SLOT(setPath(CommandQueue, bool)));
 
-  connect(_eventHandler, SIGNAL(name(const QString&)),
-	  getParser(), SLOT(name(const QString&)));
+  connect(_eventHandler, SIGNAL(name(QString)),
+	  getParser(), SLOT(name(QString)));
   connect(_eventHandler, SIGNAL(description(const QString&)),
 	  getParser(), SLOT(description(const QString&)));
   connect(_eventHandler, SIGNAL(dynamicDescription(const QString&)),
 	  getParser(), SLOT(dynamicDescription(const QString&)));
-  connect(_eventHandler, SIGNAL(exits(const QString&)),
-	  getParser(), SLOT(exits(const QString&)));
-  connect(_eventHandler, SIGNAL(prompt(const QString&)),
-	  getParser(), SLOT(prompt(const QString&)));
+  connect(_eventHandler, SIGNAL(exits(QString)),
+	  getParser(), SLOT(exits(QString)));
+  connect(_eventHandler, SIGNAL(prompt(QString)),
+	  getParser(), SLOT(prompt(QString)));
   connect(_eventHandler, SIGNAL(move(const QString &)),
 	  getParser(), SLOT(move(const QString &)));
   connect(_eventHandler, SIGNAL(terrain(const QString &)),
 	  getParser(), SLOT(terrain(const QString &)));
-  
+
+  connect(getParser(), SIGNAL(foundDoors(const QStringList &)),
+	  _eventHandler, SLOT(foundDoors(const QStringList &)));  
+
   connect(_eventHandler, SIGNAL(userInput(QString)),
 	  getParser(), SLOT(userInput(QString)),
 	  Qt::DirectConnection);
@@ -312,15 +315,15 @@ void MapperManager::merge()
     connect(storage->progressCounter(), SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
     connect(storage, SIGNAL(log(const QString&, const QString&)), this, SLOT(log(const QString&, const QString&)));
 
-//     ActionManager *actMgr = ActionManager::self();
-//     actMgr->disableActions(true);
+//     ActionManager *_eventHandler = ActionManager::self();
+//     _eventHandler->disableActions(true);
     getMapWindow()->getCanvas()->hide();
     if (storage->canLoad()) storage->mergeData();
     getMapWindow()->getCanvas()->show();
-//     actMgr->disableActions(false);
-//     actMgr->cutAct->setEnabled(false);
-//     actMgr->copyAct->setEnabled(false);
-//     actMgr->pasteAct->setEnabled(false);
+//     _eventHandler->disableActions(false);
+//     _eventHandler->cutAct->setEnabled(false);
+//     _eventHandler->copyAct->setEnabled(false);
+//     _eventHandler->pasteAct->setEnabled(false);
 
     delete(storage);
     delete progressDlg;
@@ -441,15 +444,15 @@ void MapperManager::loadFile(const QString &fileName)
   connect(storage->progressCounter(), SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
   connect(storage, SIGNAL(log(const QString&, const QString&)), this, SLOT(log(const QString&, const QString&)));
 
-//   ActionManager *actMgr = ActionManager::self();
-//   actMgr->disableActions(true);
+//   ActionManager *_eventHandler = ActionManager::self();
+//   _eventHandler->disableActions(true);
   getMapWindow()->getCanvas()->hide();
   if (storage->canLoad()) storage->loadData();
   getMapWindow()->getCanvas()->show();
-//   actMgr->disableActions(false);
-//   actMgr->cutAct->setEnabled(false);
-//   actMgr->copyAct->setEnabled(false);
-//   actMgr->pasteAct->setEnabled(false);
+//   _eventHandler->disableActions(false);
+//   _eventHandler->cutAct->setEnabled(false);
+//   _eventHandler->copyAct->setEnabled(false);
+//   _eventHandler->pasteAct->setEnabled(false);
 
   delete(storage);
   delete progressDlg;
@@ -506,15 +509,15 @@ bool MapperManager::saveFile(const QString &fileName, bool baseMapOnly )
   connect(storage->progressCounter(), SIGNAL(onPercentageChanged(quint32)), this, SLOT(percentageChanged(quint32)));
   connect(storage.get(), SIGNAL(log(const QString&, const QString&)), this, SLOT(log(const QString&, const QString&)));
 
-//   ActionManager *actMgr = ActionManager::self();
-//   actMgr->disableActions(true);
+//   ActionManager *_eventHandler = ActionManager::self();
+//   _eventHandler->disableActions(true);
   //getMapWindow()->getCanvas()->hide();
   if (storage->canSave()) storage->saveData( baseMapOnly );
   //getMapWindow()->getCanvas()->show();
-//   actMgr->disableActions(false);
-//   actMgr->cutAct->setEnabled(false);
-//   actMgr->copyAct->setEnabled(false);
-//   actMgr->pasteAct->setEnabled(false);
+//   _eventHandler->disableActions(false);
+//   _eventHandler->cutAct->setEnabled(false);
+//   _eventHandler->copyAct->setEnabled(false);
+//   _eventHandler->pasteAct->setEnabled(false);
 
   delete progressDlg;
 
@@ -542,110 +545,80 @@ bool MapperManager::saveFile(const QString &fileName, bool baseMapOnly )
   return true;
 }
 
-void MapperManager::newRoomSelection(const RoomSelection*) // rs)
-{
-//   ActionManager *actMgr = ActionManager::self();
-//   actMgr->forceRoomAct->setEnabled(FALSE);
-//   _roomSelection = rs;
-//   if (_roomSelection)
-//   {
-//     actMgr->roomActGroup->setEnabled(TRUE);
-//     if (_roomSelection->size() == 1) {
-//       actMgr->forceRoomAct->setEnabled(TRUE);
-//     }
-//   }
-//   else
-//   {
-//     actMgr->roomActGroup->setEnabled(FALSE);
-//   }
+void MapperManager::newRoomSelection(const RoomSelection* rs) {
+  if (_eventHandler->forceRoomAct)
+    _eventHandler->forceRoomAct->setEnabled(FALSE);
+  _roomSelection = rs;
+  if (_roomSelection)
+  {
+    _eventHandler->roomActGroup->setEnabled(TRUE);
+    if (_roomSelection->size() == 1) {
+      _eventHandler->forceRoomAct->setEnabled(TRUE);
+    }
+  }
+  else {
+    if (_eventHandler->roomActGroup)
+      _eventHandler->roomActGroup->setEnabled(FALSE);
+  }
 }
 
-void MapperManager::newConnectionSelection(ConnectionSelection*)// cs)
-{
-//   ActionManager *actMgr = ActionManager::self();
-//   _connectionSelection = cs;
-//   if (_connectionSelection)
-//   {
-//     actMgr->connectionActGroup->setEnabled(TRUE);
-//   }
-//   else
-//   {
-//     actMgr->connectionActGroup->setEnabled(FALSE);
-//   }
+void MapperManager::newConnectionSelection(ConnectionSelection* cs) {
+  _connectionSelection = cs;
+  if (_connectionSelection)
+  {
+    _eventHandler->connectionActGroup->setEnabled(TRUE);
+  }
+  else
+  {
+    if (_eventHandler->connectionActGroup)
+      _eventHandler->connectionActGroup->setEnabled(FALSE);
+  }
 }
 
-void MapperManager::onLayerUp()
-{
+void MapperManager::onLayerUp() {
   _mapWindow->getCanvas()->layerUp();
 }
 
-void MapperManager::onLayerDown()
-{
+void MapperManager::onLayerDown() {
   _mapWindow->getCanvas()->layerDown();
 }
 
-void MapperManager::onModeConnectionSelect()
-{
+void MapperManager::onModeConnectionSelect() {
   _mapWindow->getCanvas()->setCanvasMouseMode(MapCanvas::CMM_SELECT_CONNECTIONS);
 }
 
-void MapperManager::onModeRoomSelect()
-{
+void MapperManager::onModeRoomSelect() {
   _mapWindow->getCanvas()->setCanvasMouseMode(MapCanvas::CMM_SELECT_ROOMS);
 }
 
-void MapperManager::onModeMoveSelect()
-{
+void MapperManager::onModeMoveSelect() {
   _mapWindow->getCanvas()->setCanvasMouseMode(MapCanvas::CMM_MOVE);
 }
 
-void MapperManager::onModeCreateRoomSelect()
-{
+void MapperManager::onModeCreateRoomSelect() {
   _mapWindow->getCanvas()->setCanvasMouseMode(MapCanvas::CMM_CREATE_ROOMS);
 }
 
-void MapperManager::onModeCreateConnectionSelect()
-{
+void MapperManager::onModeCreateConnectionSelect() {
   _mapWindow->getCanvas()->setCanvasMouseMode(MapCanvas::CMM_CREATE_CONNECTIONS);
 }
 
-void MapperManager::onModeCreateOnewayConnectionSelect()
-{
+void MapperManager::onModeCreateOnewayConnectionSelect() {
   _mapWindow->getCanvas()->setCanvasMouseMode(MapCanvas::CMM_CREATE_ONEWAY_CONNECTIONS);
 }
 
-void MapperManager::onModeInfoMarkEdit()
-{
+void MapperManager::onModeInfoMarkEdit() {
   _mapWindow->getCanvas()->setCanvasMouseMode(MapCanvas::CMM_EDIT_INFOMARKS);
 }
 
-void MapperManager::onEditRoomSelection()
-{
-  if (_roomSelection)
-  {
+void MapperManager::onEditRoomSelection() {
+  if (_roomSelection) {
     RoomEditAttrDlg _roomEditDialog;
     _roomEditDialog.setRoomSelection(_roomSelection, _mapData, _mapWindow->getCanvas());
     _roomEditDialog.exec();
   }
 }
 
-void MapperManager::onEditConnectionSelection()
-{
-
-  if (_connectionSelection)
-  {
-    /*RoomConnectionsDlg connectionsDlg;
-    connectionsDlg.setRoom(static_cast<Room*>(_connectionSelection->getFirst().room),
-    _mapData,
-    static_cast<Room*>(_connectionSelection->getSecond().room),
-    _connectionSelection->getFirst().direction,
-    _connectionSelection->getSecond().direction);
-    connect(&connectionsDlg, SIGNAL(connectionChanged()), _mapWindow->getCanvas(), SLOT(update()));
-
-    connectionsDlg.exec();
-    */
-  }
-}
 
 void MapperManager::onDeleteRoomSelection()
 {

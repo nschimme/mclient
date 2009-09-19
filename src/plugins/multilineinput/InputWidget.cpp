@@ -37,7 +37,9 @@ InputWidget::InputWidget(QWidget* parent)
     _echoMode = true;
 
     // Word History
-    _iterator = new QMutableStringListIterator(_wordHistory);
+    _wordHistory << "dork" << "double" << "doobie";
+    _lineIterator = new QMutableStringListIterator(_lineHistory);
+    _tabIterator = new QMutableStringListIterator(_wordHistory);
     _newInput = true;
 
 }
@@ -49,10 +51,14 @@ QSize InputWidget::sizeHint() const {
 
 
 InputWidget::~InputWidget() {
+  delete _lineIterator;
+  delete _tabIterator;
 }
 
 
 void InputWidget::keyPressEvent(QKeyEvent *event) {
+  if (event->key() !=  Qt::Key_Tab) _tabState = NORMAL;
+
   // Check for key bindings
   switch (event->key()) {
     /** Enter could mean to submit the current text or add a newline */
@@ -179,6 +185,7 @@ void InputWidget::wordHistory(int key) {
     }
     break;
   case Qt::Key_Tab:
+    tabWord();
     break;
   };
 }
@@ -200,8 +207,11 @@ void InputWidget::detectedLineChange() {
 void InputWidget::gotInput() {
   selectAll();
   emit sendUserInput(toPlainText(), _echoMode);
-  if (_echoMode) addHistory(toPlainText());
-  _iterator->toBack();
+  if (_echoMode) {
+    addLineHistory(toPlainText());
+    addTabHistory(toPlainText());
+    _lineIterator->toBack();
+  }
 
 }
 
@@ -220,19 +230,35 @@ void InputWidget::toggleEchoMode(bool b) {
 }
 
 
-void InputWidget::addHistory(const QString string) {
+void InputWidget::addLineHistory(const QString &string) {
   if (!string.isEmpty()) {
-    qDebug() << "* adding history:" << string;
-    _wordHistory << string;
+    qDebug() << "* adding line history:" << string;
+    _lineHistory << string;
   }
 
-  if (_wordHistory.size() > 100) _wordHistory.removeFirst();
+  if (_lineHistory.size() > 100) _lineHistory.removeFirst();
+}
 
+
+void InputWidget::addTabHistory(const QString &string) {
+  QStringList list = string.split(QRegExp("\\W+"), QString::SkipEmptyParts);
+  addTabHistory(list);
+}
+
+
+void InputWidget::addTabHistory(const QStringList &list) {
+  foreach (QString word, list)
+    if (word.length() > 3) {
+      qDebug() << "* adding word history:" << word;
+      _wordHistory << word;
+    }
+
+  while (_wordHistory.size() > 200) _wordHistory.removeFirst();
 }
 
 
 void InputWidget::forwardHistory() {
-  if (!_iterator->hasNext()) {
+  if (!_lineIterator->hasNext()) {
     qDebug() << "* no newer word history to go to";
     return ;
 
@@ -240,14 +266,15 @@ void InputWidget::forwardHistory() {
   
   if (_newInput) {
     selectAll();
-    addHistory(toPlainText());
+    addLineHistory(toPlainText());
     
   }
 
   selectAll();
-  QString next = _iterator->next();
+  QString next = _lineIterator->next();
   // Ensure we always get "new" input
-  if (next == toPlainText()) next = _iterator->next();
+  if (next == toPlainText() &&
+      _lineIterator->hasNext()) next = _lineIterator->next();
 
   insertPlainText(next);
   _newInput = false;
@@ -256,7 +283,7 @@ void InputWidget::forwardHistory() {
 
 
 void InputWidget::backwardHistory() {
-  if (!_iterator->hasPrevious()) {
+  if (!_lineIterator->hasPrevious()) {
     qDebug() << "* no older word history to go to";
     return ;
 
@@ -264,14 +291,15 @@ void InputWidget::backwardHistory() {
   
   if (_newInput) {
     selectAll();
-    addHistory(toPlainText());
+    addLineHistory(toPlainText());
     
   }
 
   selectAll();
-  QString previous = _iterator->previous();
+  QString previous = _lineIterator->previous();
   // Ensure we always get "new" input
-  if (previous == toPlainText()) previous = _iterator->previous();
+  if (previous == toPlainText() &&
+      _lineIterator->hasPrevious()) previous = _lineIterator->previous();
 
   insertPlainText(previous);
   _newInput = false;
@@ -282,11 +310,45 @@ void InputWidget::backwardHistory() {
 void InputWidget::showCommandHistory() {
   QString message("#history:\r\n");
   int i = 1;
-  foreach (QString s, _wordHistory)
+  foreach (QString s, _lineHistory)
     message.append(QString::number(i++) + " " + s + "\r\n");
 
   qDebug() << "* showing history" << message;
 
   emit displayMessage(message);
 
+}
+
+
+void InputWidget::tabWord() {
+  QTextCursor current = textCursor();
+  current.select(QTextCursor::WordUnderCursor);
+  switch (_tabState) {
+  case NORMAL:
+    qDebug() << "* in NORMAL state";
+    _tabFragment = current.selectedText();
+    _tabIterator->toBack();
+    _tabState = TABBING;
+  case TABBING:
+    qDebug() << "* in TABBING state";
+    if (!_tabIterator->hasPrevious() && !_wordHistory.isEmpty()) {
+      qDebug() << "* Resetting tab iterator";
+      _tabIterator->toBack();
+    }
+    while (_tabIterator->hasPrevious()) {
+      if (_tabIterator->peekPrevious().startsWith(_tabFragment)) {
+	current.insertText(_tabIterator->previous());
+	if (current.movePosition(QTextCursor::StartOfWord,
+				 QTextCursor::KeepAnchor)) {
+	  current.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
+			       _tabFragment.size());
+	  setTextCursor(current);
+	  qDebug() << "*it worked";
+	}
+	return ;
+      }
+      else _tabIterator->previous();
+    }
+    break;
+  };
 }

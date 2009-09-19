@@ -24,10 +24,14 @@ void UserCommandTask::customEvent(QEvent *e) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
     if (me->dataTypes().contains("UserInput")) {
+      _verbose = true;
       parseUserInput(me->payload()->toString());
       
-    } else
-      AbstractCommandTask::customEvent(e);
+    } else if (me->dataTypes().contains("ScriptResult")) {
+      _verbose = false;
+      parseUserInput(me->payload()->toString());
+      
+    } else AbstractCommandTask::customEvent(e);
 
   }
   else {

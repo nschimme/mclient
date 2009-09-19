@@ -47,8 +47,12 @@ void MMapperPluginParser::dynamicDescription(const QString &text) {
 void MMapperPluginParser::exits(QString text) {
   m_descriptionReady = true;
 
-  if (text.isEmpty() && queue.head() != CID_SCOUT)
+  if (text.isEmpty()) {
+    if (!queue.isEmpty())
+      if (queue.head() == CID_SCOUT)
+	return ;
     emulateExits();
+  }
   else
     parseExits(text);
 }
@@ -138,6 +142,8 @@ void MMapperPluginParser::userInput(QString text) {
 
 
 void MMapperPluginParser::mudOutput(const QString &text) {
+  if (text.isEmpty()) return;
+
   if (text.startsWith('Y')) {
     qDebug() << "* MMapperPluginParser detected some text" << text;
 

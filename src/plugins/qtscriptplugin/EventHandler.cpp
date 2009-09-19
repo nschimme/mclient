@@ -42,7 +42,7 @@ void EventHandler::customEvent(QEvent *e) {
 void EventHandler::parseInput(const QString &input) {
   // Post to command processor
   QVariant *payload = new QVariant(input);
-  QStringList tags("UserInput");
+  QStringList tags("ScriptResult");
   MClientEventData *med = new MClientEventData(payload, tags,
 					       _pluginSession->session());
   MClientEvent* me = new MClientEvent(med);

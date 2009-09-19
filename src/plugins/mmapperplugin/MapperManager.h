@@ -25,7 +25,6 @@
 class Configuration;
 
 class MapWindow;
-class MainWindowCtrl;
 class Mmapper2PathMachine;
 class CommandEvaluator;
 class PrespammedPath;
@@ -78,7 +77,6 @@ class MapperManager: public QThread {
     void onLayerUp();
     void onLayerDown();
     void onEditRoomSelection();
-    void onEditConnectionSelection();
     void onDeleteRoomSelection();
     void onDeleteConnectionSelection();
     void onMoveUpRoomSelection();
@@ -106,7 +104,6 @@ class MapperManager: public QThread {
     Mmapper2PathMachine *_pathMachine;
     MapData *_mapData;
     RoomPropertySetter *_propertySetter;
-    //CommandEvaluator *_commandEvaluator;
     PrespammedPath *_prespammedPath;
     MMapperPluginParser *_parser;
 

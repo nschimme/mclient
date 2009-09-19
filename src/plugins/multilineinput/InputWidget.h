@@ -20,6 +20,7 @@ class InputWidget : public QPlainTextEdit {
 public slots:
         void toggleEchoMode(bool); 
         void showCommandHistory(); 
+	void addTabHistory(const QStringList &);
 
     private:
 	bool _echoMode;
@@ -29,13 +30,21 @@ public slots:
 	void wordHistory(int);
 	void keypadMovement(int);
 
-	QMutableStringListIterator *_iterator;
+	QMutableStringListIterator *_lineIterator;
 	bool _newInput;
-	QStringList _wordHistory;
+	QStringList _lineHistory, _wordHistory;
 
-	void addHistory(const QString);
+	void addLineHistory(const QString &);
 	void forwardHistory();
 	void backwardHistory();
+
+	void tabWord();
+
+	enum TabState {NORMAL, TABBING};
+	TabState _tabState;
+	QString _tabFragment;
+	QMutableStringListIterator *_tabIterator;
+	void addTabHistory(const QString &);
 
  signals:
 	void sendUserInput(const QString&, bool);
