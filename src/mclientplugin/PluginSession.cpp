@@ -351,8 +351,17 @@ void PluginSession::customEvent(QEvent* e) {
       found = true;
     }
     
-    if (!found)
-      qWarning() << "! No plugins accepted data types" << me->dataTypes();
+    if (!found) {
+      if (me->dataTypes().contains("XMLAll")) {
+	MClientEvent* nme = new MClientEvent(*me);
+	QCoreApplication::postEvent(_commandProcessor->getAction(), nme);
+	nme = new MClientEvent(*me);
+	QCoreApplication::postEvent(_commandProcessor->getUserInput(), nme);
+	qDebug() << "* posting to CommandProcessor";
+
+      }
+      else qWarning() << "! No plugins accepted data types" << me->dataTypes();
+    }
     
   }
 }

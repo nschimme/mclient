@@ -37,7 +37,6 @@ InputWidget::InputWidget(QWidget* parent)
     _echoMode = true;
 
     // Word History
-    _wordHistory << "lol" << "dork";
     _iterator = new QMutableStringListIterator(_wordHistory);
     _newInput = true;
 
@@ -81,6 +80,9 @@ void InputWidget::keyPressEvent(QKeyEvent *event) {
   case Qt::Key_Tab:
 
     switch (event->modifiers()) {
+    case Qt::KeypadModifier:
+      keypadMovement(event->key());
+      break;
     case Qt::NoModifier:
       wordHistory(event->key());
       break;
@@ -88,10 +90,73 @@ void InputWidget::keyPressEvent(QKeyEvent *event) {
       QPlainTextEdit::keyPressEvent(event);
     };
     break;
-    
+
+  case Qt::Key_Left:
+  case Qt::Key_Right:
+  case Qt::Key_PageUp:
+  case Qt::Key_PageDown:
+  case Qt::Key_Clear:  // Numpad 5
+  case Qt::Key_Home:
+  case Qt::Key_End:
+    // TODO, Implement these following keys
+  case Qt::Key_Delete:
+  case Qt::Key_Plus:
+  case Qt::Key_Minus:
+  case Qt::Key_Slash:
+  case Qt::Key_Asterisk:
+  case Qt::Key_Insert:
+    switch (event->modifiers()) {
+    case Qt::KeypadModifier:
+      keypadMovement(event->key());
+      break; 
+    };
+
     /** All other keys */
   default:
     QPlainTextEdit::keyPressEvent(event);
+  };
+}
+
+
+void InputWidget::keypadMovement(int key) {
+  switch (key) {
+  case Qt::Key_Up:
+    emit sendUserInput("north", _echoMode);
+    break;
+  case Qt::Key_Down:
+    emit sendUserInput("south", _echoMode);
+    break;
+  case Qt::Key_Left:
+    emit sendUserInput("west", _echoMode);
+    break;
+  case Qt::Key_Right:
+    emit sendUserInput("east", _echoMode);
+    break;
+  case Qt::Key_PageUp:
+    emit sendUserInput("up", _echoMode);
+    break;
+  case Qt::Key_PageDown:
+    emit sendUserInput("down", _echoMode);
+    break;
+  case Qt::Key_Clear: // Numpad 5
+    emit sendUserInput("exits", _echoMode);
+    break;
+  case Qt::Key_Home:
+    emit sendUserInput("open exit", _echoMode);
+    break;
+  case Qt::Key_End:
+    emit sendUserInput("close exit", _echoMode);
+    break;
+  case Qt::Key_Insert:
+    emit sendUserInput("flee", _echoMode);
+    break;
+  case Qt::Key_Delete:
+  case Qt::Key_Plus:
+  case Qt::Key_Minus:
+  case Qt::Key_Slash:
+  case Qt::Key_Asterisk:
+  default:
+    qDebug() << "! Unknown keypad movement" << key;
   };
 }
 
@@ -102,14 +167,14 @@ void InputWidget::wordHistory(int key) {
   case Qt::Key_Up:
     if (!cursor.movePosition(QTextCursor::Up)) {
       // At the top of the document
-      forwardHistory();
+      backwardHistory();
 
     }
     break;
   case Qt::Key_Down:
     if (!cursor.movePosition(QTextCursor::Down)) {
       // At the end of the document
-      backwardHistory();
+      forwardHistory();
 
     }
     break;
@@ -135,7 +200,7 @@ void InputWidget::detectedLineChange() {
 void InputWidget::gotInput() {
   selectAll();
   emit sendUserInput(toPlainText(), _echoMode);
-  addHistory(toPlainText());
+  if (_echoMode) addHistory(toPlainText());
   _iterator->toBack();
 
 }
@@ -180,7 +245,11 @@ void InputWidget::forwardHistory() {
   }
 
   selectAll();
-  insertPlainText(_iterator->next());
+  QString next = _iterator->next();
+  // Ensure we always get "new" input
+  if (next == toPlainText()) next = _iterator->next();
+
+  insertPlainText(next);
   _newInput = false;
   
 }
@@ -200,7 +269,11 @@ void InputWidget::backwardHistory() {
   }
 
   selectAll();
-  insertPlainText(_iterator->previous());
+  QString previous = _iterator->previous();
+  // Ensure we always get "new" input
+  if (previous == toPlainText()) previous = _iterator->previous();
+
+  insertPlainText(previous);
   _newInput = false;
 
 }

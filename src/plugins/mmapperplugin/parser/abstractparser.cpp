@@ -284,10 +284,7 @@ void AbstractParser::parseExits(QString& str)
       
     }
 
-  qDebug() << "###displaying exit" << str.trimmed().toAscii() << cn;
   emit sendToUser(str.trimmed().toAscii()+cn);
-    //emit sendToUser(str.toAscii()+QByteArray("\r\n"));
-  //emit sendToUser(cn);
 }
 
 void AbstractParser::emulateExits()

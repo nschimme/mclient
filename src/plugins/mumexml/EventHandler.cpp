@@ -75,7 +75,9 @@ void EventHandler::customEvent(QEvent *e) {
 
       }
       else if (s.startsWith("SocketConnected")) {
-	if (_pluginSession->isMUME()) {
+	// TODO: Remove the "Mint" session logic (eventually)
+	if (_pluginSession->isMUME() &&
+	    _pluginSession->session() == "Mint") { 
 	  qDebug() << "* sent mume MPI XML request";
 	  QVariant* qv = new QVariant(QByteArray("~$#EX\n"));
 	  QStringList sl("SendToSocketData");

@@ -6,7 +6,6 @@
 
 class QWebFrame;
 class WebKitDisplay;
-//class QWebView;
 
 // for Qt 4.5, we use JQuery
 // for Qt >= 4.6, we use the QWebElement API
@@ -22,7 +21,7 @@ class DisplayWidget : public QWebView {
     Q_OBJECT
     
     public:
-        DisplayWidget(QString s, WebKitDisplay *wkd, QWidget* parent=0);
+        DisplayWidget(QWidget* parent=0);
         ~DisplayWidget();
 
 public slots:
@@ -35,12 +34,10 @@ protected slots:
 
  protected:
 	QWebView* _view;
-	WebKitDisplay* _wkd;
 
     private:
-	QString _session;
-	int _currentSection, _maxSections,
-	  _currentCharacterCount, _maxCharacterCount;
+	int _currentSection, _maxSections;
+       	int _currentCharacterCount, _maxCharacterCount;
 };
 
 

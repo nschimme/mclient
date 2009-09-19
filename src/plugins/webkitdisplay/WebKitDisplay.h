@@ -1,15 +1,14 @@
 #ifndef WEBKITDISPLAY_H
 #define WEBKITDISPLAY_H
 
-#include "MClientDisplayPlugin.h"
+#include "MClientPlugin.h"
 
 #include <QPointer>
 
-class DisplayWidget;
-class DisplayParser;
 class QEvent;
+class EventHandler;
 
-class WebKitDisplay : public MClientDisplayPlugin {
+class WebKitDisplay : public MClientPlugin {
     Q_OBJECT
     
     public:
@@ -17,27 +16,14 @@ class WebKitDisplay : public MClientDisplayPlugin {
         ~WebKitDisplay();
 
         // Plugin members
-        void customEvent(QEvent* e);
         void configure();
-        bool loadSettings();
-        bool saveSettings() const;
-        bool startSession(QString s);
-        bool stopSession(QString s);
+        bool startSession(PluginSession *ps);
+        bool stopSession(PluginSession *ps);
 
-        // Display members
-        bool initDisplay(QString s);
-        QWidget* getWidget(QString s);
-
-  protected:
-	void run();
+	MClientEventHandler* getEventHandler(QString s);
 
     private:
-	QPointer<DisplayWidget> _widget;
-	DisplayParser *_parser;
-
- signals:
-	void displayData(const QString&);
-	void userInput(const QString&);
+	QHash<QString, QPointer<EventHandler> > _eventHandlers;
 };
 
 

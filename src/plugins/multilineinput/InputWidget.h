@@ -27,6 +27,7 @@ public slots:
         void gotInput();
 	void detectedLineChange();
 	void wordHistory(int);
+	void keypadMovement(int);
 
 	QMutableStringListIterator *_iterator;
 	bool _newInput;

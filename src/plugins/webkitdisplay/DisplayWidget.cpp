@@ -4,16 +4,13 @@
 #include <QDebug>
 #include <QtWebKit>
 #include <QWebFrame>
+#include <QWebElement>
 
 #include <QTimer> // Debug (for identifying lag)
 
 //#include <QFile>
 
-DisplayWidget::DisplayWidget(QString s, WebKitDisplay* wkd, QWidget* parent) 
-    : QWebView(parent) {
-    _session = s;
-    _wkd = wkd;
-
+DisplayWidget::DisplayWidget(QWidget* parent) : QWebView(parent) {
     QWidget::setMinimumSize(0, 30);
 
     // Sections Information
@@ -27,17 +24,12 @@ DisplayWidget::DisplayWidget(QString s, WebKitDisplay* wkd, QWidget* parent)
 
     // Connect Signals/Slots
     connect(this, SIGNAL(loadFinished(bool)), SLOT(finishLoading(bool)));
-    connect(_wkd, SIGNAL(dataReceived(const QString&)),
-	    SLOT(appendText(const QString&)));
+    connect(page(), SIGNAL(contentsChanged()), SLOT(scrollToBottom()));
 
     // TODO: Why aren't frames working?
     connect(page(), SIGNAL(frameCreated(QWebFrame *frame)),
 	    SLOT(loadFrame(QWebFrame *frame)));
 
-    // Debugging Information
-    qDebug() << "* WebKitDisplay thread:" << _wkd->thread();
-    qDebug() << "* DisplayWidget thread:" << this->thread();
-    
     page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
     page()->setContentEditable(false);
 
@@ -76,22 +68,20 @@ void DisplayWidget::appendText(const QString &output) {
 
 #endif
   } else {
-  
-    // Append text to Section
-#ifdef USE_JQUERY
-    //QString code = QString("$('<div
-    //class=\"section\">Something!</div>').appendTo('.container');");
-    //QString code = QString("$('.section').css('background-color', 'yellow');");
-
+      // Append text to Section
     QTime t;
     t.start();
+#ifdef USE_JQUERY
     QString code = QString("$('.section').append('%1');").arg(output);
     page()->mainFrame()->evaluateJavaScript(code);
-    qDebug() << "* Displaying (" << t.elapsed() << "ms):" << output;
-
-  }
+#else
+    QWebElement doc = page()->mainFrame()->documentElement();
+    doc.findFirst(".section").appendInside(output);
 #endif
+    qDebug() << "* Displaying (" << t.elapsed() << "ms):" << output;
+  }
   
+
   scrollToBottom();
 }
 
@@ -108,6 +98,10 @@ void DisplayWidget::finishLoading(bool) {
 void DisplayWidget::scrollToBottom() {
   int height = page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
   page()->mainFrame()->setScrollBarValue(Qt::Vertical, height);
+  /*
+  QString scrollCode = QString("$(window).scrollTop($(document).height());");
+  page()->mainFrame()->evaluateJavaScript(scrollCode);
+  */
 }
 
 
