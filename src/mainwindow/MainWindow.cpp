@@ -117,7 +117,7 @@ void MainWindow::startProfile(const QString &profile) {
 
   if (_quickConnectDlg) {
     _quickConnectDlg->close();
-    delete _quickConnectDlg;
+    _quickConnectDlg->deleteLater();
   }
 
   /** Create Second Splash Screen */

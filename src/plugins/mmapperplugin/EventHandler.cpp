@@ -73,9 +73,7 @@ void EventHandler::customEvent(QEvent *e) {
       if (display) {
 	// These tags get forwarded to the CommandProcessor
 	MClientEvent* nme = new MClientEvent(*me);
-	QCoreApplication::postEvent(_pluginSession->
-				    getCommand()->
-				    getAction(), nme);
+	QCoreApplication::postEvent(_pluginSession->getCommand(), nme);
 	//qDebug() << "* forwarding to CommandProcessor";
 	
       }
@@ -137,8 +135,7 @@ void EventHandler::postCommand(const QByteArray &input) {
   MClientEventData *med = new MClientEventData(payload, tags,
 					       _pluginSession->session());
   MClientEvent* me = new MClientEvent(med);
-  QCoreApplication::postEvent(_pluginSession->getCommand()->getUserInput(),
-			      me);
+  QCoreApplication::postEvent(_pluginSession->getCommand(), me);
 
 }
 

@@ -5,7 +5,10 @@
 #include <QEvent>
 #include <QVariant>
 
+//#include "MClientPlugin.h"
+
 class SmartMenu;
+class MClientPlugin;
 
 typedef QSet<SmartMenu*> MenuData;
 
@@ -24,6 +27,9 @@ class MClientEventHandlerInterface {
         // Post an event to the PluginManager
 	virtual void postManager(QVariant* payload, QStringList types, 
 				 QString session)=0;
+
+	// Post the parent plugin
+	virtual MClientPlugin* plugin()=0;
 
     protected:
 	// Handles MClientEngineEvents

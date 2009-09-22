@@ -6,8 +6,10 @@
 #include "EventHandler.h"
 
 #include "PluginSession.h"
+
+#include "CommandProcessor.h"
+#include "CommandTask.h"
 #include "CommandEntry.h"
-#include "ScriptEngine.h"
 
 Q_EXPORT_PLUGIN2(qtscriptplugin, QtScriptPlugin)
 
@@ -17,9 +19,9 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
     _longName = "QtScripting Plugin";
     _description = "A JavaScript scripting language";
     //_dependencies.insert("terrible_test_api", 1);
-//    _implemented.insert("some_other_api",1);
+    //_implemented.insert("some_other_api",1);
     _receivesDataTypes << "QtScriptEvaluate" << "QtScriptVariable";
-    _deliversDataTypes << "DisplayData";
+    //_deliversDataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";
 
@@ -51,30 +53,15 @@ void QtScriptPlugin::configure() {
 
 
 bool QtScriptPlugin::startSession(PluginSession *ps) {
-  QString s = ps->session();
-  _eventHandlers[s] = new EventHandler(ps, this);
-  _scriptEngines[s] = new ScriptEngine;
-
-  // Connect Signals/Slots
-  connect(_eventHandlers[s], SIGNAL(evaluate(const QString&)),
-	  _scriptEngines[s], SLOT(evaluateExpression(const QString&)));
-  connect(_eventHandlers[s], SIGNAL(variable(const QString&)),
-	  _scriptEngines[s], SLOT(variableCommand(const QString&)));
-  connect(_scriptEngines[s], SIGNAL(signalHandlerException(const QScriptValue&)),
-	  _scriptEngines[s], SLOT(handleException(const QScriptValue&)));
-  connect(_scriptEngines[s], SIGNAL(emitParseInput(const QString&)),
-	  _eventHandlers[s], SLOT(parseInput(const QString&)));
-  connect(_scriptEngines[s], SIGNAL(postSession(QVariant*, const QStringList&)),
-	  _eventHandlers[s], SLOT(postSession(QVariant*, const QStringList&)));
-
+  CommandTask *task
+    = static_cast<CommandTask*>(ps->getCommand()->getTask());
+  _eventHandlers[ps->session()] = new EventHandler(ps, this, task);
   return true;
 }
 
 
 bool QtScriptPlugin::stopSession(PluginSession *ps) {
-  QString s = ps->session();
-  _eventHandlers[s]->deleteLater();
-  _scriptEngines[s]->deleteLater();
+  _eventHandlers[ps->session()]->deleteLater();
   return true;
 }
 

@@ -301,7 +301,7 @@ bool ConfigManager::discoverProfiles() {
   }
 
   // If there are no profiles, add the "Default" one
-  if (_pluginSettings.isEmpty()) {
+  if (_profileSettings.isEmpty()) {
     _profileSettings["Default"] = new ConfigEntry("Default");
 
     qDebug() << "! No profiles found, creating default profile.";

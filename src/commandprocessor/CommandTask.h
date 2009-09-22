@@ -1,8 +1,9 @@
-#ifndef ABSTRACTCOMMANDTASK_H
-#define ABSTRACTCOMMANDTASK_H
+#ifndef COMMANDTASK_H
+#define COMMANDTASK_H
 
-#include <QThread>
+#include <QObject>
 #include <QStringList>
+#include <QSemaphore>
 
 #include "CommandEntry.h"
 
@@ -10,21 +11,20 @@ class CommandProcessor;
 class AliasManager;
 class ActionManager;
 
-class AbstractCommandTask : public QThread {
+class CommandTask : public QObject {
+  Q_OBJECT
     
     public:
-        AbstractCommandTask(CommandProcessor*, QObject *parent=0);
-        ~AbstractCommandTask();
+        CommandTask(CommandProcessor *);
+        ~CommandTask();
 
-	virtual void customEvent(QEvent *e);
-
- protected:
-	void run();
+public slots:
 	void parseMudOutput(const QString &, const QStringList &);
         void parseUserInput(const QString &);
+        void socketOpen(bool);
 
-	bool _verbose;
-	bool _socketOpen;
+ protected:
+	QSemaphore _semaphore;
 
    private:
 	QStringList _queue;
@@ -32,6 +32,11 @@ class AbstractCommandTask : public QThread {
 	CommandProcessor *_commandProcessor;
 	AliasManager *_aliasManager;
 	ActionManager *_actionManager;
+	bool _verbose;
+	bool _socketOpen;
+
+	void displayData(const QString &);
+	void postSession(QVariant *, const QStringList &);
 
 	bool processStack();
 	
@@ -46,9 +51,9 @@ class AbstractCommandTask : public QThread {
 	bool handleAliasCommand(const QString &);
 	bool handleActionCommand(const QString &);
 
-	void displayData(const QString &);
-	void postSession(QVariant *, const QStringList &);
+	friend class CommandProcessor;
+
 };
 
 
-#endif /* ABSTRACTCOMMANDTASK_H */
+#endif /* COMMANDTASK_H */

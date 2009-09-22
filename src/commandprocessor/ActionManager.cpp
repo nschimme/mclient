@@ -64,7 +64,6 @@ Action* ActionManager::match(const QString &pattern,
 bool ActionManager::add(const QString &label, const QRegExp &pattern,
 			const QString &command, const QStringList &tags,
 			const QString &group, bool active, int priority) {
-  _mutex.lock();
   Action *action = new Action;
   action->label = label;
   action->pattern = pattern;
@@ -74,28 +73,37 @@ bool ActionManager::add(const QString &label, const QRegExp &pattern,
   action->active = active;
   action->priority = priority;
 
+  if (add(action))
+    return true;
+  else
+    return false;
+}
+
+
+Action* ActionManager::add(Action *action) {
+  _mutex.lock();
   // Check Priority Map
   QMultiHash<QString, Action*> *actions;
-  if (_actions.contains(priority)) {
-    actions = _actions.value(priority);
+  if (_actions.contains(action->priority)) {
+    actions = _actions.value(action->priority);
     /*
     qDebug() << "* Priority" << priority << "has a hash of size"
 	     << actions->size();
     */
   } else {
     actions = new QMultiHash<QString, Action*>;
-    _actions.insert(priority, actions);
+    _actions.insert(action->priority, actions);
     //qDebug() << "* Priority" << priority << "created NEW hash";
   }
   
-  foreach(QString tag, tags) {
+  foreach(QString tag, action->tags) {
     //qDebug() << "adding for tag" << tag;
     actions->insert(tag, action);
     //qDebug() << "inserted action! hash is now size of" << actions->size();
   }
   
   _mutex.unlock();
-  return true;
+  return action;
 }
 
 
@@ -126,19 +134,22 @@ bool ActionManager::loadSettings(const QHash<QString, QVariant> &hash) {
       // Clean up the command (remove indentation, etc)
       QStringList commandList;
       foreach(QString line, hash.value(prefix+"/command").toString().trimmed()
-	      .split("\n", QString::SkipEmptyParts)) {
+	      .split(QRegExp("\r?\n"), QString::SkipEmptyParts)) {
 	commandList << line.trimmed();
       }
       
       // Add the alias
-      add(hash.value(prefix+"/label", QString::number(i)).toString(),
-	  QRegExp(hash.value(prefix+"/pattern").toString()),
-	  commandList.join("\n"),
-	  hash.value(prefix+"/tags", "XMLNone").toStringList(),
-	  hash.value(prefix+"/group", "Default").toString(),
-	  hash.value(prefix+"/active", true).toBool(),
-	  hash.value(prefix+"/priority", 0).toInt()
-	  );
+      Action *action = new Action;
+      action->label = hash.value(prefix+"/label", QString::number(i)).toString();
+      action->pattern = QRegExp(hash.value(prefix+"/pattern").toString());
+      action->command = commandList.join("\n");
+      action->tags = hash.value(prefix+"/tags", "XMLNone").toStringList();
+      action->group = hash.value(prefix+"/group", "Default").toString();
+      action->active = hash.value(prefix+"/active", true).toBool();
+      action->priority = hash.value(prefix+"/priority", 0).toInt();
+      action->substitute = hash.value(prefix+"/substitute", false).toBool();
+      action->text = hash.value(prefix+"/text").toString();
+      add(action);
       count++;
     }
     else qDebug() << "* ActionManager unable to parse alias" << i;

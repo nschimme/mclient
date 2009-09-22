@@ -15,6 +15,7 @@
 #include "ConfigEntry.h"
 
 #include "MClientEventHandler.h"
+#include "MClientCommandHandler.h"
 
 #include "MClientEngineEvent.h"
 #include "MClientEvent.h"
@@ -49,8 +50,11 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
 
   // Create the command processor
   _commandProcessor = new CommandProcessor(this);
+  _commandProcessor->start();
   connect(_commandProcessor, SIGNAL(quit()),
 	  _pluginManager->getMainWindow(), SLOT(close()));
+  connect(this, SIGNAL(doneLoading(PluginSession *)),
+	  _commandProcessor, SLOT(initHandlers()));
 
   // Start the session in another thread to allow for widgets to be created
   connect(this, SIGNAL(doneLoading(PluginSession *)),
@@ -270,7 +274,6 @@ void PluginSession::startSession() {
       // Register the commands
       _commandProcessor->registerCommand(iPlugin->shortName(),
 					 iPlugin->commandEntries());
-
     }
   }
 }
@@ -342,11 +345,11 @@ void PluginSession::customEvent(QEvent* e) {
 
     // TODO: Improve this somehow. This is very hack-ish.
     if (me->dataTypes().contains("SocketConnected") ||
-	me->dataTypes().contains("SocketDisconnected")) {
+	me->dataTypes().contains("SocketDisconnected") ||
+	me->dataTypes().contains("UnlockProcessor")) {
       MClientEvent* nme = new MClientEvent(*me);
-      QCoreApplication::postEvent(_commandProcessor->getAction(), nme);
+      QCoreApplication::postEvent(_commandProcessor, nme);
       nme = new MClientEvent(*me);
-      QCoreApplication::postEvent(_commandProcessor->getUserInput(), nme);
       qDebug() << "* posting to CommandProcessor";
       found = true;
     }
@@ -354,9 +357,8 @@ void PluginSession::customEvent(QEvent* e) {
     if (!found) {
       if (me->dataTypes().contains("XMLAll")) {
 	MClientEvent* nme = new MClientEvent(*me);
-	QCoreApplication::postEvent(_commandProcessor->getAction(), nme);
+	QCoreApplication::postEvent(_commandProcessor, nme);
 	nme = new MClientEvent(*me);
-	QCoreApplication::postEvent(_commandProcessor->getUserInput(), nme);
 	qDebug() << "* posting to CommandProcessor";
 
       }

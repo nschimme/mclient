@@ -30,6 +30,9 @@ class MClientEventHandler : public QObject, public MClientEventHandlerInterface 
 	// Generate the menus
 	virtual const MenuData& createMenus();
 
+	// Post the parent plugin
+	virtual MClientPlugin* plugin();
+
 public slots:
         // Post an event to the PluginSession
 	void postSession(QVariant* payload, QStringList types);

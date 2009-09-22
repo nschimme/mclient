@@ -6,16 +6,20 @@
 #include <QCoreApplication> // for sending command
 
 #include "MClientEvent.h"
-
 #include "PluginSession.h"
 #include "CommandProcessor.h"
+#include "ConfigEntry.h"
+#include "ScriptEngine.h"
+#include "CommandTask.h"
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
-  : MClientEventHandler(ps, mp) {
+EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp,
+			   CommandTask *task)
+  : MClientCommandHandler(ps, mp, task) {
 }
 
 
 EventHandler::~EventHandler() {
+  _scriptEngine->deleteLater();
   qDebug() << "* removed QtScriptPlugin for session"
 	   << _pluginSession->session();
 }
@@ -39,7 +43,29 @@ void EventHandler::customEvent(QEvent *e) {
 }
 
 
+void EventHandler::init() {
+  _scriptEngine = new ScriptEngine(_task);
+
+  // Connect Signals/Slots
+  connect(this, SIGNAL(evaluate(const QString&)),
+	  _scriptEngine, SLOT(evaluateExpression(const QString&)));
+  connect(this, SIGNAL(variable(const QString&)),
+	  _scriptEngine, SLOT(variableCommand(const QString&)));
+  connect(_scriptEngine, SIGNAL(emitParseInput(const QString&)),
+	  this, SLOT(postCommand(const QString&)));
+  connect(_scriptEngine, SIGNAL(postSession(QVariant*, const QStringList&)),
+	  this, SLOT(postSession(QVariant*, const QStringList&)));
+
+}
+
 void EventHandler::parseInput(const QString &input) {
+  emit evaluate(input);
+}
+
+
+void EventHandler::postCommand(const QString &input) {
+  _task->parseUserInput(input);
+  /*
   // Post to command processor
   QVariant *payload = new QVariant(input);
   QStringList tags("ScriptResult");
@@ -48,4 +74,5 @@ void EventHandler::parseInput(const QString &input) {
   MClientEvent* me = new MClientEvent(med);
   QCoreApplication::postEvent(_pluginSession->getCommand()->getUserInput(),
 			      me); 
+  */
 }

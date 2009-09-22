@@ -1,59 +1,64 @@
 #ifndef COMMANDPROCESSOR_H
 #define COMMANDPROCESSOR_H
 
-#include <QObject>
+#include <QThread>
 #include <QMap>
 #include <QMultiHash>
 #include <QStringList>
 #include <QEvent>
 
 class CommandEntry;
-class UserCommandTask;
-class MudCommandTask;
+class CommandTask;
 class PluginSession;
+class MClientCommandHandler;
 
 typedef QMap<QString, CommandEntry*> CommandMapping;
+typedef QHash<QString, MClientCommandHandler*> CommandHandlerHash;
 
-class CommandProcessor : public QObject {
+class CommandProcessor : public QThread {
     Q_OBJECT
     
     public:
-        CommandProcessor(PluginSession*, QObject* parent=0);
+        CommandProcessor(PluginSession *);
         ~CommandProcessor();
 
 	// For receiving events
-	//void customEvent(QEvent* e);
+	void customEvent(QEvent* e);
 
-        void configure();
-        bool loadSettings();
-        bool saveSettings() const;
-
-	// For sending events to
-	QObject* getUserInput() const;
-	QObject* getAction() const;
-
-	//void parseInput(const QString&);
 	bool unregisterCommand(const QString &source);
 	void registerCommand(const QString &,
 			     const QList<CommandEntry *> &);
 
-	CommandMapping getCommandMapping() { return _mapping; };
-	QChar getCommandSymbol() { return _symbol; };
-	QChar getDelimSymbol() { return _delim; };
-	PluginSession* getPluginSession() { return _pluginSession; };
+	CommandMapping getCommandMapping() { return _mapping; }
+	CommandHandlerHash getHandlers() { return _handlers; }
+	QChar getCommandSymbol() { return _symbol; }
+	QChar getDelimSymbol() { return _delim; }
+	PluginSession* getPluginSession() { return _pluginSession; }
 	void emitQuit();
+
+	CommandTask* getTask() const { return _task; }
+
+public slots:
+        void initHandlers();
+
+ protected:
+	void run();
 
    private:
 	/** Commands Section */
         QChar _symbol, _delim;
 	CommandMapping _mapping;
+	CommandHandlerHash _handlers;
 
 	PluginSession *_pluginSession;
-	MudCommandTask *_actionTask;
-	UserCommandTask *_userInputTask;
+	CommandTask *_task;
 
  signals:
 	void quit();
+	void parseUserInput(const QString&);
+	void parseMudOutput(const QString &, const QStringList &);
+	void socketOpen(bool);
+
 };
 
 

@@ -77,6 +77,19 @@ void WindowActionManager::createActions() {
   fullScreenAct->setStatusTip(tr("Toggle full screen mode"));
   connect(fullScreenAct, SIGNAL(triggered()), this, SLOT(fullScreen()));
 
+profileAct = new QAction(QIcon(":/mainwindow/profile.png"), tr("Profile &Manager..."), this);
+  profileAct->setStatusTip(tr("Manage mClient profile settings"));
+  connect(profileAct, SIGNAL(triggered()), _mainWindow, SLOT(manageProfiles()));
+
+  settingsAct = new QAction(QIcon(":/mainwindow/settings.png"), tr("&Preferences..."), this);
+  settingsAct->setStatusTip(tr("Change mClient settings"));
+  connect(settingsAct, SIGNAL(triggered()), _mainWindow, SLOT(changeConfiguration()) );
+
+  aliasAct = new QAction(tr("&Alias"), this);
+  aliasAct->setStatusTip(tr("Manage mClient aliases"));
+  connect(aliasAct, SIGNAL(triggered()), _mainWindow, SLOT(aliasEditor()));
+
+
   mumeWebsiteAct = new QAction(tr("&Website"), this);
   mumeWebsiteAct->setStatusTip(tr("The official MUME website"));
   connect(mumeWebsiteAct, SIGNAL(triggered()), this, SLOT(openMumeWebsite()));
@@ -91,7 +104,7 @@ void WindowActionManager::createActions() {
   clientHelpAct->setStatusTip(tr("View the mClient help file"));
   connect(clientHelpAct, SIGNAL(triggered()), this, SLOT(clientHelp()));
 
-  aboutAct = new QAction(QIcon(":/mainwindow/m.png"), tr("About &mClient Lite"), this);
+  aboutAct = new QAction(QIcon(":/mainwindow/m.png"), tr("About &mClient"), this);
   aboutAct->setStatusTip(tr("Show the application's About box"));
   connect(aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -142,6 +155,11 @@ void WindowActionManager::createMenus() {
   viewMenu = menuBar->addMenu(tr("&View"));
   viewMenu->addAction(alwaysOnTopAct);
   viewMenu->addAction(fullScreenAct);
+
+  settingsMenu = menuBar->addMenu(tr("&Settings"));
+  settingsMenu->addAction(settingsAct);
+  settingsMenu->addAction(profileAct);
+  settingsMenu->addAction(aliasAct);
 
   menuBar->addSeparator();
 
@@ -215,7 +233,7 @@ void WindowActionManager::about() {
 #endif
 #endif
     + tr("</b><br><br>");
-  QMessageBox::about(_mainWindow, tr("About mClient Lite"),
+  QMessageBox::about(_mainWindow, tr("About mClient"),
                      tr("<FONT SIZE=\"+1\"><B>") + version +
 		     tr("</B></FONT><P>"
 			"Copyright \251 2008 by Jahara<P>"

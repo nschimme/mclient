@@ -1,25 +1,28 @@
 #ifndef EVENTHANDLER_H
 #define EVENTHANDLER_H
 
-#include "MClientEventHandler.h"
+#include "MClientCommandHandler.h"
 
 class QEvent;
 class ScriptEngine;
 
-class EventHandler : public MClientEventHandler {
+class EventHandler : public MClientCommandHandler {
     Q_OBJECT
     
     public:
-        EventHandler(PluginSession *ps, MClientPlugin *mp);
+        EventHandler(PluginSession *ps, MClientPlugin *mp,
+		     CommandTask *task);
         ~EventHandler();
 
         void customEvent(QEvent* e);
+        void parseInput(const QString &input);
+	void init();
 
 public slots:
-        void parseInput(const QString &input);
+        void postCommand(const QString &input);
 
     private:
-	ScriptEngine* _engine;
+	ScriptEngine *_scriptEngine;
 	
  signals:
 	void evaluate(const QString&);

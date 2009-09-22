@@ -75,8 +75,7 @@ void EventHandler::sendUserInput(const QByteArray &input) {
   MClientEventData *med = new MClientEventData(payload, tags,
 					       _pluginSession->session());
   MClientEvent* me = new MClientEvent(med);
-  QCoreApplication::postEvent(_pluginSession->getCommand()->getUserInput(),
-			      me);
+  QCoreApplication::postEvent(_pluginSession->getCommand(), me);
   
 }
 

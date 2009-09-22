@@ -1,15 +1,22 @@
 #include "CommandProcessor.h"
 
 #include "PluginSession.h"
-#include "UserCommandTask.h"
-#include "MudCommandTask.h"
+#include "CommandTask.h"
 #include "CommandEntry.h"
+
+#include "MClientPlugin.h"
+#include "MClientEventHandler.h"
+#include "MClientCommandHandler.h"
+
+#include "MClientEvent.h"
 
 #include <QDebug>
 #include <QApplication>
+#include <QPluginLoader>
+#include <QSemaphore>
 
-CommandProcessor::CommandProcessor(PluginSession *ps, QObject* parent)
-  : QObject(parent), _pluginSession(ps) {
+CommandProcessor::CommandProcessor(PluginSession *ps)
+  : QThread(ps), _pluginSession(ps) {
   _delim = QChar(';');  // Command delimeter symbol
   _symbol = QChar('#'); // Command prefix symbol
 
@@ -43,16 +50,10 @@ CommandProcessor::CommandProcessor(PluginSession *ps, QObject* parent)
 					    CMD_ONE_LINE));
   _mapping.insert("action", new CommandEntry("action",
 					     "",
-					     CMD_ONE_LINE));
+					     CMD_MULTI_LINE));
   _mapping.insert("split", new CommandEntry("split",
 					    "",
 					    CMD_ONE_LINE));
-
-  // Start the command task threads
-  _actionTask = new MudCommandTask(this);
-  _userInputTask = new UserCommandTask(this);
-  _actionTask->start();
-  _userInputTask->start();
 
   qDebug() << "CommandProcessor created with thread:" << this->thread();
 }
@@ -64,7 +65,6 @@ CommandProcessor::~CommandProcessor() {
 }
 
 
-/*
 void CommandProcessor::customEvent(QEvent* e) {
   if (e->type() == 10000) {
     // EngineEvent
@@ -75,29 +75,24 @@ void CommandProcessor::customEvent(QEvent* e) {
     MClientEvent* me = static_cast<MClientEvent*>(e);
     
     if(me->dataTypes().contains("XMLAll")) {
-      CommandTask *task = new CommandTask(me->payload()->toString(),
-					  me->dataTypes(),
-					  this);
-      QThreadPool::globalInstance()->start(task);
+      emit parseMudOutput(me->payload()->toString(),
+			  me->dataTypes());
+
+    } else if (me->dataTypes().contains("UserInput")) {
+      emit parseUserInput(me->payload()->toString());
+
+    } else if (me->dataTypes().contains("SocketConnected")) {
+      emit socketOpen(true);
+
+    } else if (me->dataTypes().contains("SocketDisconnected")) {
+      emit socketOpen(false);
+
+    } else if (me->dataTypes().contains("UnlockProcessor")) {
+      qDebug() << "* got UNLOCK message";
+      _task->_semaphore.release();
+
     }
   }
-}
-
-
-void CommandProcessor::parseInput(const QString &input) {
-  CommandTask *task = new CommandTask(input, this);
-  QThreadPool::globalInstance()->start(task);
-}
-*/
-
-
-QObject* CommandProcessor::getUserInput() const {
-  return _userInputTask;
-}
-
-
-QObject* CommandProcessor::getAction() const {
-  return _actionTask;
 }
 
 
@@ -135,20 +130,41 @@ void CommandProcessor::registerCommand(const QString &pluginName,
 }
 
 
-void CommandProcessor::configure() {
-}
-
-
-bool CommandProcessor::loadSettings() {
-    return true;
-}
-
-
-bool CommandProcessor::saveSettings() const {
-    return true;
+void CommandProcessor::run() {
+  // Start the command task threads
+  _task = new CommandTask(this);
+  
+  qDebug() << "CommandProcessor run" << QThread::currentThread();
+  exec();
+  qDebug() << "CommandProcessor" << QThread::currentThread() << "done";
 }
 
 
 void CommandProcessor::emitQuit() {
   emit quit();
+}
+
+
+void CommandProcessor::initHandlers() {
+  qDebug() << "* Initializing" << _pluginSession->loadedPlugins().size()
+           << "commands from thread" << this->thread();
+  foreach(QPluginLoader* pl, _pluginSession->loadedPlugins()) {
+    MClientPluginInterface* pi
+      = qobject_cast<MClientPluginInterface*>(pl->instance());
+    if (pi) {
+      MClientEventHandler *eh = pi->getEventHandler(_pluginSession->session());
+      if (eh) {
+        MClientCommandHandlerInterface *ch
+	  = qobject_cast<MClientCommandHandlerInterface*>(eh);
+	if (ch) {
+	  foreach(CommandEntry *ce, pi->commandEntries())
+	    _handlers.insert(ce->pluginName(),
+			     static_cast<MClientCommandHandler*>(ch));
+
+	  ch->init();
+
+	}
+      }
+    }
+  }
 }

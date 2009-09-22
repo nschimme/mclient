@@ -1,4 +1,4 @@
-#include "AbstractCommandTask.h"
+#include "CommandTask.h"
 
 #include "PluginSession.h"
 #include "CommandProcessor.h"
@@ -7,50 +7,40 @@
 #include "CommandEntry.h"
 
 #include "MClientEvent.h"
+#include "MClientCommandHandler.h"
 
+#include <QObject>
 #include <QApplication>
 #include <QDebug>
 #include <QVariant>
 
-AbstractCommandTask::AbstractCommandTask(CommandProcessor *ps, QObject *parent)
-  : QThread(parent), _commandProcessor(ps) {
+CommandTask::CommandTask(CommandProcessor *ps)
+  : QObject(ps), _commandProcessor(ps) {
 
   _queue = QStringList();
   _stack = 0;
+  _verbose = false;
 
   _aliasManager = _commandProcessor->getPluginSession()->getAlias();
   _actionManager = _commandProcessor->getPluginSession()->getAction();
+
+  // Signal/Slots
+  connect(ps, SIGNAL(socketOpen(bool)),
+	  SLOT(socketOpen(bool)));
+  connect(ps, SIGNAL(parseUserInput(const QString&)),
+	  SLOT(parseUserInput(const QString&)));
+  connect(ps, SIGNAL(parseMudOutput(const QString &, const QStringList &)),
+	  SLOT(parseMudOutput(const QString &, const QStringList &)));
+
+  qDebug() << "* CommandTask created with thread" << QThread::currentThread();
 }
 
 
-AbstractCommandTask::~AbstractCommandTask() {
+CommandTask::~CommandTask() {
 }
 
 
-void AbstractCommandTask::customEvent(QEvent *e) {
-  if (e->type() == 10001) {
-    MClientEvent* me = static_cast<MClientEvent*>(e);
-    
-    if (me->dataTypes().contains("SocketConnected")) {
-      _socketOpen = true;
-
-    }
-    else if (me->dataTypes().contains("SocketDisconnected")) {
-      _socketOpen = false;
-      
-    }
-  }
-}
-
-
-void AbstractCommandTask::run() {
-  qDebug() << "AbstractCommandTask run" << QThread::currentThread();
-  exec();
-  qDebug() << "AbstractCommandTask" << QThread::currentThread() << "done";
-}
-
-
-void AbstractCommandTask::parseUserInput(const QString &input) {
+void CommandTask::parseUserInput(const QString &input) {
   // Add current input to the bottom of the queue
   _queue.prepend(input);
   //qDebug() << "* adding" << _queue.first() << "to queue";
@@ -58,7 +48,7 @@ void AbstractCommandTask::parseUserInput(const QString &input) {
 
 }
 
-bool AbstractCommandTask::processStack() {
+bool CommandTask::processStack() {
   // Reinitialize the stack
   _stack = 0;
 
@@ -69,7 +59,7 @@ bool AbstractCommandTask::processStack() {
       _queue.clear();
       qWarning() << "! Stack overflow!";
       displayData("#error: stack overflow.\r\n");
-      return false;
+      continue;
     }
 
     // Pop stack
@@ -106,11 +96,12 @@ bool AbstractCommandTask::processStack() {
 
     }
   }
+
   return true;
 }
 
 
-const QString& AbstractCommandTask::parseArguments(QString &arguments,
+const QString& CommandTask::parseArguments(QString &arguments,
 						   CommandEntryType type) {
   if (type == CMD_ONE_LINE) {
     QRegExp rx("\r?\n");
@@ -122,8 +113,9 @@ const QString& AbstractCommandTask::parseArguments(QString &arguments,
     }
 
   } else {
-    unsigned int i, leftCount = 0, rightCount = 0, escapedChar = 0;
-    for (i = 0; i < (unsigned int) arguments.length(); i++) {
+    int i, leftCount = 0, rightCount = 0, escapedChar = 0;
+    for (i = 0; i < arguments.length(); i++) {
+      qDebug() << arguments[i] << leftCount << rightCount << escapedChar;
       switch (arguments.at(i).toAscii()) {
       case '\\':
 	escapedChar = i;
@@ -141,9 +133,19 @@ const QString& AbstractCommandTask::parseArguments(QString &arguments,
 	  if (rightCount > leftCount) {
 	    qDebug() << "! WTF?";
 
-	  } else if (leftCount == rightCount) {
-	    _queue.append(arguments.mid(i));
-	    arguments.truncate(i);
+	  }
+	  else if (leftCount == rightCount) {
+	    qDebug() << "* detected finish";
+	    QString nextCommand = arguments.mid(i+1);
+	    QRegExp rx("\r?\n");
+	    int pos;
+	    if ((pos = rx.indexIn(nextCommand)) != -1) {
+	      qDebug() << "* stripping" << nextCommand.left(pos + rx.matchedLength());
+	      nextCommand.remove(0, pos + rx.matchedLength());
+	    }
+	    if (!nextCommand.isEmpty())
+	      _queue.append(nextCommand);
+	    arguments.truncate(i+1);
 	    
 	  }
 	}
@@ -165,7 +167,7 @@ const QString& AbstractCommandTask::parseArguments(QString &arguments,
 }
 
 
-bool AbstractCommandTask::findCommand(const QString &rawCommand,
+bool CommandTask::findCommand(const QString &rawCommand,
 				      QString &arguments) {
   if (!rawCommand.startsWith(_commandProcessor->getCommandSymbol()))
     return false;
@@ -186,12 +188,24 @@ bool AbstractCommandTask::findCommand(const QString &rawCommand,
       parseArguments(arguments, i.value()->commandType());
 
       if (!i.value()->pluginName().isEmpty()) {
-	// External commands, relay command to corresponding plugin
-	QVariant* qv = new QVariant(arguments);
-	QStringList sl;
-	sl << i.value()->dataType();
-	postSession(qv, sl);
-    	return true;
+	CommandHandlerHash hash = _commandProcessor->getHandlers();
+	if (hash.contains(i.value()->pluginName())) {
+	  // External command handler
+	  qDebug() << "###" << i.value()->pluginName();
+	  MClientCommandHandler *handler = hash.value(i.value()->pluginName());
+	  handler->parseInput(arguments);
+	  qDebug() << "* LOCKING";
+	  _semaphore.acquire();
+	  qDebug() << "* UNLOCKING";
+
+	}
+	else {
+	  // External commands, relay command to corresponding plugin
+	  QVariant* qv = new QVariant(arguments);
+	  QStringList sl(i.value()->dataType());
+	  postSession(qv, sl);
+	}
+	return true;
 
       } else {
 	// Internal Commands
@@ -321,7 +335,7 @@ bool AbstractCommandTask::findCommand(const QString &rawCommand,
 }
  
 
-bool AbstractCommandTask::handleAliasCommand(const QString &arguments) {
+bool CommandTask::handleAliasCommand(const QString &arguments) {
   AliasManager *aliases = _commandProcessor->getPluginSession()->getAlias();
 
   if (arguments.isEmpty()) {
@@ -405,7 +419,7 @@ bool AbstractCommandTask::handleAliasCommand(const QString &arguments) {
 }
 
 
-bool AbstractCommandTask::findAlias(const QString &name,
+bool CommandTask::findAlias(const QString &name,
 				    QString &arguments) {
   // Try to find the alias
   Alias *alias = _aliasManager->match(name);
@@ -440,8 +454,9 @@ bool AbstractCommandTask::findAlias(const QString &name,
 
   return false;
 }
+
   
-bool AbstractCommandTask::handleActionCommand(const QString &arguments) {
+bool CommandTask::handleActionCommand(const QString &arguments) {
   ActionManager *actions = _commandProcessor->getPluginSession()->getAction();
 
   if (arguments.isEmpty()) {
@@ -513,33 +528,25 @@ bool AbstractCommandTask::handleActionCommand(const QString &arguments) {
 }
 
 
-bool AbstractCommandTask::findAction(const QString &pattern, QStringList tags) {
+bool CommandTask::findAction(const QString &pattern, QStringList tags) {
   if (tags.size() > 1) tags.removeAll("XMLAll");
 
   ActionManager *actions = _commandProcessor->getPluginSession()->getAction();
   Action *action = actions->match(pattern, tags);
 
   if (action) {
-    // Create the new command
+    // Create the new command and substituting text
     QString newCommand = action->command;
+    QString newText;
+    if (action->substitute) newText = action->text;
     QStringList captures = action->pattern.capturedTexts();
     for (int i = 0; i < captures.size(); ++i) {
       // Match against non-escaped $ variables
       QRegExp rx(QString("^\\$%1|([^\\\\])\\$%1").arg(i));
-      switch (i) {
-      case 0:
-	/*
-	if (pattern.contains("\r\n")) {
-	  // Remove newlines from $0
-	  newCommand.replace(rx, captures[i].replace(QString("\r\n"),
-						     QString(" ")));
-	  continue;
-	}
-	*/
-      default:
-	newCommand.replace(rx, "\\1"+captures.at(i));
-	break;
-      };
+      qDebug() << i << newCommand;
+      newCommand.replace(rx, "\\1"+captures.at(i));
+      if (!newText.isEmpty())
+	newText.replace(rx, "\\1"+captures.at(i));
     }
 
     // Unescape $s
@@ -548,7 +555,11 @@ bool AbstractCommandTask::findAction(const QString &pattern, QStringList tags) {
     qDebug() << "* action command is" << newCommand;
 
     // Display text
-    displayData(pattern);
+    if (action->substitute) {
+      displayData(newText);
+    }
+    else
+      displayData(pattern);
 
     parseUserInput(newCommand);
     return true;
@@ -560,7 +571,7 @@ bool AbstractCommandTask::findAction(const QString &pattern, QStringList tags) {
 }
 
 
-void AbstractCommandTask::parseMudOutput(const QString &output,
+void CommandTask::parseMudOutput(const QString &output,
 				 const QStringList &tags) {
   // match tag blocks
   findAction(output, tags);
@@ -569,13 +580,13 @@ void AbstractCommandTask::parseMudOutput(const QString &output,
 }
 
 
-void AbstractCommandTask::displayData(const QString &output) {
+void CommandTask::displayData(const QString &output) {
   QVariant* qv = new QVariant(output);
   QStringList sl("DisplayData");
   postSession(qv, sl);
 }
 
-void AbstractCommandTask::postSession(QVariant *payload,
+void CommandTask::postSession(QVariant *payload,
 			      const QStringList& tags) {
   MClientEventData *med =
     new MClientEventData(payload, tags,
@@ -583,4 +594,9 @@ void AbstractCommandTask::postSession(QVariant *payload,
   MClientEvent *me = new MClientEvent(med);
 
   QApplication::postEvent(_commandProcessor->getPluginSession(), me);
+}
+
+
+void CommandTask::socketOpen(bool open) {
+  _socketOpen = open;
 }

@@ -11,10 +11,10 @@ add_subdirectory(mumexml)
 
 
 # Feature Plugins
-add_subdirectory(qtscriptplugin)
 add_subdirectory(mmapperplugin)
 add_subdirectory(proxymanagerio)
 add_subdirectory(remoteedit)
+add_subdirectory(qtscriptplugin)
 
 # Display-Input Plugins
 add_subdirectory(multilineinput)

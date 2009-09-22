@@ -65,6 +65,10 @@ public slots:
     QAction *exitAct;
     QAction *clientHelpAct;
 
+    QAction *profileAct;
+    QAction *settingsAct;
+    QAction *aliasAct;
+
     QAction *mumeWebsiteAct;
     QAction *mumeWikiAct;
     QAction *mumeForumAct;
@@ -82,6 +86,7 @@ public slots:
     QMenu *helpMenu;
     QMenu *newbieMenu;
     QMenu *mumeMenu;
+    QMenu *settingsMenu;
 
     QToolBar *editToolBar;
     QToolBar *connectToolBar;

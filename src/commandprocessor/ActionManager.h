@@ -12,11 +12,13 @@
 typedef struct Action {
   QString label;
   QRegExp pattern;
+  QString text;
   QString command;
   QString group;
   QStringList tags;
   uint priority;
   bool active;
+  bool substitute;
 } Action;
 
 
@@ -40,6 +42,9 @@ class ActionManager : public QObject {
     };
 
     bool loadSettings(const QHash<QString, QVariant> &);
+
+ protected:
+    Action* add(Action *);
     
  private:
     mutable QMutex _mutex;

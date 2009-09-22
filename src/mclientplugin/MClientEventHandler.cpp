@@ -64,6 +64,11 @@ const MenuData& MClientEventHandler::createMenus() {
 }
 
 
+MClientPlugin* MClientEventHandler::plugin() {
+  return _plugin;
+}
+
+
 /*
 bool MClientEventHandler::loadSettings(const QHash<QString, QVariant> &hash) {
   _settings = hash;

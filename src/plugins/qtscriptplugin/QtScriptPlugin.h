@@ -7,7 +7,6 @@
 
 class PluginSession;
 class EventHandler;
-class ScriptEngine;
 
 class QtScriptPlugin : public MClientPlugin {
     Q_OBJECT
@@ -25,7 +24,6 @@ class QtScriptPlugin : public MClientPlugin {
 
  private:
 	QHash<QString, QPointer<EventHandler> > _eventHandlers;
-	QHash<QString, QPointer<ScriptEngine> > _scriptEngines;
 	
 };
 

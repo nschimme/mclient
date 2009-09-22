@@ -79,9 +79,12 @@ bool ScriptEngine::evaluateExpression(const QString &expr) {
 	   << "with backstrace" << uncaughtExceptionBacktrace()
 	   << "\n";
     displayData(output.join(""));
-    return false;
   }
 
+  QVariant* payload = new QVariant(result.toString());
+  QStringList tags("UnlockProcessor");
+  postEvent(payload, tags);
+  
   return true;
 }
 
