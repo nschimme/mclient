@@ -10,10 +10,8 @@
 class CommandEntry;
 class CommandTask;
 class PluginSession;
-class MClientCommandHandler;
 
 typedef QMap<QString, CommandEntry*> CommandMapping;
-typedef QHash<QString, MClientCommandHandler*> CommandHandlerHash;
 
 class CommandProcessor : public QThread {
     Q_OBJECT
@@ -30,16 +28,12 @@ class CommandProcessor : public QThread {
 			     const QList<CommandEntry *> &);
 
 	CommandMapping getCommandMapping() { return _mapping; }
-	CommandHandlerHash getHandlers() { return _handlers; }
 	QChar getCommandSymbol() { return _symbol; }
 	QChar getDelimSymbol() { return _delim; }
 	PluginSession* getPluginSession() { return _pluginSession; }
 	void emitQuit();
 
 	CommandTask* getTask() const { return _task; }
-
-public slots:
-        void initHandlers();
 
  protected:
 	void run();
@@ -48,7 +42,6 @@ public slots:
 	/** Commands Section */
         QChar _symbol, _delim;
 	CommandMapping _mapping;
-	CommandHandlerHash _handlers;
 
 	PluginSession *_pluginSession;
 	CommandTask *_task;

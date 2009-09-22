@@ -24,7 +24,7 @@ RemoteEdit::RemoteEdit(QObject* parent)
     CommandEntry *identify = new CommandEntry();
     identify->pluginName(shortName());
     identify->command("identify");
-    identify->help("send the MUME identify request");
+    identify->help("send MUME client identification request");
     identify->dataType("MUMEIdentifyRequest");
     
     // For registering commands

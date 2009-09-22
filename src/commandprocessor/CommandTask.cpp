@@ -7,7 +7,6 @@
 #include "CommandEntry.h"
 
 #include "MClientEvent.h"
-#include "MClientCommandHandler.h"
 
 #include <QObject>
 #include <QApplication>
@@ -15,7 +14,7 @@
 #include <QVariant>
 
 CommandTask::CommandTask(CommandProcessor *ps)
-  : QObject(ps), _commandProcessor(ps) {
+  : QObject(0), _commandProcessor(ps) {
 
   _queue = QStringList();
   _stack = 0;
@@ -188,22 +187,17 @@ bool CommandTask::findCommand(const QString &rawCommand,
       parseArguments(arguments, i.value()->commandType());
 
       if (!i.value()->pluginName().isEmpty()) {
-	CommandHandlerHash hash = _commandProcessor->getHandlers();
-	if (hash.contains(i.value()->pluginName())) {
-	  // External command handler
-	  qDebug() << "###" << i.value()->pluginName();
-	  MClientCommandHandler *handler = hash.value(i.value()->pluginName());
-	  handler->parseInput(arguments);
-	  qDebug() << "* LOCKING";
-	  _semaphore.acquire();
-	  qDebug() << "* UNLOCKING";
+	// External commands, relay command to corresponding plugin
+	QVariant* qv = new QVariant(arguments);
+	QStringList sl(i.value()->dataType());
+	postSession(qv, sl);
 
-	}
-	else {
-	  // External commands, relay command to corresponding plugin
-	  QVariant* qv = new QVariant(arguments);
-	  QStringList sl(i.value()->dataType());
-	  postSession(qv, sl);
+	if (i.value()->locking()) {
+	  // External command handler
+	  qDebug() << "* LOCKING" << i.value()->pluginName();
+	  _semaphore.acquire();
+	  qDebug() << "* UNLOCKING" << i.value()->pluginName();
+
 	}
 	return true;
 

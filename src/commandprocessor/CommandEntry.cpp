@@ -5,11 +5,14 @@ CommandEntry::CommandEntry(const QString command, const QString help,
   _command = command;
   _help = help;
   _commandType = commandType;
+  _locking = false;
+
 }
 
 CommandEntry::CommandEntry() {
   _command = "unknown";
   _commandType = CMD_ONE_LINE;
+  _locking = false;
 
 }
 
@@ -65,4 +68,14 @@ CommandEntryType CommandEntry::commandType() const {
 
 void CommandEntry::commandType(CommandEntryType commandType) {
   _commandType = commandType;
+}
+
+
+bool CommandEntry::locking() const {
+  return _locking;
+}
+
+
+void CommandEntry::locking(bool value) {
+  _locking = value;
 }

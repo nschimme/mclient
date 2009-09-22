@@ -34,7 +34,12 @@ class CommandEntry {
 	CommandEntryType commandType() const;
 	void commandType(CommandEntryType);
 
+	// Is the command a locking semaphore?
+	bool locking() const;
+	void locking(bool);
+
     protected:
+	bool _locking;
         QString _pluginName;
 	QString _command;
 	QString _help;

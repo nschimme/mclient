@@ -28,7 +28,7 @@
 </array18>
 <array19 name="xpprint" group="XP Counter">
     <command>
-    #script print("\r- Gained:  xp:" + xpcnt_gain_xp + "\t\ttp:" + xpcnt_gain_tp + "\n"); print("- Needed:  xp:" + xpcnt_need_xp + "\t\ttp:" + xpcnt_need_tp + "\n"); print("- Session: xp:" + xpcnt_session_xp + "\t\ttp:" + xpcnt_session_tp + "  \t\tSession: " + xpcnt_session_time + " min.\n"); print("- Rate:    xp:" + xpcnt_hour_xp + "\t\ttp:" + xpcnt_hour_tp + "\n");
+    #script print("\r - Gained:  xp:" + xpcnt_gain_xp + "\ttp:" + xpcnt_gain_tp + "\n"); print(" - Needed:  xp:" + xpcnt_need_xp + "\ttp:" + xpcnt_need_tp + "\n"); print(" - Session: xp:" + xpcnt_session_xp + "\ttp:" + xpcnt_session_tp + "  \tSession: " + xpcnt_session_time + " min.\n"); print(" - Rate:    xp:" + xpcnt_hour_xp + "\ttp:" + xpcnt_hour_tp + "\n");
     </command>
 </array19>
 <array20 name="xprate" group="XP Counter">

@@ -8,7 +8,6 @@
 #include "PluginSession.h"
 
 #include "CommandProcessor.h"
-#include "CommandTask.h"
 #include "CommandEntry.h"
 
 Q_EXPORT_PLUGIN2(qtscriptplugin, QtScriptPlugin)
@@ -31,6 +30,7 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
     script->command("script");
     script->help("evaluate a script");
     script->dataType("QtScriptEvaluate");
+    script->locking(true);
 
     // Command: var
     CommandEntry *var = new CommandEntry();
@@ -53,9 +53,7 @@ void QtScriptPlugin::configure() {
 
 
 bool QtScriptPlugin::startSession(PluginSession *ps) {
-  CommandTask *task
-    = static_cast<CommandTask*>(ps->getCommand()->getTask());
-  _eventHandlers[ps->session()] = new EventHandler(ps, this, task);
+  _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 

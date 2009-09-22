@@ -15,7 +15,6 @@
 #include "ConfigEntry.h"
 
 #include "MClientEventHandler.h"
-#include "MClientCommandHandler.h"
 
 #include "MClientEngineEvent.h"
 #include "MClientEvent.h"
@@ -53,8 +52,6 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
   _commandProcessor->start();
   connect(_commandProcessor, SIGNAL(quit()),
 	  _pluginManager->getMainWindow(), SLOT(close()));
-  connect(this, SIGNAL(doneLoading(PluginSession *)),
-	  _commandProcessor, SLOT(initHandlers()));
 
   // Start the session in another thread to allow for widgets to be created
   connect(this, SIGNAL(doneLoading(PluginSession *)),

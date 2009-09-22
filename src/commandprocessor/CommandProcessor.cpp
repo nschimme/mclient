@@ -6,7 +6,6 @@
 
 #include "MClientPlugin.h"
 #include "MClientEventHandler.h"
-#include "MClientCommandHandler.h"
 
 #include "MClientEvent.h"
 
@@ -16,7 +15,7 @@
 #include <QSemaphore>
 
 CommandProcessor::CommandProcessor(PluginSession *ps)
-  : QThread(ps), _pluginSession(ps) {
+  : QThread(0), _pluginSession(ps) {
   _delim = QChar(';');  // Command delimeter symbol
   _symbol = QChar('#'); // Command prefix symbol
 
@@ -46,10 +45,10 @@ CommandProcessor::CommandProcessor(PluginSession *ps)
 					   "",
 					   CMD_ONE_LINE));
   _mapping.insert("alias", new CommandEntry("alias",
-					    "",
+					    "delete/list/define aliases",
 					    CMD_ONE_LINE));
   _mapping.insert("action", new CommandEntry("action",
-					     "",
+					     "delete/list/define actions",
 					     CMD_MULTI_LINE));
   _mapping.insert("split", new CommandEntry("split",
 					    "",
@@ -131,10 +130,11 @@ void CommandProcessor::registerCommand(const QString &pluginName,
 
 
 void CommandProcessor::run() {
+  qDebug() << "CommandProcessor run" << QThread::currentThread();
+
   // Start the command task threads
   _task = new CommandTask(this);
   
-  qDebug() << "CommandProcessor run" << QThread::currentThread();
   exec();
   qDebug() << "CommandProcessor" << QThread::currentThread() << "done";
 }
@@ -142,29 +142,4 @@ void CommandProcessor::run() {
 
 void CommandProcessor::emitQuit() {
   emit quit();
-}
-
-
-void CommandProcessor::initHandlers() {
-  qDebug() << "* Initializing" << _pluginSession->loadedPlugins().size()
-           << "commands from thread" << this->thread();
-  foreach(QPluginLoader* pl, _pluginSession->loadedPlugins()) {
-    MClientPluginInterface* pi
-      = qobject_cast<MClientPluginInterface*>(pl->instance());
-    if (pi) {
-      MClientEventHandler *eh = pi->getEventHandler(_pluginSession->session());
-      if (eh) {
-        MClientCommandHandlerInterface *ch
-	  = qobject_cast<MClientCommandHandlerInterface*>(eh);
-	if (ch) {
-	  foreach(CommandEntry *ce, pi->commandEntries())
-	    _handlers.insert(ce->pluginName(),
-			     static_cast<MClientCommandHandler*>(ch));
-
-	  ch->init();
-
-	}
-      }
-    }
-  }
 }
