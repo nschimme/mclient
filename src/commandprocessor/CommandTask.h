@@ -36,16 +36,17 @@ public slots:
 	bool _socketOpen;
 
 	void displayData(const QString &);
+	void displayPrompt(const QString &);
 	void postSession(QVariant *, const QStringList &);
 
 	bool processStack();
 	
-        bool findCommand(const QString &, QString &);
-	bool findAlias(const QString &, QString &);
-
+        bool findCommand(const QString &cmd, QString &arg);
+	bool internalCommand(const QString &cmd, QString &arg);
 	const QString& parseArguments(QString &,
 				      CommandEntryType =CMD_ONE_LINE);
 
+	bool findAlias(const QString &, QString &);
 	bool findAction(const QString &, QStringList);
 
 	bool handleAliasCommand(const QString &);

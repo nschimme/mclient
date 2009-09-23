@@ -8,7 +8,8 @@
 class ProxyServer;
 class EventHandler;
 
-enum ProxyState {PROXY_AUTHENTICATING, PROXY_CONNECTED, PROXY_DISCONNECTED};
+enum ProxyState {PROXY_AUTHENTICATING, PROXY_CONNECTED, PROXY_DISCONNECTED,
+		 PROXY_FAILED_PASSWORD};
 
 class ProxyConnection : public QObject {
   Q_OBJECT

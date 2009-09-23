@@ -24,9 +24,6 @@ EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
   _proxyServer->port(port);
   _proxyServer->start();
 
-  connect(this, SIGNAL(removeProxyConnection(ProxyConnection *)),
-	  _proxyServer, SLOT(removeProxyConnection(ProxyConnection *)));
-
 }
 
 
@@ -45,6 +42,13 @@ void EventHandler::customEvent(QEvent *e) {
     if (me->dataTypes().contains("DisplayData") ||
 	me->dataTypes().contains("UserInput")) {
       QByteArray ba = me->payload()->toByteArray();
+      emit sendToSocket(ba);
+
+    } else if (me->dataTypes().contains("DisplayPrompt")) {
+      QByteArray ba = me->payload()->toByteArray();
+      // Append the IAC GA
+      ba += (unsigned char) 255; // IAC
+      ba += (unsigned char) 249; // GA
       emit sendToSocket(ba);
       
     } else if (me->dataTypes().contains("EchoMode")) {
@@ -97,6 +101,7 @@ bool EventHandler::proxyCommand(const QString &args) {
 	state = "Connected";
 	break;
       case PROXY_DISCONNECTED:
+      case PROXY_FAILED_PASSWORD:
 	state = "Disconnected";
 	break;
       };
@@ -112,10 +117,13 @@ bool EventHandler::proxyCommand(const QString &args) {
 
   } else {
     // Other commands
-    QRegExp rx("^(kill)\\s+(\\d+)");
+    QRegExp rx("^(kill|listen|close)(?:\\s+(\\d+))?");
     if (!rx.exactMatch(args)) {
       // Incorrect command syntax
-      qDebug() << "* Unknown syntax in proxy command regular expression";
+      displayMessage("#usage:\r\n"
+		     "\t#proxy listen\r\n"
+		     "\t#proxy close\r\n"
+		     "\t#proxy kill #\r\n");
       return false;
     }
     // Parse the command
@@ -125,7 +133,13 @@ bool EventHandler::proxyCommand(const QString &args) {
     QString command(cmd.at(1));
     QString number(cmd.at(2));
 
-    if (command == "kill") {
+    if (command == "listen") {
+      _proxyServer->start();
+
+    } else if (command == "close") {
+      _proxyServer->close();
+
+    } else if (command == "kill") {
       unsigned int j = 1;
       ProxyConnections::const_iterator i = map.constBegin();
       while (i != map.constEnd()) {

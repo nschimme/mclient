@@ -46,7 +46,7 @@ CommandProcessor::CommandProcessor(PluginSession *ps)
 					   CMD_ONE_LINE));
   _mapping.insert("alias", new CommandEntry("alias",
 					    "delete/list/define aliases",
-					    CMD_ONE_LINE));
+					    CMD_MULTI_LINE));
   _mapping.insert("action", new CommandEntry("action",
 					     "delete/list/define actions",
 					     CMD_MULTI_LINE));

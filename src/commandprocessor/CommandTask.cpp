@@ -19,6 +19,7 @@ CommandTask::CommandTask(CommandProcessor *ps)
   _queue = QStringList();
   _stack = 0;
   _verbose = false;
+  _socketOpen = false;
 
   _aliasManager = _commandProcessor->getPluginSession()->getAlias();
   _actionManager = _commandProcessor->getPluginSession()->getAction();
@@ -91,7 +92,7 @@ bool CommandTask::processStack() {
     }
     else {
       displayData("#no open connections. "
-		  "Use '\033[1m#connect\033[0m' to open a connection.\r\n");
+		  "Type \033[1m#connect\033[0m to open a connection.\r\n");
 
     }
   }
@@ -131,6 +132,7 @@ const QString& CommandTask::parseArguments(QString &arguments,
 	  rightCount++;
 	  if (rightCount > leftCount) {
 	    qDebug() << "! WTF?";
+	    // TODO: throw error
 
 	  }
 	  else if (leftCount == rightCount) {
@@ -140,6 +142,7 @@ const QString& CommandTask::parseArguments(QString &arguments,
 	    int pos;
 	    if ((pos = rx.indexIn(nextCommand)) != -1) {
 	      qDebug() << "* stripping" << nextCommand.left(pos + rx.matchedLength());
+	      // TODO: throw error
 	      nextCommand.remove(0, pos + rx.matchedLength());
 	    }
 	    if (!nextCommand.isEmpty())
@@ -175,6 +178,8 @@ bool CommandTask::findCommand(const QString &rawCommand,
   QString command(rawCommand);
   command.remove(0, 1);
 
+  if (command.isEmpty()) command = "help";
+
   // Identify Command
   CommandMapping map = _commandProcessor->getCommandMapping();
   CommandMapping::const_iterator i;
@@ -201,133 +206,150 @@ bool CommandTask::findCommand(const QString &rawCommand,
 	}
 	return true;
 
-      } else {
-	// Internal Commands
-	command = i.key();
-
-	if (command == "emulate") {
-	  // TODO: Add tag parsing
-	  findAction(arguments, QStringList("XMLNone"));
-    
-	} else if (command == "print") {
-	  // Unescape arguments and display
-	  QString temp(arguments);
-	  QRegExp rx("\\\\(.)");
-	  int pos = 0;
-	  while ((pos = rx.indexIn(temp, pos)) != -1) {
-	    switch (rx.cap(1).at(0).toAscii()) {
-	    case 'r':
-	      temp.replace(pos, 2, "\r");
-	      break;
-	    case 'n':
-	      temp.replace(pos, 2, "\n");
-	      break;
-	    case 't':
-	      temp.replace(pos, 2, "\t");
-	      break;
-	    default:
-	      temp.remove(pos--, 1);
-	    };
-	    pos += rx.matchedLength();
-	  }
-	  displayData(temp);
-
-	} else if (command == "delim") {
-	  /*
-	    if (arguments.size() == 1 && arguments.at(0) != ' ') {
-	    _delim = arguments.at(0);
-	    displayData("#delimeter is now " + arguments + "\r\n");
-	    } else
-	    displayData("#not allowed\r\n");
-	  */
-
-	} else if (command == "qui") {
-	  displayData("#you have to write '#quit' - no less, to quit!\r\n");
-	  
-	} else if (command == "quit") {
-	  _commandProcessor->emitQuit();
-
-	} else if (command == "version") {
-	  QString output = QString("mClient %1, \251 2009 by Jahara\r\n"
-				   "%2"
-				   "%3")
-	    .arg( // %1
-#ifdef SVN_REVISION
-		 "SVN Revision " + QString::number(SVN_REVISION)
-#else
-#ifdef MCLIENT_VERSION
-		 MCLIENT_VERSION
-#else
-		 "unknown version"
-#endif
-#endif
-		 )
-	    .arg( // %2
-
-#if __STDC__
-		 "Compiled " __TIME__ " " __DATE__ "\r\n"
-#else
-		 ""
-#endif
-		 )
-	    .arg( // %3
-		 tr("Based on Qt %1 (%2 bit)\r\n")
-		 .arg(QLatin1String(QT_VERSION_STR),
-		      QString::number(QSysInfo::WordSize))
-		 );
-	  displayData(output);
-	  
-	} else if (command == "help") {
-	  QString output = "\033[1;4m#commands available:\033[0m\r\n";
-	  for (i = map.constBegin(); i != map.constEnd(); ++i) {
-	    output += QString("\033[1m#%1\033[0m%2\r\n")
-	      .arg(i.key(), -15, ' ') // pad 15 characters
-	      .arg(i.value()->help());
-	  }
-	  displayData(output);
-
-	} else if (command == "beep") {
-	  QApplication::beep();
-
-	} else if (command == "alias") {
-	  handleAliasCommand(arguments);
-
-	} else if (command == "action") {
-	  handleActionCommand(arguments);
-
-	} else if (command == "split") {
-	  QChar splitChar = _commandProcessor->getDelimSymbol();
-	  // QString::SkipEmptyParts
-	  QListIterator<QString> i(arguments.split(splitChar));
-	  for (i.toBack(); i.hasPrevious();) {
-	    _queue.append(i.previous());
-	  }
-
-	}
+      } else if (internalCommand(i.key(), arguments)) {
+	qDebug() << "* Command " << command << "was run";
+	return true;
       }
-      qDebug() << "* Command " << command << "was run";
-      return true;
-
     }
   }
-
-  // Check if it is a repeat
-  bool ok;
-  int repeat = command.toInt(&ok);
-  if (ok) {
-    for (int i = 0; i < repeat; i++)
-      parseUserInput(arguments);
+  
+  if (internalCommand(command, arguments)) {
+    qDebug() << "* Command " << command << "was run";
     return true;
-
   }
 
   // Unknown command!
   parseArguments(arguments);
   displayData(QString("#unknown command \"" + command + "\"\r\n"));
   return false;
-
 }
- 
+
+
+bool CommandTask::internalCommand(const QString &command,
+				  QString &arguments) {
+  if (command == "emulate") {
+    // TODO: Add tag parsing
+    findAction(arguments, QStringList("XMLNone"));
+    
+  } else if (command == "print") {
+    // Unescape arguments and display
+    QString temp(arguments);
+    QRegExp rx("\\\\(.)");
+    int pos = 0;
+    while ((pos = rx.indexIn(temp, pos)) != -1) {
+      switch (rx.cap(1).at(0).toAscii()) {
+      case 'r':
+	temp.replace(pos, 2, "\r");
+	break;
+      case 'n':
+	temp.replace(pos, 2, "\n");
+	break;
+      case 't':
+	temp.replace(pos, 2, "\t");
+	break;
+      default:
+	temp.remove(pos--, 1);
+      };
+      pos += rx.matchedLength();
+    }
+    displayData(temp);
+
+  } else if (command == "delim") {
+    /*
+      if (arguments.size() == 1 && arguments.at(0) != ' ') {
+      _delim = arguments.at(0);
+      displayData("#delimeter is now " + arguments + "\r\n");
+      } else
+      displayData("#not allowed\r\n");
+    */
+
+  } else if (command == "qui") {
+    displayData("#you have to write '#quit' - no less, to quit!\r\n");
+	  
+  } else if (command == "quit") {
+    _commandProcessor->emitQuit();
+
+  } else if (command == "version") {
+    QString output = QString("mClient %1, \251 2009 by Jahara\r\n"
+			     "%2"
+			     "%3")
+      .arg( // %1
+#ifdef SVN_REVISION
+	   "SVN Revision " + QString::number(SVN_REVISION)
+#else
+#ifdef MCLIENT_VERSION
+	   MCLIENT_VERSION
+#else
+	   "unknown version"
+#endif
+#endif
+	   )
+      .arg( // %2
+
+#if __STDC__
+	   "Compiled " __TIME__ " " __DATE__ "\r\n"
+#else
+	   ""
+#endif
+	   )
+      .arg( // %3
+	   tr("Based on Qt %1 (%2 bit)\r\n")
+	   .arg(QLatin1String(QT_VERSION_STR),
+		QString::number(QSysInfo::WordSize))
+	   );
+    displayData(output);
+	  
+  } else if (command == "help") {
+    QString output = "\033[1;4m#commands available:\033[0m\r\n";
+    CommandMapping map = _commandProcessor->getCommandMapping();
+    CommandMapping::const_iterator i;
+    for (i = map.constBegin(); i != map.constEnd(); ++i) {
+      output += QString("\033[1m#%1\033[0m%2\r\n")
+	.arg(i.key(), -15, ' ') // pad 15 characters
+	.arg(i.value()->help());
+    }
+    displayData(output);
+
+  } else if (command == "beep") {
+    QApplication::beep();
+
+  } else if (command == "alias") {
+    handleAliasCommand(arguments);
+
+  } else if (command == "action") {
+    handleActionCommand(arguments);
+
+  } else if (command == "split") {
+    QChar splitChar = _commandProcessor->getDelimSymbol();
+    // QString::SkipEmptyParts
+    QListIterator<QString> i(arguments.split(splitChar));
+    for (i.toBack(); i.hasPrevious();) {
+      _queue.append(i.previous());
+    }
+    
+  } else if (command.indexOf(QRegExp("^\\d+$")) == 0) {
+    // Check if it is a repeat
+    bool ok;
+    int repeat = command.toInt(&ok);
+    if (ok) {
+      QStringList newCommand;
+      for (int i = 0; i < repeat; i++) {
+	newCommand << arguments;
+      }
+      parseUserInput(newCommand.join("\n"));
+      
+    }
+  } else {
+  
+    // Unknown command!
+    parseArguments(arguments);
+    displayData(QString("#unknown command \"" + command + "\"\r\n"));
+    return false;
+  }
+
+  return true;
+}
+
 
 bool CommandTask::handleAliasCommand(const QString &arguments) {
   AliasManager *aliases = _commandProcessor->getPluginSession()->getAlias();
@@ -539,7 +561,7 @@ bool CommandTask::findAction(const QString &pattern, QStringList tags) {
       QRegExp rx(QString("^\\$%1|([^\\\\])\\$%1").arg(i));
       qDebug() << i << newCommand;
       newCommand.replace(rx, "\\1"+captures.at(i));
-      if (!newText.isEmpty())
+      if (action->substitute)
 	newText.replace(rx, "\\1"+captures.at(i));
     }
 
@@ -549,18 +571,21 @@ bool CommandTask::findAction(const QString &pattern, QStringList tags) {
     qDebug() << "* action command is" << newCommand;
 
     // Display text
-    if (action->substitute) {
-      displayData(newText);
-    }
+    if (!action->substitute) newText = pattern;
+    if (tags.contains("XMLPrompt"))
+      displayPrompt(newText);
     else
-      displayData(pattern);
+      displayData(newText);
 
     parseUserInput(newCommand);
     return true;
   }
   
   // No action found, display the text
-  displayData(pattern);
+    if (tags.contains("XMLPrompt"))
+      displayPrompt(pattern);
+    else
+      displayData(pattern);
   return false;
 }
 
@@ -577,6 +602,13 @@ void CommandTask::parseMudOutput(const QString &output,
 void CommandTask::displayData(const QString &output) {
   QVariant* qv = new QVariant(output);
   QStringList sl("DisplayData");
+  postSession(qv, sl);
+}
+
+
+void CommandTask::displayPrompt(const QString &output) {
+  QVariant* qv = new QVariant(output);
+  QStringList sl("DisplayPrompt");
   postSession(qv, sl);
 }
 

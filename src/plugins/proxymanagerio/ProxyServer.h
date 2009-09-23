@@ -16,7 +16,7 @@ class ProxyServer : public QTcpServer {
     Q_OBJECT
 
     public:        
-        ProxyServer(EventHandler *, QObject* parent=0);
+        ProxyServer(EventHandler *);
         ~ProxyServer();
 
 	void start();

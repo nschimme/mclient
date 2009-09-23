@@ -19,13 +19,13 @@ class EventHandler : public MClientEventHandler {
 	const MenuData& createMenus();
 
 public slots:
-        void socketReadData(const QByteArray&);
-	void displayMessage(const QString&);
+        void socketReadData(const QByteArray &);
+	void displayMessage(const QString &);
 	void socketOpened();
 	void socketClosed();
 
         // Menu/Action members
-        void connectDevice();
+        void connectDevice(const QString & =0);
         void disconnectDevice();
 
  signals:

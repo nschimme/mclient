@@ -27,7 +27,6 @@ ProxyConnection::ProxyConnection(int socketDescriptor, ProxyServer *server)
   } else {
     // Connected!
     _peerAddress = _socket->peerAddress().toString();
-    qDebug() << "* Client connected to proxy from" << _peerAddress;
     QByteArray ba("\033[1;37;41m                     \033[0m\r\n"
 		  "\033[1;37;41m Welcome to mClient! \033[0m\r\n"
 		  "\033[1;37;41m                     \033[0m\r\n");
@@ -79,19 +78,17 @@ ProxyConnection::~ProxyConnection() {
 }
 
 void ProxyConnection::onPasswordRead() {
-  QByteArray ba = _socket->readAll();
+  QByteArray ba = _socket->readAll().trimmed();
   QString password = _server->password();
   
   // Ignore telnet commands (IAC)
-  if ((unsigned char) ba.at(0) == (unsigned char) 255)
-    return ;
+  if ((unsigned char) ba.at(0) == (unsigned char) 255) return ;
   
   // This is a password attempt, disconnect this slot because no
   // other attempts are allowed.
   disconnect(_socket, SIGNAL(readyRead()), this, SLOT(onPasswordRead()));
-  
-  if (ba.length() - 2 > password.length() || // -2 because of \r\n
-      ba.trimmed() != password) {
+
+  if (ba.length() > password.length() || ba != password) {
     // Password incorrect
     sendToSocket(QString("\033[31mIncorrect password!\r\n"
 			 "\r\n"
@@ -99,12 +96,11 @@ void ProxyConnection::onPasswordRead() {
 		 .arg(_peerAddress)
 		 .toAscii());
     _socket->flush();
-
     qDebug() << "* Proxy did not recognize password attempt:"
-	     << ba.trimmed() << "from IP address"
+	     << ba << "from IP address"
 	     << _peerAddress;
 
-    _state = PROXY_DISCONNECTED;
+    _state = PROXY_FAILED_PASSWORD;
     _socket->disconnectFromHost();
         
   } else {

@@ -83,8 +83,7 @@ void EventHandler::customEvent(QEvent *e) {
       sendData(ba);
       
     } else if (me->dataTypes().contains("ConnectToHost")) {
-      //QString arg = me->payload()->toString();
-      connectDevice();
+      connectDevice(me->payload()->toString());
       
     } else if (me->dataTypes().contains("DisconnectFromHost")) {
       //QString arg = me->payload()->toString();
@@ -127,13 +126,24 @@ const MenuData& EventHandler::createMenus() {
 }
 
 // IO members
-void EventHandler::connectDevice() {
+void EventHandler::connectDevice(const QString &args) {
     if (_openSocket) {
       displayMessage("#connection is already open. "
-		     "Use '#zap' to disconnect it.\n");
+		     "Type \033[1m#zap\033[0m to disconnect it.\r\n");
 
     } else {
       // Connect a particular session's sockets.
+      if (!args.isEmpty()) {
+	// Update the host and port
+	QStringList list = args.split(QRegExp("[:\\s]+"),
+				      QString::SkipEmptyParts);
+	qDebug() << list << list.size();
+	if (list.size() == 2) {
+	  _socketReader->host(list.at(0));
+	  _socketReader->port(list.at(1).toInt());
+	}
+	
+      }
       emit connectToHost();
 
     }

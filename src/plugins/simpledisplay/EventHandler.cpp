@@ -27,11 +27,9 @@ void EventHandler::customEvent(QEvent *e) {
   if(!e->type() == 10001) return;
   
   MClientEvent* me = static_cast<MClientEvent*>(e);
-  if (me->dataTypes().contains("DisplayData")) {
-    emit displayText(me->payload()->toString());
-
-  }
-  else if (me->dataTypes().contains("UserInput")) {
+  if (me->dataTypes().contains("DisplayData") ||
+      me->dataTypes().contains("DisplayPrompt") ||
+      me->dataTypes().contains("UserInput")) {
     emit displayText(me->payload()->toString());
 
   }

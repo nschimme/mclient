@@ -5,14 +5,19 @@
 #include <QTcpSocket>
 
 /** Starts a local server and listens for connections */
-ProxyServer::ProxyServer(EventHandler *eh, QObject *parent)
-  : QTcpServer(parent), _eventHandler(eh) {
+ProxyServer::ProxyServer(EventHandler *eh)
+  : QTcpServer(0), _eventHandler(eh) {
 
   // TODO: replace this with some configuration code
   _maxConnections = 5;
 
   setMaxPendingConnections(_maxConnections + 1); // Allow one more for
 						 // max connection info
+
+  connect(_eventHandler, SIGNAL(removeProxyConnection(ProxyConnection *)),
+	  this, SLOT(removeProxyConnection(ProxyConnection *)));
+  connect(this, SIGNAL(sendMessage(const QString &)),
+	  _eventHandler, SLOT(displayMessage(const QString &)));
 }
 
 
@@ -37,6 +42,8 @@ void ProxyServer::incomingConnection(int socketDescriptor) {
       = new ProxyConnection(socketDescriptor, this);
     QDateTime current(QDateTime::currentDateTime());
     _proxyConnections[current] = proxyConnection;
+    connect(proxyConnection, SIGNAL(sendMessage(const QString &)),
+	    _eventHandler, SLOT(displayMessage(const QString &)));
           
   } else {
     qDebug() << "! Proxy only allows a certain number of connections";
@@ -52,6 +59,13 @@ void ProxyServer::incomingConnection(int socketDescriptor) {
 
 void ProxyServer::removeProxyConnection(ProxyConnection *proxyConnection) {
   qDebug() << "* in removeProxyConnection" << proxyConnection;
+  if (proxyConnection->state() == PROXY_FAILED_PASSWORD)
+    emit sendMessage("#WARNING!\r\n"
+		     "#proxy client \"" + proxyConnection->peerAddress()
+		     + "\" did not enter the correct password.\r\n");
+  else
+    emit sendMessage("#proxy client \""+ proxyConnection->peerAddress()
+		     + "\" disconnected.\r\n");
   QDateTime current = _proxyConnections.key(proxyConnection);
   _proxyConnections.remove(current);
   qDebug() << _proxyConnections;
@@ -61,6 +75,9 @@ void ProxyServer::removeProxyConnection(ProxyConnection *proxyConnection) {
 
 void ProxyServer::connectProxyConnection(ProxyConnection *proxyConnection) {
   qDebug() << "* in connectProxyConnection" << proxyConnection;
+  emit sendMessage("#proxy client \""+ proxyConnection->peerAddress()
+		   + "\" connected.\r\n");
+  
   // Input from the client is sent to mClient for processing
   connect(proxyConnection, SIGNAL(sendUserInput(const QByteArray &)),
 	  _eventHandler, SLOT(sendUserInput(const QByteArray &)));
