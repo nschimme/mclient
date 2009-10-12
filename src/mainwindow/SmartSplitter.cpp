@@ -40,12 +40,11 @@ void SmartSplitter::insertWidget(int index, QWidget *widget) {
 	  widget, SLOT(splitterResized()));
 }
 
-void SmartSplitter::resizeWidget(QWidget *widget) {
+void SmartSplitter::resizeWidget(QWidget */*widget*/) {
   /*
   qDebug() << "* SmartSplitter: resizing" << indexOf(widget)
 	   << widget->size().height();
   qDebug() << "* SmartSplitter size:" << this->size().height();
-  */
   int pos = closestLegalPosition(size().height() -
 				 handleWidth() -
 				 widget->size().height(),
@@ -53,4 +52,5 @@ void SmartSplitter::resizeWidget(QWidget *widget) {
   //qDebug() << "* SmartSplitter is moving to" << pos;
   moveSplitter(pos, indexOf(widget));
   emit resizedWidget();
+  */
 }

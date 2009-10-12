@@ -10,6 +10,7 @@
 bool readXmlFile(QIODevice &device, QSettings::SettingsMap &map);
 bool writeXmlFile(QIODevice &device, const QSettings::SettingsMap &map);
 bool sortXmlElements(const QString &s1, const QString &s2);
+enum XmlSaverState {XML_NORMAL, XML_SIZE, XML_MULTI};
 
 class ConfigEntry;
 class QAbstractTableModel;

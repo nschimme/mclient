@@ -14,7 +14,6 @@
 
 EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
   : MClientEventHandler(ps, mp) {
-  _openSocket = false;
   _socketReader = new SocketReader(ps->session(), this);
 
   QString cfg = QString("config/");
@@ -127,46 +126,31 @@ const MenuData& EventHandler::createMenus() {
 
 // IO members
 void EventHandler::connectDevice(const QString &args) {
-    if (_openSocket) {
-      displayMessage("#connection is already open. "
-		     "Type \033[1m#zap\033[0m to disconnect it.\r\n");
-
-    } else {
-      // Connect a particular session's sockets.
-      if (!args.isEmpty()) {
-	// Update the host and port
-	QStringList list = args.split(QRegExp("[:\\s]+"),
-				      QString::SkipEmptyParts);
-	qDebug() << list << list.size();
-	if (list.size() == 2) {
-	  _socketReader->host(list.at(0));
-	  _socketReader->port(list.at(1).toInt());
-	}
-	
-      }
-      emit connectToHost();
-
+  // Connect a particular session's sockets.
+  if (!args.isEmpty()) {
+    // Update the host and port
+    QStringList list = args.split(QRegExp("[:\\s]+"),
+				  QString::SkipEmptyParts);
+    qDebug() << list << list.size();
+    if (list.size() == 2) {
+      _socketReader->host(list.at(0));
+      _socketReader->port(list.at(1).toInt());
     }
+    
+  }
+  emit connectToHost();
+  
 }
 
 
 void EventHandler::disconnectDevice() {
-    if (!_openSocket) {
-      displayMessage("#no open connections to zap.\n");
-
-    } else {
-      // Disconnect a particular session's sockets.
-      emit closeSocket();
-    }
+  // Disconnect a particular session's sockets.
+  emit closeSocket();
 }
-
 
 void EventHandler::sendData(const QByteArray& ba) {
   // Send data to the sockets.
-  if (!_openSocket)
-    qDebug() << "! Socket is not open!";
-  else
-    emit sendToSocket(ba);
+  emit sendToSocket(ba);
 }
 
 
@@ -185,7 +169,6 @@ void EventHandler::displayMessage(const QString& message) {
 
 
 void EventHandler::socketOpened() {
-  _openSocket = true;
   QVariant* qv = new QVariant();
   QStringList sl("SocketConnected");
   postSession(qv, sl);
@@ -194,7 +177,6 @@ void EventHandler::socketOpened() {
 }
 
 void EventHandler::socketClosed() {
-  _openSocket = false;
   QVariant* qv = new QVariant();
   QStringList sl("SocketDisconnected");
   postSession(qv, sl);

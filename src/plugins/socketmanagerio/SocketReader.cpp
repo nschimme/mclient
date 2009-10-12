@@ -20,6 +20,11 @@ void SocketReader::connectToHost() {
   }
   else if (_socket->state() < 3) {
     emit displayMessage("#already connecting... ");
+
+  } else {
+    emit displayMessage("#connection is already open. "
+			"Type \033[1m#zap\033[0m to disconnect it.\r\n");
+
   }
   /** Old threaded code
   if (!isRunning()) start(LowPriority);
@@ -51,7 +56,10 @@ void SocketReader::sendToSocket(const QByteArray &ba) {
 
 
 void SocketReader::closeSocket() {
-  if (_socket) {
+  if (!_socket) {
+    emit displayMessage("#no open connections to zap.\n");
+
+  } else {
     _socket->close();
     _socket->deleteLater();
   }

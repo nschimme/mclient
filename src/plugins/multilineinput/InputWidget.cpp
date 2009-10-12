@@ -17,31 +17,31 @@
 InputWidget::InputWidget(QWidget* parent) 
     : QPlainTextEdit(parent) {
 
-    // Size Policy
-    QFontMetrics fm(currentCharFormat().font());
-    int textHeight = fm.height();
-    int documentMargin = document()->documentMargin()*2;
-    int frameWidth = QFrame::frameWidth()*2;
+  // Size Policy
+  QFontMetrics fm(currentCharFormat().font());
+  int textHeight = fm.height();
+  int documentMargin = document()->documentMargin()*2;
+  int frameWidth = QFrame::frameWidth()*2;
+  
+  QSizePolicy policy = QSizePolicy(QSizePolicy::Expanding,
+				   QSizePolicy::Maximum);
+  setSizePolicy(policy);
+  QWidget::setMinimumSize(0, textHeight+documentMargin+frameWidth);
+  QWidget::setBaseSize(0, documentMargin+frameWidth +2); // +2 just because
+  QWidget::setSizeIncrement(0, textHeight);
 
-    QSizePolicy policy = QSizePolicy(QSizePolicy::Expanding,
-				     QSizePolicy::Maximum);
-    setSizePolicy(policy);
-    QWidget::setMinimumSize(0, textHeight+documentMargin+frameWidth);
-    QWidget::setBaseSize(0, documentMargin+frameWidth +2); // +2 just because
-    QWidget::setSizeIncrement(0, textHeight);
-
-    // Line Wrapping
-    setLineWrapMode(QPlainTextEdit::NoWrap);
-
-    // Local Echo?
-    _echoMode = true;
-
-    // Word History
-    _wordHistory << "dork" << "double" << "doobie";
-    _lineIterator = new QMutableStringListIterator(_lineHistory);
-    _tabIterator = new QMutableStringListIterator(_wordHistory);
-    _newInput = true;
-
+  // Line Wrapping
+  setLineWrapMode(QPlainTextEdit::NoWrap);
+  
+  // Local Echo?
+  _echoMode = true;
+    
+  // Word History
+  _wordHistory << "dork" << "double" << "doobie";
+  _lineIterator = new QMutableStringListIterator(_lineHistory);
+  _tabIterator = new QMutableStringListIterator(_wordHistory);
+  _newInput = true;
+  
 }
 
 
@@ -192,15 +192,15 @@ void InputWidget::wordHistory(int key) {
 
 
 void InputWidget::detectedLineChange() {
+  /*
   qDebug() << "InputWidget resizing!";
   QSize size = document()->documentLayout()->documentSize().toSize();
   int height = baseSize().height() + size.height() * sizeIncrement().height();
 
-  qDebug() << QWidget::size() << height;
-  
+  qDebug() << QWidget::size() << height;  
   resize(QWidget::width(), height);
   emit resizeSplitter(this);
-
+  */
 }
 
 

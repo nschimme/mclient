@@ -103,7 +103,7 @@ void PluginSession::loadAllPlugins() {
   int pluginsSize = hash->value("profile/plugins/size", 0).toInt();
   for (int i = 0; i < pluginsSize; ++i) {
     // Add the plugin to the list of those to be loaded
-    QString pluginName(hash->value("profile/plugins/"+
+    QString pluginName(hash->value("profile/plugin/"+
 				   QString::number(i+1)+
 				   "/name").toString());    
     pluginsToLoad << pluginName;

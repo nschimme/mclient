@@ -176,16 +176,18 @@ bool PluginManager::indexPlugins() {
 
 bool PluginManager::writePluginIndex() {
     QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
+    QList<PluginEntry*> plugins = _availablePlugins.values();
     
     QStringList groups;
     groups << "mClient" << "plugins";
-    QList<PluginEntry*> plugins = _availablePlugins.values();
-    hash->insert(groups.join("/")+"/size",
-		 QVariant(QString::number(plugins.size())));
     hash->insert(groups.join("/")+"/path",
 		 QVariant(getConfig()->getPluginPath()));
     hash->insert(groups.join("/")+"/indexed",
 		QVariant(QDateTime(QDateTime::currentDateTime()).toString()));
+    groups.removeLast();
+    groups << "plugin";
+    hash->insert(groups.join("/")+"/size",
+		 QVariant(QString::number(plugins.size())));
     for (int i = 0; i < plugins.size(); ++i) {
       PluginEntry *e = plugins.at(i);
       groups << QString::number(i+1); /* plugins/index */
@@ -227,6 +229,8 @@ bool PluginManager::readPluginIndex() {
     QDateTime generated =
       QDateTime::fromString(hash->value(groups.join("/")+"/generated")
 			    .toString());
+    groups.removeLast();
+    groups << "plugin";
 
     int pluginsSize = hash->value(groups.join("/")+"/size", 0).toInt();
     for (int i = 0; i < pluginsSize; ++i) {

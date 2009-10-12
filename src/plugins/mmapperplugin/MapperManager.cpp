@@ -158,8 +158,10 @@ MapperManager::MapperManager(EventHandler *eh, QObject *parent)
   */
 
   // auto load the map
+  /*
   if (Config().m_autoLoadWorld && Config().m_autoLoadFileName!="")
     loadFile(Config().m_autoLoadFileName);
+  */
 
   qDebug() << "* MapperManager thread:" << QThread::currentThread();
 }
