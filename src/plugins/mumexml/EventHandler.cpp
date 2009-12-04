@@ -118,14 +118,14 @@ void EventHandler::parse(const QByteArray& line) {
     else
     {
       if (line.at(index) == '<') {
-	/*
+	//*
         //send characters (ignore whitespace as this can be pretty print)
 	QRegExp rx("^\\s+?(\n.+)");
 	rx.setMinimal(true);
 	QString temp(_tempCharacters);
 	temp.replace(rx, "\\1");
 	_tempCharacters = temp.toLatin1();
-	*/
+    // */
         if (!_tempCharacters.isEmpty())
           characters( _tempCharacters );
         _tempCharacters.clear();
