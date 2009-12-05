@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config plugin="tellmessenger" version="1.0">
+    <output type="tcpserver" enabled="1" port="4242">
+        <events>XMLTell</events>
+    </output>
+    <output type="mclientevent" enabled="1" name="GlobalChat">
+        <events>XMLPray XMLNarrate XMLSing</events>
+    </output>
+    <output type="widget" enabled="1">
+        <events>XMLWeather</events>
+    </output>
+</config>
