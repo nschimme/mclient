@@ -23,10 +23,10 @@ class TellMessenger : public MClientPlugin {
         bool startSession(PluginSession *ps);
         bool stopSession(PluginSession *ps);
 
-	MClientEventHandler* getEventHandler(QString s);
+	    MClientEventHandler* getEventHandler(QString s);
 
     private:
-	QHash<QString, QPointer<EventHandler> > _eventHandlers;
+	    QHash<QString, QPointer<EventHandler> > _eventHandlers;
 
         QPointer<TellMessengerConfig> _configWidget;
 

@@ -17,14 +17,16 @@ class SocketServer : public QThread {
         ~SocketServer();
 
         void port(const int);
-
-        const QString& session() const;
         const int& port() const;
 
+        const QString& session() const;
+
     public slots:
-        void openSocket(const int& port=0);
-        void sendToSocket(const QByteArray&);
+        // Open and close a listening socket
+        void openSocket();
         void closeSocket();        
+        
+        void sendToSocket(const QByteArray&);
 
     //signals:
 	//    void socketReadData(const QByteArray&);
@@ -41,7 +43,7 @@ class SocketServer : public QThread {
         
     private slots:
         void onNewConnection(); 
-        void onDisconnect();
+        void onClientDisconnect();
 //        void onReadyRead();
         void onError(QAbstractSocket::SocketError error);
 };

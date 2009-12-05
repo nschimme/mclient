@@ -31,14 +31,14 @@ SocketServer::~SocketServer() {
         wait();
     }
   
+    closeSocket();
     if(_tcpServer) _tcpServer->deleteLater();
     qDebug() << "~SocketServer";
 }
 
 
-void SocketServer::openSocket(const int& port) {
+void SocketServer::openSocket() {
    
-    //if(port != 0) _port = port;
     qDebug() << "* binding localhost on port" << _port;
     _tcpServer->listen(QHostAddress(QHostAddress::Any), port);
 
@@ -52,7 +52,6 @@ void SocketServer::sendToSocket(const QByteArray &ba) {
             qDebug() << "No clients connected!";
             return;
         }
-    
 
         QTcpSocket* cl;
         foreach(cl, _clients) {
@@ -64,14 +63,14 @@ void SocketServer::sendToSocket(const QByteArray &ba) {
 
 
 void SocketServer::closeSocket() {
-    if (!_tcpServer) {
-        //emit displayMessage("#no open connections to zap.\n");
-
-    } else {
-        //_tcpServer->close();
-        _tcpServer->deleteLater();
+    if (_clients.count() != 0) {
+        QTcpSocket* cl = 0;
+        foreach(cl, _clients) {
+            cl->deleteLater();
+        }
     }
 
+    // check the best way to exit a running thread
     if (isRunning()) {
         exit();
         wait();
@@ -105,15 +104,15 @@ void SocketServer::onReadyRead() {
 void SocketServer::onNewConnection() {
     QTcpSocket* sock = _tcpServer->nextPendingConnection();
     qDebug() << "* client connected to tell port";
+    
+    connect(sock, SIGNAL(blah()), this, SLOT(onDisconnect()));
+    
     _clients.append(sock);
 }
 
-void SocketServer::onDisconnect() {
-  qDebug() << "Socket disconnected";
-//  emit displayMessage(QString("#connection on \"%1\" closed.\n")
-//		      .arg(_session));
-//  emit socketClosed();
-  closeSocket();
+void SocketServer::onClientDisconnect() {
+    qDebug() << "* client disconnected from tell port";
+    // do... stuff. like get the socket pointer and delete it
 }
 
 
