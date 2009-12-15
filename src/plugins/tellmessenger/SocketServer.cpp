@@ -40,7 +40,7 @@ SocketServer::~SocketServer() {
 void SocketServer::openSocket() {
    
     qDebug() << "* binding localhost on port" << _port;
-    _tcpServer->listen(QHostAddress(QHostAddress::Any), port);
+    _tcpServer->listen(QHostAddress(QHostAddress::Any), _port);
 
 }
 
@@ -105,7 +105,7 @@ void SocketServer::onNewConnection() {
     QTcpSocket* sock = _tcpServer->nextPendingConnection();
     qDebug() << "* client connected to tell port";
     
-    connect(sock, SIGNAL(blah()), this, SLOT(onDisconnect()));
+    connect(sock, SIGNAL(disconnected()), this, SLOT(onClientDisconnect()));
     
     _clients.append(sock);
 }
@@ -113,6 +113,7 @@ void SocketServer::onNewConnection() {
 void SocketServer::onClientDisconnect() {
     qDebug() << "* client disconnected from tell port";
     // do... stuff. like get the socket pointer and delete it
+    qDebug() << "  * clients remaining:" << _clients.count();
 }
 
 
