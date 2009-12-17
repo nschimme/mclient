@@ -93,7 +93,7 @@ add_subdirectory(plugins)
 # Installation Location
 if (NOT APPLE)
    install(TARGETS mclient
-           RUNTIME DESTINATION .
+           RUNTIME DESTINATION ${MCLIENT_BIN_DIR}
 	   COMPONENT applications)
 endif (NOT APPLE)
 

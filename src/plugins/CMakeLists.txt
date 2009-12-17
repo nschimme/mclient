@@ -1,7 +1,7 @@
 add_definitions(-DQT_PLUGIN)
 
 # mClient Plugins
-set(PLUGINS_DIR "plugins")
+set(PLUGINS_DIR "${MCLIENT_PLUGINS_DIR}")
 
 
 # Core Plugins
@@ -11,7 +11,7 @@ add_subdirectory(mumexml)
 
 
 # Feature Plugins
-add_subdirectory(mmapperplugin)
+#add_subdirectory(mmapperplugin)
 add_subdirectory(proxymanagerio)
 add_subdirectory(remoteedit)
 add_subdirectory(qtscriptplugin)
