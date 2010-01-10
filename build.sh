@@ -10,5 +10,5 @@ fi
 mkdir build
 cd build
 cmake ../ -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=. \
--DMCLIENT_BIN_DER=. -DMCLIENT_PLUGINS_DIR=plugins && make -j$JFLAG && make install
+-DMCLIENT_BIN_DIR=. -DMCLIENT_PLUGINS_DIR=plugins && make -j$JFLAG && make install
 ln -sf ../config config
