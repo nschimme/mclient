@@ -9,7 +9,7 @@
 #include "PluginSession.h"
 #include "CommandProcessor.h"
 
-#include "InputWidget.h"
+#include "StackedWidget.h"
 
 EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
   : MClientDisplayHandler(ps, mp) {
@@ -52,19 +52,7 @@ void EventHandler::customEvent(QEvent *e) {
 
 
 QWidget* EventHandler::createWidget() {
-  _widget = new InputWidget;  
-
-  // Connect Signals/Slots
-  connect(_widget, SIGNAL(sendUserInput(const QString&, bool)),
-	  SLOT(sendUserInput(const QString&, bool)));
-  connect(_widget, SIGNAL(displayMessage(const QString &)),
-	  SLOT(displayMessage(const QString &)));
-  connect(this, SIGNAL(setEchoMode(bool)),
-	  _widget, SLOT(toggleEchoMode(bool)));
-  connect(this, SIGNAL(showCommandHistory()),
-	  _widget, SLOT(showCommandHistory()));
-  connect(this, SIGNAL(addTabHistory(const QStringList &)),
-	  _widget, SLOT(addTabHistory(const QStringList &)));
+  _widget = new StackedWidget(this);
 
   return _widget;
 }
@@ -72,13 +60,13 @@ QWidget* EventHandler::createWidget() {
 
 
 void EventHandler::sendUserInput(const QString &input,
-					       bool echo) {
+				 bool echo) {
   if (echo) {
-    QVariant *qv = new QVariant(input + "\n");
+    QVariant *qv = new QVariant(input + "\r\n");
     QStringList sl("UserInput");
     postSession(qv, sl);
   }
-
+  
   /*
   // Post to command processor
   QVariant *payload = new QVariant(input);

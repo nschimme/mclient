@@ -4,7 +4,7 @@
 #include "MClientDisplayHandler.h"
 
 class QEvent;
-class InputWidget;
+class StackedWidget;
 class PluginSession;
 
 class EventHandler : public MClientDisplayHandler {
@@ -28,7 +28,7 @@ public slots:
 	void addTabHistory(const QStringList &);
 
  private:
-	InputWidget *_widget;
+	StackedWidget *_widget;
 };
 
 
