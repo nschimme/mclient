@@ -36,6 +36,7 @@ MultiLineInput::MultiLineInput(QObject* parent)
 
 
 MultiLineInput::~MultiLineInput() {
+  qDebug() << "~MultiLineInput";
 }
 
 

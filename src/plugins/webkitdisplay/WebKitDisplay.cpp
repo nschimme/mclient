@@ -25,6 +25,7 @@ WebKitDisplay::WebKitDisplay(QWidget* parent)
 
 
 WebKitDisplay::~WebKitDisplay() {
+  qDebug() << "~WebKitDisplay";
 }
 
 

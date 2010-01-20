@@ -69,14 +69,19 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
 
 
 PluginManager::~PluginManager() {
+  qDebug() << "* PluginManager is destroying itself";
+
   foreach(PluginSession *ps, _pluginSessions) {
     stopSession(ps->session());
+    delete ps;
   }
 
   // Remove entries in the available plugins list
   foreach(PluginEntry *pe, _availablePlugins) {
     delete pe;
   }
+
+  delete _configManager;
 
   qDebug() << "* PluginManager destroyed";
 }

@@ -33,11 +33,13 @@ void SocketReader::connectToHost() {
 
 
 SocketReader::~SocketReader() {
+  /*
   if (isRunning()) {
     exit();
     wait();
   }
   if (_socket) _socket->deleteLater();
+  */
   qDebug() << "~SocketReader";
 }
 

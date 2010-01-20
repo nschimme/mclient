@@ -67,6 +67,7 @@ SocketManagerIO::SocketManagerIO(QObject* parent)
 
 
 SocketManagerIO::~SocketManagerIO() {
+  qDebug() << "~SocketManagerIO";
 }
 
 

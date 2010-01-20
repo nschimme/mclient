@@ -277,6 +277,8 @@ void PluginSession::startSession() {
 
 
 void PluginSession::stopSession() {
+  qDebug() << "* PluginSession" << _session << "is stopping...";
+
   // Save profile settings
   getManager()->getConfig()->writeProfileSettings(_session);
 
@@ -286,11 +288,14 @@ void PluginSession::stopSession() {
     if (pi) {
       // TODO
       //pi->saveSettings();
+      /*
+      qDebug() << "* sending stop to" << pi->shortName();
       pi->stopSession(this);
+      */
     }
   }
 
-  qDebug() << "* All" << _session << "sessions have been stopped.";
+  qDebug() << "* All" << _session << "plugins have been stopped.";
 }
 
 
@@ -358,6 +363,16 @@ void PluginSession::customEvent(QEvent* e) {
 	nme = new MClientEvent(*me);
 	qDebug() << "* posting to CommandProcessor";
 
+      }
+      else if (me->dataTypes().contains("MMapperInput")) {
+	// HACK to allow client to run without MMapper
+	QMultiHash<QString, MClientEventHandler*>::iterator it
+	  = _receivesTypes.find("SocketWriteData");
+	while (it != _receivesTypes.end() && it.key() == "SocketWriteData") {
+	  MClientEvent* nme = new MClientEvent(*me);
+	  QCoreApplication::postEvent(it.value(), nme);
+	  ++it; // Iterate
+	}
       }
       else qWarning() << "! No plugins accepted data types" << me->dataTypes();
     }

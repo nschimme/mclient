@@ -2,6 +2,7 @@
 
 #include "PluginSession.h"
 #include "EventHandler.h"
+#include <QDebug>
 
 Q_EXPORT_PLUGIN2(telnet, Telnet)
 
@@ -22,6 +23,7 @@ Telnet::Telnet(QObject* parent)
 
 
 Telnet::~Telnet() {
+  qDebug() << "~Telnet";
 }
 
 

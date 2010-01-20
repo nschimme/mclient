@@ -53,6 +53,9 @@ CommandProcessor::CommandProcessor(PluginSession *ps)
   _mapping.insert("split", new CommandEntry("split",
 					    "",
 					    CMD_ONE_LINE));
+  _mapping.insert("session", new CommandEntry("session",
+					     "start or stop a session",
+					     CMD_ONE_LINE));
 
   qDebug() << "CommandProcessor created with thread:" << this->thread();
 }

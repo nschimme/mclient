@@ -142,6 +142,7 @@ void WindowActionManager::disableActions(bool value)
 
 void WindowActionManager::createMenus() {
   SmartMenuBar *menuBar = static_cast<SmartMenuBar*>(_mainWindow->menuBar());
+  //QMenuBar *menuBar = _mainWindow->menuBar();
 
   fileMenu = menuBar->addMenu(tr("&File"));
   fileMenu->addSeparator();

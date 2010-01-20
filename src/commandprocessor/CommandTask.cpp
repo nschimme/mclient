@@ -326,6 +326,10 @@ bool CommandTask::internalCommand(const QString &command,
     for (i.toBack(); i.hasPrevious();) {
       _queue.append(i.previous());
     }
+
+  } else if (command == "session") {
+    // TODO: finish this command (start/stop)
+    _commandProcessor->getPluginSession()->stopSession();
     
   } else if (command.indexOf(QRegExp("^\\d+$")) == 0) {
     // Check if it is a repeat

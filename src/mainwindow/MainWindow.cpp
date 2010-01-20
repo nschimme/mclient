@@ -46,6 +46,7 @@ MainWindow::MainWindow(PluginManager *pm) {
   /** Create Other Child Widgets */
   delete menuBar();
   setMenuBar(new SmartMenuBar(this));
+
   // Initialize WindowActionManager
   _actMgr = WindowActionManager::instance(this);
   _actMgr->createActions();
@@ -71,9 +72,8 @@ MainWindow::MainWindow(PluginManager *pm) {
 
 
 MainWindow::~MainWindow() {
-  delete menuBar();
-  //getPluginManager()->getConfig()->~ConfigManager();
-  //getPluginManager()->~PluginManager();
+  qDebug() << "* MainWindow got a quit!";
+  //delete menuBar();
   qDebug() << "* MainWindow destroyed";
 }
 
@@ -189,8 +189,11 @@ void MainWindow::initDisplay(PluginSession *ps) {
   layout->setContentsMargins(0, 0, 0, 0);
 
   // Add the primary widgets to the smart splitter
+  /*
   // TODO: Make it smart and resizable upon request of the widget!
   SmartSplitter *_splitter = new SmartSplitter(Qt::Vertical);
+  */
+  QSplitter *_splitter = new QSplitter(Qt::Vertical);
   _tabWidget->addTab(_splitter, _currentProfile);
 
   bool displaySet = false, inputSet = false;
@@ -265,6 +268,8 @@ void MainWindow::closeEvent(QCloseEvent *event)
   if (maybeSave()) {
     writeSettings();
     //deleteLater();
+    //getPluginManager()->deleteLater();
+    //getPluginManager()->getConfig()->~ConfigManager();
     event->accept();
   } else {
     event->ignore();
@@ -279,7 +284,7 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
-  _pluginManager->getConfig()->writeApplicationSettings();
+  //_pluginManager->getConfig()->writeApplicationSettings();
   /*
   Config().setWindowPosition(pos() );
   Config().setWindowSize(size() );

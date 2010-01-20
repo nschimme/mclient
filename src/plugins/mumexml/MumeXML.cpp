@@ -35,6 +35,7 @@ MumeXML::MumeXML(QObject* parent)
 
 
 MumeXML::~MumeXML() {
+  qDebug() << "~MumeXML";
 }
 
 
