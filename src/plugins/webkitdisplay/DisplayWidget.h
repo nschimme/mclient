@@ -34,6 +34,7 @@ protected slots:
 
  protected:
 	QWebView* _view;
+	void paintEvent(QPaintEvent *ev);
 
     private:
 	int _currentSection, _maxSections;

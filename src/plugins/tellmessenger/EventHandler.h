@@ -17,7 +17,7 @@ class EventHandler : public MClientEventHandler {
         void customEvent(QEvent* e);
 
     public slots:
-        void socketWriteData(const QByteArray &);
+        //void socketWriteData(const QByteArray &);
         void disconnectDevice();
 
     signals:

@@ -5,6 +5,7 @@
 #include <QRegExp>
 #include <QStringList>
 #include <QDebug>
+#include <QTextDocument>
 
 const QChar DisplayParser::greaterThanChar('>');
 const QChar DisplayParser::lessThanChar('<');
@@ -43,6 +44,7 @@ void DisplayParser::userInput(const QString &text) {
 
 void DisplayParser::parseDisplayData(QString text) {
 
+  /*
   text.replace(greaterThanChar, greaterThanTemplate);
   text.replace(lessThanChar, lessThanTemplate);
   text.replace(QString("\r\n"), QString("<br>"));
@@ -50,6 +52,9 @@ void DisplayParser::parseDisplayData(QString text) {
   text.replace(QChar('\''), QString("\\'"));
   text.replace(QChar('`'), QString("\\`"));
   text.replace(QChar('$'), QString("\\$"));
+  */
+  text = Qt::escape(text);
+  //text = Qt::convertFromPlainText(text);
 
   // ANSI Removal
   QRegExp ansiRx("\\0033\\[((?:\\d+;)*\\d+)m");

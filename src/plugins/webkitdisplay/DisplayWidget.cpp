@@ -82,7 +82,7 @@ void DisplayWidget::appendText(const QString &output) {
   }
   
 
-  scrollToBottom();
+  //scrollToBottom();
 }
 
 void DisplayWidget::finishLoading(bool) {
@@ -95,13 +95,21 @@ void DisplayWidget::finishLoading(bool) {
   qDebug() << "* WebKit page loaded";
 }
 
+void DisplayWidget::paintEvent(QPaintEvent *ev) {
+  // When the display is updated we want to (usually) always scroll to the bottom
+  // TODO: fix this so when the user scrolls it doesn't scroll to the bottom
+  QWebView::paintEvent(ev);
+  scrollToBottom();
+}
+
 void DisplayWidget::scrollToBottom() {
-  int height = page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
-  page()->mainFrame()->setScrollBarValue(Qt::Vertical, height);
-  /*
+#ifdef USE_JQUERY
   QString scrollCode = QString("$(window).scrollTop($(document).height());");
   page()->mainFrame()->evaluateJavaScript(scrollCode);
-  */
+#else
+  int height = page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
+  page()->mainFrame()->setScrollBarValue(Qt::Vertical, height);
+#endif
 }
 
 

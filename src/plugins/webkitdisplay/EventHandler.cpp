@@ -40,7 +40,8 @@ void EventHandler::customEvent(QEvent *e) {
   if(!e->type() == 10001) return;
   
   MClientEvent* me = static_cast<MClientEvent*>(e);
-  if (me->dataTypes().contains("DisplayData")) {
+  if (me->dataTypes().contains("DisplayData") ||
+      me->dataTypes().contains("DisplayPrompt")) {
     emit displayData(me->payload()->toString());
 
   }

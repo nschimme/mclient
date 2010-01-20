@@ -11,7 +11,7 @@ add_subdirectory(mumexml)
 
 
 # Feature Plugins
-#add_subdirectory(mmapperplugin)
+add_subdirectory(mmapperplugin)
 add_subdirectory(proxymanagerio)
 add_subdirectory(remoteedit)
 add_subdirectory(qtscriptplugin)
@@ -23,8 +23,8 @@ add_subdirectory(multilineinput)
 
 
 # Display-Output Plugins
-#add_subdirectory(webkitdisplay)
-add_subdirectory(simpledisplay)
+add_subdirectory(webkitdisplay)
+#add_subdirectory(simpledisplay)
 
 # Obsolete Plugins
 #add_subdirectory(aliasplugin)
