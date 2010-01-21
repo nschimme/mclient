@@ -21,7 +21,7 @@ EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
   // Host settings
   QString host = _config->value(cfg+"connection/host", "mume.org").toString();
   int port = _config->value(cfg+"connection/port", "23").toInt();
-  _autoConnect = _config->value(cfg+"connection/autoconnect", false).toBool();
+  _autoConnect = _config->value(cfg+"connection/autoconnect", true).toBool();
   
   // Proxy settings
   QString proxy_host = _config->value(cfg+"proxy/host",
@@ -66,7 +66,8 @@ EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
 
 
 EventHandler::~EventHandler() {
-  //delete _socketReader;
+  _socketReader->disconnect();
+  _socketReader->deleteLater();
 }
 
 

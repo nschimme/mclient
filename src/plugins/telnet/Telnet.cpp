@@ -38,7 +38,8 @@ bool Telnet::startSession(PluginSession *ps) {
 
 
 bool Telnet::stopSession(PluginSession *ps) {
-  delete _eventHandlers[ps->session()];
+  _eventHandlers[ps->session()]->deleteLater();
+  _eventHandlers.remove(ps->session());
   return true;
 }
 

@@ -34,8 +34,10 @@ StackedWidget::StackedWidget(EventHandler *eh, QWidget* parent)
 
 
 StackedWidget::~StackedWidget() {
-  delete _inputWidget;
-  delete _passwordWidget;
+  _inputWidget->disconnect();
+  _passwordWidget->disconnect();
+  _inputWidget->deleteLater();
+  _passwordWidget->deleteLater();
 }
 
 

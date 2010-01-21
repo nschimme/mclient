@@ -19,6 +19,8 @@ EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
 
 
 EventHandler::~EventHandler() {
+  _widget->disconnect();
+  _widget->deleteLater();
 }
 
 

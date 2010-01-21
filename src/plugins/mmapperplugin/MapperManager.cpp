@@ -167,6 +167,8 @@ MapperManager::MapperManager(EventHandler *eh, QObject *parent)
 }
 
 MapperManager::~MapperManager() {
+  _mapWindow->close();
+  _mapWindow->disconnect();
   exit();
   wait();
 }

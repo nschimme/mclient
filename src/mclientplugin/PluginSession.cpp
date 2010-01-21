@@ -66,12 +66,12 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm,
 
 
 PluginSession::~PluginSession() {
-  /*
+  /* This is unecessary because the plugin might still be in use by other sessions, right?
   // Unload all plugins 
   foreach(QPluginLoader *pm, _loadedPlugins) {
-    //delete pm->instance();
+    delete pm->instance();
     pm->unload();
-    //delete pm;
+    delete pm;
   }
   */
 
@@ -288,10 +288,8 @@ void PluginSession::stopSession() {
     if (pi) {
       // TODO
       //pi->saveSettings();
-      /*
       qDebug() << "* sending stop to" << pi->shortName();
       pi->stopSession(this);
-      */
     }
   }
 

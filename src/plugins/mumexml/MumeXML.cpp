@@ -50,7 +50,8 @@ bool MumeXML::startSession(PluginSession *ps) {
 
 
 bool MumeXML::stopSession(PluginSession *ps) {
-  delete _eventHandlers[ps->session()];
+  _eventHandlers[ps->session()]->deleteLater();
+  _eventHandlers.remove(ps->session());
   return true;
 }
 

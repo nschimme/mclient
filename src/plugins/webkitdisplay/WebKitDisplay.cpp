@@ -44,7 +44,8 @@ bool WebKitDisplay::startSession(PluginSession *ps) {
 bool WebKitDisplay::stopSession(PluginSession *ps) {
   QString s = ps->session();
   qDebug() << "* removed Simple DisplayWidget for session" << s << this;
-  delete _eventHandlers[s];
+  _eventHandlers[s]->deleteLater();
+  _eventHandlers.remove(s);
   return true;
 }
 

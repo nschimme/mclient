@@ -60,6 +60,7 @@ bool QtScriptPlugin::startSession(PluginSession *ps) {
 
 bool QtScriptPlugin::stopSession(PluginSession *ps) {
   _eventHandlers[ps->session()]->deleteLater();
+  _eventHandlers.remove(ps->session());
   return true;
 }
 

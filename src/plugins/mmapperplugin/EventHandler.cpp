@@ -27,7 +27,7 @@ EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
 
 
 EventHandler::~EventHandler() {
-  _mapper->getMapWindow()->close();
+  _mapper->disconnect();
   _mapper->deleteLater();
   qDebug() << "* removed MMapperPlugin for session"
 	   << _pluginSession->session();

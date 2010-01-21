@@ -17,4 +17,5 @@ PasswordWidget::~PasswordWidget() {
 void PasswordWidget::gotInput() {
     selectAll();
     emit sendUserInput(text(), false);
+    clear();
 }

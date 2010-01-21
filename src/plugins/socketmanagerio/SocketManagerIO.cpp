@@ -94,7 +94,8 @@ bool SocketManagerIO::startSession(PluginSession *ps) {
 
 bool SocketManagerIO::stopSession(PluginSession *ps) {
   QString s = ps->session();
-  delete _eventHandlers[s];
+  _eventHandlers[ps->session()]->deleteLater();
+  _eventHandlers.remove(ps->session());
   qDebug() << "* removed SocketReader for session" << s;
   return true;
 }

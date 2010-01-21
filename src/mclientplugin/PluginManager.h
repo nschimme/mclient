@@ -43,6 +43,10 @@ public slots:
         void initSession(const QString &s);
         void stopSession(const QString &s);
 
+ signals:
+	// We emit this signal after having found the available plugins
+	void doneLoading();
+
     private:
         bool indexPlugins();
         bool writePluginIndex();
@@ -58,9 +62,6 @@ public slots:
         QHash<QString, PluginEntry*> _availablePlugins; 
 
         QPointer<PluginConfigWidget> _configWidget;
-
- signals:
-	void doneLoading();
 
 };
 

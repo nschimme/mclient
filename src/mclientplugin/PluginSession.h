@@ -34,10 +34,6 @@ class PluginSession : public QThread {
     // For posting events
     void customEvent(QEvent* e);
 
-    // For starting/stopping the session
-    void startSession();
-    void stopSession();
-
     PluginManager* getManager() const { return _pluginManager; }
     CommandProcessor* getCommand() const { return _commandProcessor; }
     AliasManager* getAlias() const { return _aliasManager; }
@@ -54,8 +50,21 @@ class PluginSession : public QThread {
 public slots:
     void doneLoading();
 
+ signals:
+    void sendPlugins(const PluginHash &);
+    void doneLoading(PluginSession *);
+
  protected:
     void run();
+
+    // For starting/stopping the session (accessible by PluginManager)
+    void startSession();
+    void stopSession();
+    
+    // Some of these protected functions should only be accessible by the
+    // PluginManager which handles whether or not a session should start
+    // or stop
+    friend class PluginManager;
 
   private:
     bool _mume;
@@ -85,10 +94,6 @@ public slots:
     // wants for easy event handling.  This one also may have multiple
     // entries for a given plugin.
     QMultiHash<QString, MClientEventHandler*> _receivesTypes;
-    
- signals:
-    void sendPlugins(const PluginHash &);
-    void doneLoading(PluginSession *);
 };
 
 #endif /* PLUGINSESSION_H */

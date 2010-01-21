@@ -329,7 +329,7 @@ bool CommandTask::internalCommand(const QString &command,
 
   } else if (command == "session") {
     // TODO: finish this command (start/stop)
-    _commandProcessor->getPluginSession()->stopSession();
+    //_commandProcessor->getPluginSession()->stopSession();
     
   } else if (command.indexOf(QRegExp("^\\d+$")) == 0) {
     // Check if it is a repeat

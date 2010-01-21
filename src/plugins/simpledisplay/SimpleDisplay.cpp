@@ -46,7 +46,8 @@ bool SimpleDisplay::startSession(PluginSession *ps) {
 bool SimpleDisplay::stopSession(PluginSession *ps) {
   QString s = ps->session();
   qDebug() << "* removed Simple DisplayWidget for session" << s << this;
-  delete _eventHandlers[s];
+  _eventHandlers[ps->session()]->deleteLater();
+  _eventHandlers.remove(ps->session());
   return true;
 }
 

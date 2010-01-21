@@ -65,6 +65,7 @@ bool MMapperPlugin::startSession(PluginSession *ps) {
 
 bool MMapperPlugin::stopSession(PluginSession *ps) {
   _eventHandlers[ps->session()]->deleteLater();
+  _eventHandlers.remove(ps->session());
   qDebug() << "* removed MapperManager for session" << ps->session();
   return true;
 }

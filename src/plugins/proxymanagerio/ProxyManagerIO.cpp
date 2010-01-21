@@ -46,7 +46,8 @@ bool ProxyManagerIO::startSession(PluginSession *ps) {
 
 
 bool ProxyManagerIO::stopSession(PluginSession *ps) {
-  delete _eventHandlers[ps->session()];
+  _eventHandlers[ps->session()]->deleteLater();
+  _eventHandlers.remove(ps->session());
   return true;
 }
 

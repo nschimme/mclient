@@ -51,9 +51,11 @@ bool MultiLineInput::startSession(PluginSession *ps) {
 
 
 bool MultiLineInput::stopSession(PluginSession *ps) {
+  EventHandler *eh = _eventHandlers[ps->session()];
+  _eventHandlers.remove(ps->session());
+  eh->deleteLater();
   qDebug() << "* removed MultiLineInput InputWidget for session"
 	   << ps->session();
-  delete _eventHandlers[ps->session()];
   return true;
 }
 

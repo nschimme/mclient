@@ -70,7 +70,8 @@ bool TellMessenger::startSession(PluginSession *ps) {
 
 bool TellMessenger::stopSession(PluginSession *ps) {
   QString s = ps->session();
-  delete _eventHandlers[s];
+  _eventHandlers[ps->session()]->deleteLater();
+  _eventHandlers.remove(ps->session());
   qDebug() << "* removed SocketServer for session" << s;
   return true;
 }
