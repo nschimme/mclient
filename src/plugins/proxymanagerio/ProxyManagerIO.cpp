@@ -12,9 +12,12 @@ ProxyManagerIO::ProxyManagerIO(QObject* parent) : MClientPlugin(parent) {
   _description = "A proxy plugin";
   //    _dependencies.insert("commandmanager", 10);
   _implemented.insert("proxymanager",10);
-  _receivesDataTypes << "DisplayData" << "DisplayPrompt" << "UserInput"
-		     << "EchoMode" << "SocketDisconnected"
-		     << "ProxyCommand";
+  _receivesDataTypes.insert("DisplayData", 3);
+  _receivesDataTypes.insert("DisplayPrompt", 3);
+  _receivesDataTypes.insert("UserInput", 3);
+  _receivesDataTypes.insert("EchoMode", 3);
+  _receivesDataTypes.insert("SocketDisconnected", 3);
+  _receivesDataTypes.insert("ProxyCommand", 3);
   // _deliversDataTypes << "SendToUser";
   _configurable = false;
 

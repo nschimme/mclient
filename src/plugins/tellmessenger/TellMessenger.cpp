@@ -21,7 +21,7 @@ TellMessenger::TellMessenger(QObject* parent)
     _description = "A plugin that listens for XML tell tags and sends them out over a socket.";
     //    _dependencies.insert("commandmanager", 10);
     _implemented.insert("tellmessenger",10);
-    _receivesDataTypes << "XMLTell";
+    _receivesDataTypes.insert("XMLTell", 3);
     /*
     _deliversDataTypes << "SocketReadData" << "SocketConnected"
 		       << "SocketDisconnected" << "DisplayData";

@@ -17,8 +17,10 @@ MultiLineInput::MultiLineInput(QObject* parent)
     _description = "A multi-lined input plugin.";
     //_dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _receivesDataTypes << "CommandHistory" << "EchoMode"
-		       << "SocketDisconnected" << "AddTabHistory";
+    _receivesDataTypes.insert("CommandHistory", 3);
+    _receivesDataTypes.insert("EchoMode", 3);
+    _receivesDataTypes.insert("SocketDisconnected", 3);
+    _receivesDataTypes.insert("AddTabHistory", 3);
     //_deliversDataTypes << "UserInput";
     _configurable = false;
     _configVersion = "2.0";

@@ -17,14 +17,12 @@ MMapperPlugin::MMapperPlugin(QObject* parent)
     _description = "An implementation of MMapper as a plugin for mClient";
     //_dependencies.insert("commandmanager", 10);
     //_implemented.insert("socketmanager",10);
-    _receivesDataTypes << "XMLAll" << "XMLMove"
-      /*
-		       << "XMLName" << "XMLDescription"
-		       << "XMLDynamicDescription" << "XMLExits" << "XMLPrompt"
-		       << "XMLMove" << "XMLNone" << "XMLTerrain"
-      */
-		       << "MMapperLoadMap" << "MMapperInput"
-		       << "SocketConnected" << "SocketDisconnected";
+    _receivesDataTypes.insert("XMLAll", 3);
+    _receivesDataTypes.insert("XMLMove", 3);
+    _receivesDataTypes.insert("MMapperLoadMap", 3);
+    _receivesDataTypes.insert("MMapperInput", 3);
+    _receivesDataTypes.insert("SocketConnected", 3);
+    _receivesDataTypes.insert("SocketDisconnected", 3);
     //_deliversDataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";

@@ -13,8 +13,10 @@ Telnet::Telnet(QObject* parent)
     _description = "A telnet data filter.";
     _dependencies.insert("socketmanager", 10);
     _implemented.insert("telnet",1);
-    _receivesDataTypes << "SocketReadData" << "SocketConnected"
-		       << "SocketDisconnected" << "SocketWriteData";
+    _receivesDataTypes.insert("SocketWriteData", 3);
+    _receivesDataTypes.insert("SocketReadData", 3);
+    _receivesDataTypes.insert("SocketConnected", 3);
+    _receivesDataTypes.insert("SocketDisconnected", 3);
     /*
     _deliversDataTypes << "TelnetData" << "TelnetGA" << "SendToSocketData"
 		       << "EchoMode";

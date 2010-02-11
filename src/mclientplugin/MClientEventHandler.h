@@ -22,7 +22,7 @@ class MClientEventHandler : public QObject, public MClientEventHandlerInterface 
     
     public:
         MClientEventHandler(PluginSession *ps, MClientPlugin *pl);
-        ~MClientEventHandler();
+        virtual ~MClientEventHandler();
 
         // Handles custom events
         virtual void customEvent(QEvent *e)=0;
@@ -32,6 +32,11 @@ class MClientEventHandler : public QObject, public MClientEventHandlerInterface 
 
 	// Post the parent plugin
 	virtual MClientPlugin* plugin();
+
+	// The next EventHandler to forward the event to
+	void setNextHandler(const QString &s, MClientEventHandler *eh);
+
+	void forwardEvent(QEvent *e);
 
 public slots:
         // Post an event to the PluginSession
@@ -54,6 +59,9 @@ public slots:
 
 	// Menus
 	MenuData _menus;
+
+	// For the Event passing to the next EventHandler
+	QHash<QString, MClientEventHandler*> _nextEventHandler;
 };
 
 

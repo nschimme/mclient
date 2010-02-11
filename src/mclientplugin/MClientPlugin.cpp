@@ -58,7 +58,7 @@ const QHash<QString, int> MClientPlugin::dependencies() const {
 }
 
 
-const QStringList& MClientPlugin::receivesDataTypes() const {
+const QHash<QString, int> MClientPlugin::receivesDataTypes() const {
     return _receivesDataTypes;
 }
 

@@ -19,10 +19,10 @@ class ConfigManager;
 class MainWindow;
 
 class PluginManager : public QObject {
-    Q_OBJECT
+  Q_OBJECT
 
     public:
-        PluginManager(QObject *parent=0);
+        static PluginManager* getInstance();
         ~PluginManager();
 
 	MainWindow* getMainWindow() const { return _mainWindow; }
@@ -46,8 +46,14 @@ public slots:
  signals:
 	// We emit this signal after having found the available plugins
 	void doneLoading();
+	
+ protected:
+        PluginManager(QObject *parent=0);
 
-    private:
+ private:
+        static PluginManager* _instance;
+	PluginManager& operator=(PluginManager const&);
+
         bool indexPlugins();
         bool writePluginIndex();
         bool readPluginIndex();

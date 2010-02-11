@@ -2,6 +2,7 @@
 
 #include <QApplication>
 #include <stdio.h>
+#include <memory>
 
 int main(int argc, char** argv) {
     QApplication::setOrganizationName("MUME");
@@ -23,9 +24,7 @@ int main(int argc, char** argv) {
       }
     }
 
-    PluginManager *pluginManager = new PluginManager;
+    std::auto_ptr<PluginManager> pm (PluginManager::getInstance());
     int ret = app.exec();
-    pluginManager->~PluginManager();
-
     return ret;
 }

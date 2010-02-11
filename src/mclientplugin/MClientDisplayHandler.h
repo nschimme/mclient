@@ -15,7 +15,7 @@ class MClientDisplayHandler : public MClientEventHandler, public MClientDisplayH
 
     public:
         MClientDisplayHandler(PluginSession *ps, MClientPlugin *mp);
-        ~MClientDisplayHandler();
+        virtual ~MClientDisplayHandler();
 
         // Plugin members
         virtual void customEvent(QEvent* e);

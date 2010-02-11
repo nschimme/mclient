@@ -18,7 +18,10 @@ WebKitDisplay::WebKitDisplay(QWidget* parent)
     _description = "A display plugin using WebKit.";
 //   _dependencies.insert("terrible_test_api", 1);
 //    _implemented.insert("some_other_api",1);
-    _receivesDataTypes << "DisplayData" << "DisplayPrompt" << "UserInput" << "DoneLoading";
+    _receivesDataTypes.insert("DisplayData", 3);
+    _receivesDataTypes.insert("DisplayPrompt", 3);
+    _receivesDataTypes.insert("UserInput", 3);
+    _receivesDataTypes.insert("DoneLoading", 3);
     //_deliversDataTypes << "?";
     _configurable = false;
 }

@@ -7,6 +7,7 @@
 #include <QtPlugin>
 #include <QHash>
 #include <QStringList>
+#include <QPointer>
 
 class PluginManager;
 class MClientEventData;
@@ -18,7 +19,7 @@ class MClientPlugin : public QObject, public MClientPluginInterface {
     
     public:
         MClientPlugin(QObject* parent=0);
-        ~MClientPlugin();
+        virtual ~MClientPlugin();
 
         // The short name of the plugin used in hashes and maps
         const QString& shortName() const;
@@ -40,8 +41,8 @@ class MClientPlugin : public QObject, public MClientPluginInterface {
         // implemented before it can be loaded.
         const QHash<QString, int> dependencies() const;
 
-        // Returns a QStringList of data types it cares about
-        const QStringList& receivesDataTypes() const;
+        // Returns a QHash of data types and their priorities that it needs
+        const QHash<QString, int> receivesDataTypes() const;
 
         // Can this be configured manually?
         bool configurable() const;
@@ -71,10 +72,9 @@ class MClientPlugin : public QObject, public MClientPluginInterface {
         QString _configVersion;
 
         QHash<QString, int> _implemented, _dependencies;
+        QHash<QString, int> _receivesDataTypes;
 
 	QList<CommandEntry* > _commandEntries;
-
-        QStringList _receivesDataTypes, _deliversDataTypes;
 
 	PluginManager *_pluginManager;
 };

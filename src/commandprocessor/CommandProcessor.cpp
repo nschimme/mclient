@@ -119,7 +119,7 @@ bool CommandProcessor::unregisterCommand(const QString &source) {
 
 
 void CommandProcessor::registerCommand(const QString &pluginName,
-				       const QList<CommandEntry* > &list) {
+				       const QList<CommandEntry*>&list) {
   foreach(CommandEntry *ce, list) {
     if (_mapping.contains(ce->command())) {
       qDebug() << "Error, command" << ce->command() << "was already added";

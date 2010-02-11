@@ -16,9 +16,14 @@ RemoteEdit::RemoteEdit(QObject* parent)
     _description = "MUME Remote Editing protocol";
     _dependencies.insert("telnet", 1);
     _implemented.insert("remoteedit",1);
-    _receivesDataTypes << "XMLEdit" << "XMLEditTitle" << "XMLEditBody"
-		       << "XMLView" << "XMLViewTitle" << "XMLViewBody"
-		       << "MUMEIdentifyRequest" << "SocketConnected";
+    _receivesDataTypes.insert("SocketConnected", 3);
+    _receivesDataTypes.insert("XMLEdit", 3);
+    _receivesDataTypes.insert("XMLEditTitle", 3);
+    _receivesDataTypes.insert("XMLEditBody", 3);
+    _receivesDataTypes.insert("XMLView", 3);
+    _receivesDataTypes.insert("XMLViewTitle", 3);
+    _receivesDataTypes.insert("XMLViewBody", 3);
+    _receivesDataTypes.insert("MUMEIdentifyRequest", 3);
 
     // Command: identify
     CommandEntry *identify = new CommandEntry();

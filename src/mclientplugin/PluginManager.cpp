@@ -16,6 +16,14 @@
 #include <QPluginLoader>
 #include <QWidget>
 
+PluginManager* PluginManager::_instance = 0;
+
+PluginManager* PluginManager::getInstance() {
+  if (!_instance) _instance = new PluginManager;
+  Q_ASSERT(_instance != 0);
+  return _instance;
+}
+
 PluginManager::PluginManager(QObject *parent) : QObject(parent) {
     _configManager = new ConfigManager;
     _mainWindow = new MainWindow(this);

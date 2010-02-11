@@ -19,7 +19,8 @@ QtScriptPlugin::QtScriptPlugin(QObject *parent)
     _description = "A JavaScript scripting language";
     //_dependencies.insert("terrible_test_api", 1);
     //_implemented.insert("some_other_api",1);
-    _receivesDataTypes << "QtScriptEvaluate" << "QtScriptVariable";
+    _receivesDataTypes.insert("QtScriptEvaluate", 3);
+    _receivesDataTypes.insert("QtScriptVariable", 3);
     //_deliversDataTypes << "DisplayData";
     _configurable = false;
     _configVersion = "2.0";

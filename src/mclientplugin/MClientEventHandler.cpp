@@ -69,6 +69,26 @@ MClientPlugin* MClientEventHandler::plugin() {
 }
 
 
+void MClientEventHandler::setNextHandler(const QString &s,
+					 MClientEventHandler *eh) {
+  _nextEventHandler[s] = eh;
+}
+
+
+void MClientEventHandler::forwardEvent(QEvent *e) {
+  if (e->type() == 10001) {
+    MClientEvent* me = static_cast<MClientEvent*>(e);
+    foreach (QString s, me->dataTypes()) {
+      // Need to make a copy, since the original event
+      // will be deleted when this function returns
+      MClientEvent* nme = new MClientEvent(*me);
+      MClientEventHandler *eh = _nextEventHandler[s];
+      if (eh) QCoreApplication::postEvent(eh, nme);
+    }
+  }
+}
+
+
 /*
 bool MClientEventHandler::loadSettings(const QHash<QString, QVariant> &hash) {
   _settings = hash;

@@ -3,6 +3,7 @@
 
 #include <QtPlugin>
 #include <QHash>
+#include <QPointer>
 
 class PluginManager;
 class PluginSession;
@@ -32,8 +33,8 @@ class MClientPluginInterface {
         // implemented before it can be loaded.
         virtual const QHash<QString, int> dependencies() const=0;
         
-        // Returns a QStringList of data types it cares about
-        virtual const QStringList& receivesDataTypes() const=0;
+        // Returns a QStringList of data types  and priorities it needs
+        virtual const QHash<QString, int> receivesDataTypes() const=0;
 
         // Can this be configured manually?
         virtual bool configurable() const=0;
