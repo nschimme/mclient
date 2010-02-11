@@ -13,10 +13,10 @@ int main(int argc, char** argv) {
     // Check for command line commands that we can handle here before
     // the application executes
     for (int i = 0; i < argc; i++) {
-      if (strcmp(argv[i], "-help") == 0) {
+      if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
 	printf("Usage:\n"
-	       "mclient -profile [profile]\n"
-	       "mclient -help\n"
+	       "mclient --profile [profile]\n"
+	       "mclient --help, -h\n"
 	       );
 	return 0;
 
