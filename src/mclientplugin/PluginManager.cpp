@@ -52,7 +52,7 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
 
     // Identify if there is something newer in the directory than the
     // index's generation date
-    bool reIndex = false;
+    bool reIndex = true; // false; // HACK, ALWAYS REINDEX
     foreach(QString fileName, pluginsDir.entryList(QDir::Files)) {
       QDateTime pluginMod = 
 	QFileInfo(pluginsDir.absoluteFilePath(fileName)).lastModified();
