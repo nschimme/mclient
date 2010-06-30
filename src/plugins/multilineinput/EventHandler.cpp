@@ -29,6 +29,10 @@ void EventHandler::customEvent(QEvent *e) {
     engineEvent(e);
 
   else if (e->type() == 10001) {
+
+    // Forward the event to the next in the chain
+    forwardEvent(e);
+
     MClientEvent *me = static_cast<MClientEvent*>(e);
     
     if(me->dataTypes().contains("CommandHistory")) {

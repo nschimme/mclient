@@ -7,7 +7,7 @@
 int main(int argc, char** argv) {
     QApplication::setOrganizationName("MUME");
     QApplication::setOrganizationDomain("mume.org");
-    QApplication::setApplicationName("mclient");
+    QApplication::setApplicationName("mClient");
 
     QApplication app(argc, argv);
     

@@ -41,6 +41,9 @@ EventHandler::~EventHandler() {
 
 void EventHandler::customEvent(QEvent *e) {
   if(!e->type() == 10001) return;
+
+  // Forward the event to the next in the chain
+  forwardEvent(e);
   
   MClientEvent* me = static_cast<MClientEvent*>(e);
   if (me->dataTypes().contains("DisplayData") ||

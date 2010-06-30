@@ -264,14 +264,40 @@ void PluginSession::startSession() {
 	qDebug() << ">> receiving for " << iPlugin->shortName()
 		 << "types" << iPlugin->receivesDataTypes();
 	*/
-	foreach(QString s, iPlugin->receivesDataTypes())
-	  _receivesTypes.insert(s, eventHandler);
+	
+	QHash<QString, int> hash = iPlugin->receivesDataTypes();
+	QHash<QString, int>::const_iterator i = hash.constBegin();
+	while (i != hash.constEnd()) {
+	  _receivesTypes[i.key()].insertMulti(i.value(), eventHandler);
+	  ++i;
+	}
       }
 
       // Register the commands
       _commandProcessor->registerCommand(iPlugin->shortName(),
 					 iPlugin->commandEntries());
     }
+  }
+
+  // Identify the head of the event handler command chain
+  QHash<QString, QMultiMap<int, MClientEventHandler*> >::const_iterator i
+    = _receivesTypes.constBegin();
+  while (i != _receivesTypes.constEnd()) {
+    MClientEventHandler *previous = NULL;
+    QMultiMap<int, MClientEventHandler*> map = i.value();
+    QMultiMap<int, MClientEventHandler*>::const_iterator j = map.constBegin();
+    while (j != map.constEnd()) {
+      // If we start at the front then this is the head
+      if (previous == NULL) _receivesType.insert(i.key(), j.value());
+      else previous->setNextHandler(i.key(), j.value());
+
+      // Keep track of the previously seen event handler
+      previous = j.value();
+      ++j;
+    }
+    // Update the tail of the command chain
+    previous->setNextHandler(i.key(), NULL);
+    ++i;
   }
 }
 
@@ -323,9 +349,8 @@ void PluginSession::customEvent(QEvent* e) {
       // Iterate through all the data types
       //qDebug() << "* finding data type" << s << "out of" << me->dataTypes();
       
-      QMultiHash<QString, MClientEventHandler*>::iterator it
-	= _receivesTypes.find(s);
-      while (it != _receivesTypes.end() && it.key() == s) {
+      QHash<QString, MClientEventHandler*>::iterator it = _receivesType.find(s);
+      while (it != _receivesType.end() && it.key() == s) {
 	MClientEvent* nme = new MClientEvent(*me);
 	//qDebug() << "* copied payload to" << nme->payload();
 	// Need to make a copy, since the original event
@@ -364,9 +389,9 @@ void PluginSession::customEvent(QEvent* e) {
       }
       else if (me->dataTypes().contains("MMapperInput")) {
 	// HACK to allow client to run without MMapper
-	QMultiHash<QString, MClientEventHandler*>::iterator it
-	  = _receivesTypes.find("SocketWriteData");
-	while (it != _receivesTypes.end() && it.key() == "SocketWriteData") {
+	QHash<QString, MClientEventHandler*>::iterator it
+	  = _receivesType.find("SocketWriteData");
+	while (it != _receivesType.end() && it.key() == "SocketWriteData") {
 	  MClientEvent* nme = new MClientEvent(*me);
 	  QCoreApplication::postEvent(it.value(), nme);
 	  ++it; // Iterate

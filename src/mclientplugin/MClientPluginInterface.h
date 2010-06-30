@@ -33,7 +33,7 @@ class MClientPluginInterface {
         // implemented before it can be loaded.
         virtual const QHash<QString, int> dependencies() const=0;
         
-        // Returns a QStringList of data types  and priorities it needs
+        // Returns a QHash of data types and priorities it needs
         virtual const QHash<QString, int> receivesDataTypes() const=0;
 
         // Can this be configured manually?

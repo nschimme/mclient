@@ -15,6 +15,7 @@
 #include <QLibrary>
 #include <QPluginLoader>
 #include <QWidget>
+#include <QSettings>
 
 PluginManager* PluginManager::_instance = 0;
 
@@ -38,10 +39,11 @@ PluginManager::PluginManager(QObject *parent) : QObject(parent) {
 	    SLOT(stopSession(const QString&)));
 
     qDebug() << "* PluginManager is reading settings...";
-    QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
+    //QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
+    QSettings conf;
     
     QDateTime indexMod
-      = QDateTime::fromString(hash->value("mClient/plugins/indexed")
+      = QDateTime::fromString(conf.value("mClient/plugins/indexed")
 			      .toString());
 
     // Move into the plugins directory
@@ -188,88 +190,74 @@ bool PluginManager::indexPlugins() {
 
 
 bool PluginManager::writePluginIndex() {
-    QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
-    QList<PluginEntry*> plugins = _availablePlugins.values();
+  QSettings conf;
+  QList<PluginEntry*> plugins = _availablePlugins.values();
+  
+  conf.beginGroup("mClient");
+  conf.beginGroup("plugins");
+  conf.setValue("path", QVariant(getConfig()->getPluginPath()));
+  conf.setValue("indexed", QVariant(QDateTime(QDateTime::currentDateTime())
+				    .toString()));
+  conf.endGroup(); /* plugins */
+  conf.beginWriteArray("plugins");
+  for (int i = 0; i < plugins.size(); ++i) {
+    PluginEntry *e = plugins.at(i);
+    conf.setArrayIndex(i);
+    conf.setValue("shortname", QVariant(e->shortName()));
+    conf.setValue("libname", QVariant(e->libName()));
+    conf.setValue("longname", QVariant(e->longName()));
     
-    QStringList groups;
-    groups << "mClient" << "plugins";
-    hash->insert(groups.join("/")+"/path",
-		 QVariant(getConfig()->getPluginPath()));
-    hash->insert(groups.join("/")+"/indexed",
-		QVariant(QDateTime(QDateTime::currentDateTime()).toString()));
-    groups.removeLast();
-    groups << "plugin";
-    hash->insert(groups.join("/")+"/size",
-		 QVariant(QString::number(plugins.size())));
-    for (int i = 0; i < plugins.size(); ++i) {
-      PluginEntry *e = plugins.at(i);
-      groups << QString::number(i+1); /* plugins/index */
-      
-      hash->insert(groups.join("/")+"/shortname", QVariant(e->shortName()));
-      hash->insert(groups.join("/")+"/libname", QVariant(e->libName()));
-      hash->insert(groups.join("/")+"/longname", QVariant(e->longName()));
-      
-      if (!e->apiList().isEmpty()) {
-	groups << "api";
-	QStringList api = e->apiList();
-	hash->insert(groups.join("/")+"/size",
-		     QVariant(QString::number(api.size())));
-	for(int j = 0; j < api.size(); ++j) {
-	  groups << QString::number(j); /* api/index */
-	  hash->insert(groups.join("/")+"/name", QVariant(api.at(j)));
-	  hash->insert(groups.join("/")+"/version",
-		       QVariant(QString::number(e->version(api.at(j)))));
-	  groups.removeLast(); /* api/index */
-	}
-	groups.removeLast(); /* api */
+    if (!e->apiList().isEmpty()) {
+      conf.beginWriteArray("api");
+      QStringList api = e->apiList();
+      for(int j = 0; j < api.size(); ++j) {
+	conf.setArrayIndex(j);
+	conf.setValue("name", QVariant(api.at(j)));
+	conf.setValue("version",
+		      QVariant(QString::number(e->version(api.at(j)))));
       }
-      groups.removeLast(); /* plugins/index */
+      conf.endArray(); /* api */
     }
-    groups.removeLast(); /* plugins */
-    groups.removeLast(); /* mClient */
-    
-    qDebug("* plugin index written");
-    return true;
+  }
+  conf.endArray(); /* plugins */
+  conf.endGroup(); /* mClient */
+  
+  qDebug("* plugin index written");
+  return true;
 }
 
 
 bool PluginManager::readPluginIndex() {
     // Read in the plugin db xml into PluginEntrys
-    QHash<QString, QVariant> *hash = getConfig()->applicationSettings();
+  QSettings conf;
     
-    QStringList groups;
-    groups << "mClient" << "plugins";
-    QDateTime generated =
-      QDateTime::fromString(hash->value(groups.join("/")+"/generated")
-			    .toString());
-    groups.removeLast();
-    groups << "plugin";
-
-    int pluginsSize = hash->value(groups.join("/")+"/size", 0).toInt();
+  conf.beginGroup("mClient");
+  conf.beginGroup("plugins");
+  QDateTime generated = 
+    QDateTime::fromString(conf.value("generated").toString());
+  conf.endGroup();
+  int pluginsSize = conf.beginReadArray("plugins");
     for (int i = 0; i < pluginsSize; ++i) {
       PluginEntry* e = new PluginEntry();
-      groups << QString::number(i+1); /* plugins/index */
-      e->libName(hash->value(groups.join("/")+"/libname").toString());
-      e->longName(hash->value(groups.join("/")+"/longname").toString());
-      e->shortName(hash->value(groups.join("/")+"/shortname").toString());
+      conf.setArrayIndex(i+1); /* plugins/index */
+      e->libName(conf.value("libname").toString());
+      e->longName(conf.value("longname").toString());
+      e->shortName(conf.value("shortname").toString());
 
-      groups << "api";
-      int apiSize = hash->value(groups.join("/")+"/size", 0).toInt();
+      int apiSize = conf.beginReadArray("api");
       for (int j = 0; j < apiSize; ++j) {
-	groups << QString::number(j+1); /* api/index */
-	QString name = hash->value(groups.join("/")+"/name").toString();
-	int version = hash->value(groups.join("/")+"/version").toInt();
+	conf.setArrayIndex(j+1); /* plugins/index */
+	QString name = conf.value("name").toString();
+	int version = conf.value("version").toInt();
 	e->addAPI(name, version);
-	groups.removeLast(); /* api/index */
       }
-      groups.removeLast(); /* api */
-      groups.removeLast(); /* plugins/index */
+      conf.endArray(); /* api */
 
       // Insert the plugin
       _availablePlugins.insert(e->shortName(), e);
     }
-    groups.removeLast(); /* plugins */
-    groups.removeLast(); /* mClient */
+    conf.endArray(); /* plugins */
+    conf.endGroup(); /* mClient */
 
     qDebug() << "* plugin index read";
     return true;

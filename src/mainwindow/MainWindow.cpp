@@ -284,7 +284,7 @@ void MainWindow::readSettings()
 
 void MainWindow::writeSettings()
 {
-  //_pluginManager->getConfig()->writeApplicationSettings();
+  getPluginManager()->getConfig()->writeApplicationSettings();
   /*
   Config().setWindowPosition(pos() );
   Config().setWindowSize(size() );

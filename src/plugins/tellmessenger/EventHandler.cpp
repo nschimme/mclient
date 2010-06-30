@@ -35,15 +35,18 @@ void EventHandler::customEvent(QEvent *e) {
         engineEvent(e);
     else if (e->type() == 10001) {
     
-        MClientEvent* me = static_cast<MClientEvent*>(e);
-    
-        if(me->dataTypes().contains("XMLTell")) {
-            QByteArray ba = me->payload()->toByteArray();
-            sendData(ba);
-      
-        }
-    }
+      // Forward the event to the next in the chain
+      forwardEvent(e);
 
+      MClientEvent* me = static_cast<MClientEvent*>(e);
+      
+      if(me->dataTypes().contains("XMLTell")) {
+	QByteArray ba = me->payload()->toByteArray();
+	sendData(ba);
+	
+      }
+    }
+    
     else qDebug() << "TellMessenger got a customEvent of type" << e->type();
 }
 

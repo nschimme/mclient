@@ -3,7 +3,7 @@
 
 #include <QThread>
 #include <QHash>
-#include <QMultiHash>
+#include <QMultiMap>
 #include "MClientPluginInterface.h"
 
 class PluginManager;
@@ -93,7 +93,8 @@ public slots:
     // NOTE: this is used to keep track of what data types each plugin
     // wants for easy event handling.  This one also may have multiple
     // entries for a given plugin.
-    QMultiHash<QString, MClientEventHandler*> _receivesTypes;
+    QHash<QString, QMultiMap<int, MClientEventHandler*> > _receivesTypes;
+    QHash<QString, MClientEventHandler*> _receivesType;
 };
 
 #endif /* PLUGINSESSION_H */

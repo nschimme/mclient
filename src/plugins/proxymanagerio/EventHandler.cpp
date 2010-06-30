@@ -17,8 +17,8 @@ EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
   _proxyServer = new ProxyServer(this);
 
   // Host settings
-  QString password = _config->value("config/password", "").toString();
-  int port = _config->value("config/port", "4243").toInt();
+  QString password = _config->value("config/proxy/password", "").toString();
+  int port = _config->value("config/proxy/port", "4243").toInt();
 
   _proxyServer->password(password.toAscii());
   _proxyServer->port(port);
@@ -36,6 +36,9 @@ void EventHandler::customEvent(QEvent *e) {
   if (e->type() == 10000)
     engineEvent(e);
   else if (e->type() == 10001) {
+
+    // Forward the event to the next in the chain
+    forwardEvent(e);
     
     MClientEvent* me = static_cast<MClientEvent*>(e);
     

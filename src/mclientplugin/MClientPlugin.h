@@ -6,7 +6,6 @@
 #include <QObject>
 #include <QtPlugin>
 #include <QHash>
-#include <QStringList>
 #include <QPointer>
 
 class PluginManager;
@@ -41,7 +40,7 @@ class MClientPlugin : public QObject, public MClientPluginInterface {
         // implemented before it can be loaded.
         const QHash<QString, int> dependencies() const;
 
-        // Returns a QHash of data types and their priorities that it needs
+        // Returns a QHash of data types and priorities
         const QHash<QString, int> receivesDataTypes() const;
 
         // Can this be configured manually?
