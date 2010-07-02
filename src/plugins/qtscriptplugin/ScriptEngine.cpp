@@ -125,7 +125,7 @@ bool ScriptEngine::variableCommand(const QString &arguments) {
     return false;
   }
   // Parse the command
-  QStringList &cmd = variableRx.capturedTexts();
+  const QStringList &cmd = variableRx.capturedTexts();
   qDebug() << cmd;
 
   QString name(cmd.at(1));
@@ -167,7 +167,7 @@ bool ScriptEngine::variableCommand(const QString &arguments) {
       output = "#new variable \""+name+"\"\r\n";
 
     // Create variable
-    QString &command = QString("var %1 = %2;").arg(name, value);
+    const QString &command = QString("var %1 = %2;").arg(name, value);
     if (evaluateExpression(command))
       displayData(output);
 

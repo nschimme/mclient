@@ -29,14 +29,19 @@ file(GLOB_RECURSE mclient_RCS
 )
 
 # Add Windows Resource File
+# Application Icon
 if (MINGW)
-    add_custom_command(
-        OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o
-        COMMAND windres.exe -I ${CMAKE_CURRENT_SOURCE_DIR}
-        -i ${CMAKE_CURRENT_SOURCE_DIR}/resources/win32/mclient.rc
-        -o ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o
-    )
-    set(mclient_WINRC ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
+    # Query qmake for windres executable name
+    QT_QUERY_QMAKE(WINDRES_EXECUTABLE "QMAKE_RC")
+    if (WINDRES_EXECUTABLE)
+        message(STATUS "Found windres: ${WINDRES_EXECUTABLE}")
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mmapper2_rc.o
+                           COMMAND ${WINDRES_EXECUTABLE}
+                                           -I ${CMAKE_CURRENT_SOURCE_DIR}
+                                           -i ${CMAKE_CURRENT_SOURCE_DIR}/resources/win32/mclient.rc
+                                           -o ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
+        set(mmapper_WINRC ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
+    endif (WINDRES_EXECUTABLE)
 else (MINGW)
     set(mclient_WINRC ${CMAKE_CURRENT_SOURCE_DIR}/resources/win32/mclient.rc)
 endif (MINGW)

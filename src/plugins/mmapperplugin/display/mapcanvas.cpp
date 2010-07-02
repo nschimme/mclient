@@ -851,6 +851,8 @@ MapCanvas::~MapCanvas()
   {
     m_scrollX = x;
     m_scrollY = y;
+
+    makeCurrent();
     resizeGL(width(), height());
     updateGL();
   }
@@ -858,6 +860,8 @@ MapCanvas::~MapCanvas()
   void MapCanvas::setHorizontalScroll(int x)
   {
     m_scrollX = x;
+
+    makeCurrent();
     resizeGL(width(), height());
     updateGL();
   }
@@ -865,6 +869,8 @@ MapCanvas::~MapCanvas()
   void MapCanvas::setVerticalScroll(int y)
   {
     m_scrollY = y;
+
+    makeCurrent();
     resizeGL(width(), height());
     updateGL();
   }
@@ -874,6 +880,8 @@ MapCanvas::~MapCanvas()
     m_scaleFactor += 0.05f;
     if (m_scaleFactor > 2.0f)
       m_scaleFactor -= 0.05f;
+
+    makeCurrent();
     resizeGL(width(), height());
     updateGL();
   }
@@ -883,6 +891,8 @@ MapCanvas::~MapCanvas()
     m_scaleFactor -= 0.05f;
     if (m_scaleFactor < 0.04f)
       m_scaleFactor += 0.05f;
+
+    makeCurrent();
     resizeGL(width(), height());
     updateGL();
   }

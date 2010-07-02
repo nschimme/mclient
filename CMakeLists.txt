@@ -3,6 +3,8 @@ project(mclient)
 
 # Set up Qt4
 find_package(Qt4 REQUIRED)
+find_package(OpenGL REQUIRED)
+find_package(ZLIB REQUIRED)
 set(QT_USE_QTNETWORK TRUE)
 set(QT_USE_QTXML TRUE)
 set(QT_USE_QTWEBKIT TRUE)

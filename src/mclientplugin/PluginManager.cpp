@@ -188,7 +188,7 @@ bool PluginManager::indexPlugins() {
 
 bool PluginManager::writePluginIndex() {
   QSettings conf;
-  QList<PluginEntry> &plugins = _availablePlugins.values();
+  const QList<PluginEntry> &plugins = _availablePlugins.values();
   
   conf.beginGroup("mClient");
   conf.beginGroup("plugins");

@@ -7,15 +7,13 @@
 class QWebFrame;
 class WebKitDisplay;
 
-// for Qt 4.5, we use JQuery
 // for Qt >= 4.6, we use the QWebElement API
 #if QT_VERSION < 0x040600
-#define USE_JQUERY
+#error You need Qt 4.6 or newer
 #endif
 
-#if QT_VERSION < 0x0040500
-#error You need Qt 4.5 or newer
-#endif
+// We normally shouldn't use JQUERY anymore
+//#define USE_JQUERY 1
 
 class DisplayWidget : public QWebView {
     Q_OBJECT

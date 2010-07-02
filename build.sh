@@ -1,7 +1,12 @@
 #!/bin/bash
-PROCESSORS=`grep processor /proc/cpuinfo | wc -l`
 declare -i JFLAG
-JFLAG=$PROCESSORS+1
+OSTYPE=`set | grep OSTYPE | cut -d = -f 1`
+if [ "$OSTYPE" == "linux-gnu" ]; then
+    PROCESSORS=`grep processor /proc/cpuinfo | wc -l`
+    JFLAG=$PROCESSORS+1
+else
+    JFLAG=2
+fi
 
 if [ -d build ]; then
     rm -r build

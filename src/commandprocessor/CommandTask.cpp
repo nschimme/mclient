@@ -181,7 +181,7 @@ bool CommandTask::findCommand(const QString &rawCommand,
   if (command.isEmpty()) command = "help";
 
   // Identify Command
-  CommandMapping &map = _commandProcessor->getCommandMapping();
+  const CommandMapping &map = _commandProcessor->getCommandMapping();
   CommandMapping::const_iterator i;
   for (i = map.constBegin(); i != map.constEnd(); ++i) {
     if (i.key().startsWith(command)) {
@@ -299,7 +299,7 @@ bool CommandTask::internalCommand(const QString &command,
 	  
   } else if (command == "help") {
     QString output = "\033[1;4m#commands available:\033[0m\r\n";
-    CommandMapping &map = _commandProcessor->getCommandMapping();
+    const CommandMapping &map = _commandProcessor->getCommandMapping();
     CommandMapping::const_iterator i;
     for (i = map.constBegin(); i != map.constEnd(); ++i) {
       output += QString("\033[1m#%1\033[0m%2\r\n")
@@ -318,7 +318,7 @@ bool CommandTask::internalCommand(const QString &command,
     handleActionCommand(arguments);
 
   } else if (command == "split") {
-    QChar &splitChar = _commandProcessor->getDelimSymbol();
+    const QChar &splitChar = _commandProcessor->getDelimSymbol();
     // QString::SkipEmptyParts
     QListIterator<QString> i(arguments.split(splitChar));
     for (i.toBack(); i.hasPrevious();) {
