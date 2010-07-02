@@ -16,8 +16,7 @@ ActionManager::~ActionManager() {
 Action* ActionManager::match(const QString &pattern,
 			     const QStringList &tags) const {
   // Iterate through all the priorities
-  QMultiMap<int,
-    QMultiHash<QString, Action*>* >::const_iterator i = _actions.constBegin();
+  QMultiMap<int, QMultiHash<QString, Action*>* >::const_iterator i = _actions.constBegin();
   while (i != _actions.constEnd()) {
     //qDebug() << "* Looking through actions of priority" << i.key();
     
@@ -25,8 +24,7 @@ Action* ActionManager::match(const QString &pattern,
     while (tag != tags.constEnd()) {
 
       //qDebug() << "looking at tag" << *tag;
-      QMultiHash<QString, Action*>::const_iterator j
-	= i.value()->constFind(*tag);
+      QMultiHash<QString, Action*>::const_iterator j = i.value()->constFind(*tag);
       while (j != i.value()->constEnd() && j.key() == *tag) {
 
 	// Only match active actions

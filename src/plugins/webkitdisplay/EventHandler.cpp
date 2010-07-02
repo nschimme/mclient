@@ -40,8 +40,6 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if(!e->type() == 10001) return;
-
   // Forward the event to the next in the chain
   forwardEvent(e);
   

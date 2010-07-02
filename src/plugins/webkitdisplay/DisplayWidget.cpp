@@ -18,6 +18,7 @@ DisplayWidget::DisplayWidget(QWidget* parent) : QWebView(parent) {
     _maxSections = 1;
     _currentCharacterCount = 0;
     _maxCharacterCount = 300000000;
+    _scrollToBottom = true;
 
     // Create WebKit Display
     page()->mainFrame()->load(QUrl("qrc:/webkitdisplay/page.html"));
@@ -50,6 +51,7 @@ DisplayWidget::~DisplayWidget() {
 
 
 void DisplayWidget::appendText(const QString &output) {
+    _scrollToBottom = true;
 
   // Maximum Amount of Permitted Characters/Sections
   _currentCharacterCount += output.size();
@@ -99,7 +101,7 @@ void DisplayWidget::paintEvent(QPaintEvent *ev) {
   // When the display is updated we want to (usually) always scroll to the bottom
   // TODO: fix this so when the user scrolls it doesn't scroll to the bottom
   QWebView::paintEvent(ev);
-  scrollToBottom();
+  if (_scrollToBottom) scrollToBottom();
 }
 
 void DisplayWidget::scrollToBottom() {
@@ -110,6 +112,7 @@ void DisplayWidget::scrollToBottom() {
   int height = page()->mainFrame()->scrollBarMaximum(Qt::Vertical);
   page()->mainFrame()->setScrollBarValue(Qt::Vertical, height);
 #endif
+  _scrollToBottom = false;
 }
 
 

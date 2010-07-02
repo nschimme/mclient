@@ -226,6 +226,11 @@ void AbstractParser::parseExits(QString& str)
     }
   }
 
+  // if we can't parse the exit then its invalid
+  if (m_exitsFlags == EXITS_FLAGS_VALID) {
+    m_exitsFlags = 0;
+  }
+
   Coordinate c;
   QByteArray dn = emptyByteArray;
   QByteArray cn = " -";

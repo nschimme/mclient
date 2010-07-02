@@ -32,7 +32,6 @@ DisplayParser::~DisplayParser() {
 
 
 void DisplayParser::displayData(const QString &text) {
-  qDebug() << "parsing";
   parseDisplayData(text);
 }
 
@@ -54,41 +53,24 @@ void DisplayParser::parseDisplayData(QString text) {
   text.replace(QChar('$'), QString("\\$"));
   */
   text = Qt::escape(text);
-  //text = Qt::convertFromPlainText(text);
 
   // ANSI Removal
   QRegExp ansiRx("\\0033\\[((?:\\d+;)*\\d+)m");
-  int index = ansiRx.indexIn(text);
-  QStringList ansi = ansiRx.capturedTexts();
-  QStringList blocks = text.split(ansiRx);
 
   QString output;
-  // Does ANSI or a text block start?
-  if (index == 0) {
-    output += convertANSI(ansi.takeFirst().toInt());
-  } else {
-    output += blocks.takeFirst();
-  }
-  
-  /*
-  qDebug() << blocks.count() << blocks << "\n"
-	   << ansi.count() << ansi;
-  */
-  
-  // Add subsequent ANSI codes
-  for (int i = 0; i < blocks.count(); i++) {
-    //qDebug() << i << blocks.at(i);
-    // Add current output block
-    output += blocks.at(i);
-    
-    // Split concatenated ANSI codes
-    if (index >= 0 && i < ansi.count()) {
-      QStringList codes = ansi[i].split(";"); 
-      for (int j = 0; j < codes.size(); j++)
-	output += convertANSI(codes.at(j).toInt());
+  int old = 0, pos = 0;
+  while ((pos = ansiRx.indexIn(text, old)) != -1) {    
+    int diff = pos - old;
+    output.append(text.midRef(old, diff));
+
+    const QStringList &codes = ansiRx.cap(1).split(";");
+    foreach (const QString &code, codes) {
+      output.append(convertANSI(code.toInt()));
     }
+    old += diff + ansiRx.matchedLength();
   }
-  
+  output.append(text.midRef(old));
+
   emit displayText(output);
 }
 

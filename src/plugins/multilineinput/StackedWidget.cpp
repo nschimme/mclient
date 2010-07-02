@@ -12,6 +12,7 @@ StackedWidget::StackedWidget(EventHandler *eh, QWidget* parent)
   _passwordWidget = new PasswordWidget;
   addWidget(_inputWidget);
   addWidget(_passwordWidget);
+  setFocusProxy(_inputWidget);
 
   // EventHandler -> StackedWidget
   connect(eh, SIGNAL(setEchoMode(bool)),
@@ -42,8 +43,12 @@ StackedWidget::~StackedWidget() {
 
 
 void StackedWidget::toggleEchoMode(bool localEcho) {
-  if (localEcho)
+  if (localEcho) {
+    setFocusProxy(_inputWidget);
     setCurrentWidget(_inputWidget);
-  else 
+  }
+  else {
+    setFocusProxy(_passwordWidget);
     setCurrentWidget(_passwordWidget);
+  }
 }

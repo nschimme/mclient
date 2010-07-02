@@ -32,7 +32,7 @@ class PluginManager : public QObject {
 	}
 	
 	// For PluginSession
-	const QHash<QString, PluginEntry*> getAvailablePlugins() const {
+	const QHash<QString, PluginEntry>& getAvailablePlugins() const {
 	  return _availablePlugins;
 	}
 
@@ -65,7 +65,7 @@ public slots:
 	QHash<QString, PluginSession*> _pluginSessions;
         
         // short name -> other info
-        QHash<QString, PluginEntry*> _availablePlugins; 
+        QHash<QString, PluginEntry> _availablePlugins; 
 
         QPointer<PluginConfigWidget> _configWidget;
 

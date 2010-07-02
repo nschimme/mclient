@@ -53,8 +53,9 @@ void MMapperPluginParser::exits(QString text) {
 	return ;
     emulateExits();
   }
-  else
+  else {
     parseExits(text);
+  }
 }
 
 

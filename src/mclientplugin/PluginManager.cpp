@@ -87,9 +87,7 @@ PluginManager::~PluginManager() {
   }
 
   // Remove entries in the available plugins list
-  foreach(PluginEntry *pe, _availablePlugins) {
-    delete pe;
-  }
+  _availablePlugins.clear();
 
   delete _configManager;
 
@@ -142,7 +140,6 @@ bool PluginManager::indexPlugins() {
   
   //qDebug() << "Files: " << pluginsDir.entryList(QDir::Files);
   
-  PluginEntry* e = 0;
   foreach(QString fileName, pluginsDir.entryList(QDir::Files)) {
 
     // See if it is a library
@@ -170,17 +167,17 @@ bool PluginManager::indexPlugins() {
     }
     
     // Put its info in memory
-    e = new PluginEntry();
-    e->shortName(pi->shortName());
-    e->longName(pi->longName());
-    e->libName(fileName);
+    PluginEntry e;
+    e.shortName(pi->shortName());
+    e.longName(pi->longName());
+    e.libName(fileName);
     QHash<QString, int>::const_iterator it = pi->implemented().begin();
     for(; it!=pi->implemented().end(); ++it) {
-      e->addAPI(it.key(), it.value());
+      e.addAPI(it.key(), it.value());
     }
     
     // Insert the plugin as one of the available plugins
-    _availablePlugins.insert(e->shortName(), e);
+    _availablePlugins.insert(e.shortName(), e);
     
     loader->unload();
   }
@@ -191,7 +188,7 @@ bool PluginManager::indexPlugins() {
 
 bool PluginManager::writePluginIndex() {
   QSettings conf;
-  QList<PluginEntry*> plugins = _availablePlugins.values();
+  QList<PluginEntry> &plugins = _availablePlugins.values();
   
   conf.beginGroup("mClient");
   conf.beginGroup("plugins");
@@ -201,20 +198,20 @@ bool PluginManager::writePluginIndex() {
   conf.endGroup(); /* plugins */
   conf.beginWriteArray("plugins");
   for (int i = 0; i < plugins.size(); ++i) {
-    PluginEntry *e = plugins.at(i);
+    const PluginEntry &e = plugins.at(i);
     conf.setArrayIndex(i);
-    conf.setValue("shortname", QVariant(e->shortName()));
-    conf.setValue("libname", QVariant(e->libName()));
-    conf.setValue("longname", QVariant(e->longName()));
+    conf.setValue("shortname", QVariant(e.shortName()));
+    conf.setValue("libname", QVariant(e.libName()));
+    conf.setValue("longname", QVariant(e.longName()));
     
-    if (!e->apiList().isEmpty()) {
+    if (!e.apiList().isEmpty()) {
       conf.beginWriteArray("api");
-      QStringList api = e->apiList();
+      QStringList api = e.apiList();
       for(int j = 0; j < api.size(); ++j) {
 	conf.setArrayIndex(j);
 	conf.setValue("name", QVariant(api.at(j)));
 	conf.setValue("version",
-		      QVariant(QString::number(e->version(api.at(j)))));
+		      QVariant(QString::number(e.version(api.at(j)))));
       }
       conf.endArray(); /* api */
     }
@@ -238,23 +235,23 @@ bool PluginManager::readPluginIndex() {
   conf.endGroup();
   int pluginsSize = conf.beginReadArray("plugins");
     for (int i = 0; i < pluginsSize; ++i) {
-      PluginEntry* e = new PluginEntry();
+      PluginEntry e;
       conf.setArrayIndex(i+1); /* plugins/index */
-      e->libName(conf.value("libname").toString());
-      e->longName(conf.value("longname").toString());
-      e->shortName(conf.value("shortname").toString());
+      e.libName(conf.value("libname").toString());
+      e.longName(conf.value("longname").toString());
+      e.shortName(conf.value("shortname").toString());
 
       int apiSize = conf.beginReadArray("api");
       for (int j = 0; j < apiSize; ++j) {
 	conf.setArrayIndex(j+1); /* plugins/index */
 	QString name = conf.value("name").toString();
 	int version = conf.value("version").toInt();
-	e->addAPI(name, version);
+	e.addAPI(name, version);
       }
       conf.endArray(); /* api */
 
       // Insert the plugin
-      _availablePlugins.insert(e->shortName(), e);
+      _availablePlugins.insert(e.shortName(), e);
     }
     conf.endArray(); /* plugins */
     conf.endGroup(); /* mClient */

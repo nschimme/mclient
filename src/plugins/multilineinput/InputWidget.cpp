@@ -260,6 +260,7 @@ void InputWidget::addTabHistory(const QStringList &list) {
 void InputWidget::forwardHistory() {
   if (!_lineIterator->hasNext()) {
     qDebug() << "* no newer word history to go to";
+    clear();
     return ;
 
   }

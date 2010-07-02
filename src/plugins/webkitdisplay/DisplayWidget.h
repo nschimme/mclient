@@ -39,6 +39,8 @@ protected slots:
     private:
 	int _currentSection, _maxSections;
        	int _currentCharacterCount, _maxCharacterCount;
+
+	bool _scrollToBottom;
 };
 
 

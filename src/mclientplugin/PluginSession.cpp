@@ -96,8 +96,7 @@ void PluginSession::run() {
 
 void PluginSession::loadAllPlugins() {
   // Get the needed plugins for this profile
-  SettingsHash *hash
-    = getManager()->getConfig()->profileSettings(_session)->hash();
+  SettingsHash *hash = getManager()->getConfig()->profileSettings(_session)->hash();
 
   QStringList pluginsToLoad;
   int pluginsSize = hash->value("profile/plugins/size", 0).toInt();
@@ -110,8 +109,7 @@ void PluginSession::loadAllPlugins() {
   }
   
   // Get a hash of the available plugins
-  const QHash<QString, PluginEntry*> availablePlugins
-    = _pluginManager->getAvailablePlugins();
+  const QHash<QString, PluginEntry>& availablePlugins = _pluginManager->getAvailablePlugins();
 
   if (pluginsToLoad.isEmpty()) {
     pluginsToLoad = availablePlugins.keys();
@@ -132,9 +130,9 @@ void PluginSession::loadAllPlugins() {
 	// Load the plugin's configuration
 	getManager()->getConfig()->readPluginSettings(_session, s);
 	
-	PluginEntry *pe = availablePlugins.value(s);
-	if (!loadPlugin(pe->libName())) {
-	  qCritical() << "! Could not load plugin" << pe->shortName();
+	const PluginEntry& pe = availablePlugins.value(s);
+	if (!loadPlugin(pe.libName())) {
+	  qCritical() << "! Could not load plugin" << pe.shortName();
 	  // TODO: what should happen if we cannot load a plugin?
 	  
 	}
@@ -147,7 +145,7 @@ void PluginSession::loadAllPlugins() {
     }
   }
   if (!foundAllPlugins)
-    qCritical() << "! Available plugins are:" << availablePlugins;
+    qCritical() << "! Available plugins are:" << availablePlugins.keys();
 }
 
 
@@ -211,9 +209,9 @@ bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
   for (; it != deps.end(); ++it) {
 
     // Ask what APIs each plugin implements and compare versions
-    foreach(PluginEntry *pe, _pluginManager->getAvailablePlugins()) {
+    foreach(const PluginEntry& pe, _pluginManager->getAvailablePlugins()) {
 
-      int version = pe->version(it.key());
+      int version = pe.version(it.key());
       if (version) {
 
 	// Found one of the APIs, so check the version
@@ -226,12 +224,12 @@ bool PluginSession::checkDependencies(MClientPluginInterface *iPlugin) {
 	}
 	
 	qDebug() << "Dependency" << it.key() << it.value()
-		 << "satisfied by" << pe->shortName();
+		 << "satisfied by" << pe.shortName();
 
-	if (_loadedPlugins.find(pe->shortName()) == _loadedPlugins.end()) {
+	if (_loadedPlugins.find(pe.shortName()) == _loadedPlugins.end()) {
 
-	  qDebug() << "Attempting to load dependency" << pe->libName();
-	  if (!loadPlugin(pe->libName())) {
+	  qDebug() << "Attempting to load dependency" << pe.libName();
+	  if (!loadPlugin(pe.libName())) {
 
 	    qWarning() << "! Could not load deps for" << it.key();
 	    return false;

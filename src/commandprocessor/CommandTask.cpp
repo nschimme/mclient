@@ -115,7 +115,7 @@ const QString& CommandTask::parseArguments(QString &arguments,
   } else {
     int i, leftCount = 0, rightCount = 0, escapedChar = 0;
     for (i = 0; i < arguments.length(); i++) {
-      qDebug() << arguments[i] << leftCount << rightCount << escapedChar;
+      //qDebug() << arguments[i] << leftCount << rightCount << escapedChar;
       switch (arguments.at(i).toAscii()) {
       case '\\':
 	escapedChar = i;
@@ -563,7 +563,6 @@ bool CommandTask::findAction(const QString &pattern, QStringList tags) {
     for (int i = 0; i < captures.size(); ++i) {
       // Match against non-escaped $ variables
       QRegExp rx(QString("^\\$%1|([^\\\\])\\$%1").arg(i));
-      qDebug() << i << newCommand;
       newCommand.replace(rx, "\\1"+captures.at(i));
       if (action->substitute)
 	newText.replace(rx, "\\1"+captures.at(i));
