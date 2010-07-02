@@ -183,7 +183,7 @@ bool CommandTask::findCommand(const QString &rawCommand,
   // Identify Command
   CommandMapping &map = _commandProcessor->getCommandMapping();
   CommandMapping::const_iterator i;
-  for (i = map.constBegin(); !wasRun && i != map.constEnd(); ++i) {
+  for (i = map.constBegin(); i != map.constEnd(); ++i) {
     if (i.key().startsWith(command)) {
       // Command was identified
 
