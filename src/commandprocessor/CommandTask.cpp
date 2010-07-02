@@ -44,8 +44,8 @@ void CommandTask::parseUserInput(const QString &input) {
   // Add current input to the bottom of the queue
   _queue.prepend(input);
   //qDebug() << "* adding" << _queue.first() << "to queue";
-  processStack();
 
+  processStack();
 }
 
 bool CommandTask::processStack() {
@@ -181,9 +181,9 @@ bool CommandTask::findCommand(const QString &rawCommand,
   if (command.isEmpty()) command = "help";
 
   // Identify Command
-  CommandMapping map = _commandProcessor->getCommandMapping();
+  CommandMapping &map = _commandProcessor->getCommandMapping();
   CommandMapping::const_iterator i;
-  for (i = map.constBegin(); i != map.constEnd(); ++i) {
+  for (i = map.constBegin(); !wasRun && i != map.constEnd(); ++i) {
     if (i.key().startsWith(command)) {
       // Command was identified
 
@@ -202,26 +202,24 @@ bool CommandTask::findCommand(const QString &rawCommand,
 	  qDebug() << "* LOCKING" << i.value()->pluginName();
 	  _semaphore.acquire();
 	  qDebug() << "* UNLOCKING" << i.value()->pluginName();
+	  return true;
 
 	}
-	return true;
 
       } else if (internalCommand(i.key(), arguments)) {
-	qDebug() << "* Command " << command << "was run";
+	qDebug() << "* Internal command " << command << "was run";
 	return true;
+
       }
     }
   }
-  
-  if (internalCommand(command, arguments)) {
-    qDebug() << "* Command " << command << "was run";
-    return true;
-  }
+
+  // Maybe there are more commands?
+  parseArguments(arguments);
 
   // Unknown command!
-  parseArguments(arguments);
   displayData(QString("#unknown command \"" + command + "\"\r\n"));
-  return false;
+  return true;
 }
 
 
@@ -301,7 +299,7 @@ bool CommandTask::internalCommand(const QString &command,
 	  
   } else if (command == "help") {
     QString output = "\033[1;4m#commands available:\033[0m\r\n";
-    CommandMapping map = _commandProcessor->getCommandMapping();
+    CommandMapping &map = _commandProcessor->getCommandMapping();
     CommandMapping::const_iterator i;
     for (i = map.constBegin(); i != map.constEnd(); ++i) {
       output += QString("\033[1m#%1\033[0m%2\r\n")
@@ -320,7 +318,7 @@ bool CommandTask::internalCommand(const QString &command,
     handleActionCommand(arguments);
 
   } else if (command == "split") {
-    QChar splitChar = _commandProcessor->getDelimSymbol();
+    QChar &splitChar = _commandProcessor->getDelimSymbol();
     // QString::SkipEmptyParts
     QListIterator<QString> i(arguments.split(splitChar));
     for (i.toBack(); i.hasPrevious();) {
@@ -331,24 +329,22 @@ bool CommandTask::internalCommand(const QString &command,
     // TODO: finish this command (start/stop)
     //_commandProcessor->getPluginSession()->stopSession();
     
-  } else if (command.indexOf(QRegExp("^\\d+$")) == 0) {
-    // Check if it is a repeat
-    bool ok;
-    int repeat = command.toInt(&ok);
-    if (ok) {
-      QStringList newCommand;
-      for (int i = 0; i < repeat; i++) {
-	newCommand << arguments;
+  } else if (QRegExp("^\\d+$").exactMatch(command)) {
+    if (!arguments.isEmpty()) {
+      // Check if it is a repeat
+      bool ok;
+      int repeat = command.toInt(&ok);
+      if (ok) {
+	QStringList newCommand;
+	for (int i = 0; i < repeat; i++) {
+	  newCommand << arguments;
+	}
+	parseUserInput(newCommand.join("\n"));
       }
-      parseUserInput(newCommand.join("\n"));
-      
+    } else {
+      // TODO: History repeat
+      qDebug() << "TODO: History repeat";
     }
-  } else {
-  
-    // Unknown command!
-    parseArguments(arguments);
-    displayData(QString("#unknown command \"" + command + "\"\r\n"));
-    return false;
   }
 
   return true;

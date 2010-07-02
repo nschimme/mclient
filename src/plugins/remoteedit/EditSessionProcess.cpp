@@ -59,7 +59,7 @@ void EditSessionProcess::onFinished(int exitCode,
   else qWarning() << "! File process did not end normally";
 
   // Cancel
-  return cancelEdit();
+  cancelEdit();
 }
 
 void EditSessionProcess::onError(QProcess::ProcessError /*error*/) {
@@ -72,8 +72,8 @@ void EditSessionProcess::onError(QProcess::ProcessError /*error*/) {
 
 void EditSessionProcess::cancelEdit() {
   // Do the whacky MUME remote editing protocol
-  QString keystr = QString("C%1\n").arg(_key);
-  QString buffer = QString("%1E%2\n%3")
+  QString &keystr = QString("C%1\n").arg(_key);
+  QString &buffer = QString("%1E%2\n%3")
     .arg(MPI)
     .arg(keystr.length())
     .arg(keystr);
@@ -90,8 +90,8 @@ void EditSessionProcess::finishEdit() {
       _body.append('\n');
 
   // Do the whacky MUME remote editing protocol
-  QString keystr = QString("E%1\n").arg(_key);
-  QString buffer = QString("%1E%2\n%3")
+  QString &keystr = QString("E%1\n").arg(_key);
+  QString &buffer = QString("%1E%2\n%3")
     .arg(MPI)
     .arg(_body.length() + keystr.length())
     .arg(keystr);

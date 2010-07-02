@@ -5,44 +5,46 @@
 #include <QScriptValueIterator>
 #include <QStringList>
 
-QScriptValue print(QScriptContext *context, QScriptEngine *engine) {
-  QScriptValue a = context->argument(0);
+namespace {
+  QScriptValue print(QScriptContext *context, QScriptEngine *engine) {
+    QScriptValue a = context->argument(0);
 
-  ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
-  e->displayData(a.toString());
+    ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
+    e->displayData(a.toString());
 
-  return a;
-}
+    return a;
+  }
 
-QScriptValue exe(QScriptContext *context, QScriptEngine *engine) {
-  QScriptValue a = context->argument(0);
+  QScriptValue exe(QScriptContext *context, QScriptEngine *engine) {
+    QScriptValue a = context->argument(0);
   
-  ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
-  e->parseInput(a.toString());
+    ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
+    e->parseInput(a.toString());
 
-  return a;
-}
+    return a;
+  }
 
-QScriptValue send(QScriptContext *context, QScriptEngine *engine) {
-  QScriptValue a = context->argument(0);
+  QScriptValue send(QScriptContext *context, QScriptEngine *engine) {
+    QScriptValue a = context->argument(0);
 
-  QVariant* payload = new QVariant(a.toString());
-  QStringList tags = (QStringList() << "SocketWriteData");
-  ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
-  e->postEvent(payload, tags);
+    QVariant* payload = new QVariant(a.toString());
+    QStringList tags = (QStringList() << "SocketWriteData");
+    ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
+    e->postEvent(payload, tags);
 
-  return a;
-}
+    return a;
+  }
 
-QScriptValue emulate(QScriptContext *context, QScriptEngine *engine) {
-  QScriptValue a = context->argument(0);
+  QScriptValue emulate(QScriptContext *context, QScriptEngine *engine) {
+    QScriptValue a = context->argument(0);
 
-  QVariant* payload = new QVariant(a.toString());
-  QStringList tags = (QStringList() << "TelnetData");
-  ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
-  e->postEvent(payload, tags);
+    QVariant* payload = new QVariant(a.toString());
+    QStringList tags = (QStringList() << "TelnetData");
+    ScriptEngine *e = qobject_cast<ScriptEngine*>(engine);
+    e->postEvent(payload, tags);
 
-  return a;
+    return a;
+  }
 }
 
 ScriptEngine::ScriptEngine(QObject* parent) : QScriptEngine(parent) {  
@@ -77,7 +79,7 @@ bool ScriptEngine::evaluateExpression(const QString &expr) {
     output << "#" << uncaughtException().toString()
 	   << "on line" << QString::number(uncaughtExceptionLineNumber())
 	   << "with backstrace" << uncaughtExceptionBacktrace()
-	   << "\n";
+	   << "\r\n";
     displayData(output.join(""));
   }
 
@@ -103,13 +105,13 @@ bool ScriptEngine::variableCommand(const QString &arguments) {
     QStringList output;
     QMap<QString, QScriptValue>::const_iterator i = variables.constBegin();
     while (i != variables.constEnd()) {
-      output << "" + i.key() + " = " + i.value().toString() + "\n";
+      output << "" + i.key() + " = " + i.value().toString() + "\r\n";
       ++i;
     }
     if (output.isEmpty())
-      output.prepend("#no variables are defined.\n");
+      output.prepend("#no variables are defined.\r\n");
     else
-      output.prepend(QString("#the following variable%1 defined:\n").arg(output.size()==1?" is":"s are"));
+      output.prepend(QString("#the following variable%1 defined:\r\n").arg(output.size()==1?" is":"s are"));
     
     displayData(output.join(""));
     return true;
@@ -123,7 +125,7 @@ bool ScriptEngine::variableCommand(const QString &arguments) {
     return false;
   }
   // Parse the command
-  QStringList cmd = variableRx.capturedTexts();
+  QStringList &cmd = variableRx.capturedTexts();
   qDebug() << cmd;
 
   QString name(cmd.at(1));
@@ -134,12 +136,12 @@ bool ScriptEngine::variableCommand(const QString &arguments) {
 
     if (variables.contains(name)) {
       // Display variable
-      displayData(QString("%1 = %2\n").arg(name,
+      displayData(QString("%1 = %2\r\n").arg(name,
 					   variables[name].toString()));
 
     } else {
       // Error, no variable exists
-      displayData("#unknown variable, cannot show: \""+name+"\"\n");
+      displayData("#unknown variable, cannot show: \""+name+"\"\r\n");
       return false;
     }
 
@@ -148,11 +150,11 @@ bool ScriptEngine::variableCommand(const QString &arguments) {
     if (variables.contains(name)) {
       // Delete variable
       variables.remove(name);
-      displayData("#deleted variable: \""+name+"\"\n");
+      displayData("#deleted variable: \""+name+"\"\r\n");
 
     } else {
       // Error, no variable exists
-      displayData("#unknown variable, cannot delete: \""+name+"\"\n");
+      displayData("#unknown variable, cannot delete: \""+name+"\"\r\n");
       return false;
 
     }
@@ -160,12 +162,12 @@ bool ScriptEngine::variableCommand(const QString &arguments) {
     
     QString output;
     if (variables.contains(name))
-      output = "#variable \""+name+"\" changed\n";
+      output = "#variable \""+name+"\" changed\r\n";
     else 
-      output = "#new variable \""+name+"\"\n";
+      output = "#new variable \""+name+"\"\r\n";
 
     // Create variable
-    QString command = QString("var %1 = %2;").arg(name, value);
+    QString &command = QString("var %1 = %2;").arg(name, value);
     if (evaluateExpression(command))
       displayData(output);
 

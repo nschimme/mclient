@@ -3,10 +3,12 @@
 
 #include <QScriptEngine>
 
-QScriptValue print(QScriptContext *, QScriptEngine *);
-QScriptValue exe(QScriptContext *, QScriptEngine *);
-QScriptValue send(QScriptContext *, QScriptEngine *);
-QScriptValue emulate(QScriptContext *, QScriptEngine *);
+namespace {
+  QScriptValue print(QScriptContext *, QScriptEngine *);
+  QScriptValue exe(QScriptContext *, QScriptEngine *);
+  QScriptValue send(QScriptContext *, QScriptEngine *);
+  QScriptValue emulate(QScriptContext *, QScriptEngine *);
+}
 
 class ScriptEngine : public QScriptEngine {
     Q_OBJECT
