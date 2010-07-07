@@ -25,7 +25,3 @@ add_subdirectory(multilineinput)
 # Display-Output Plugins
 add_subdirectory(webkitdisplay)
 #add_subdirectory(simpledisplay)
-
-# Obsolete Plugins
-#add_subdirectory(aliasplugin)
-#add_subdirectory(actionplugin)

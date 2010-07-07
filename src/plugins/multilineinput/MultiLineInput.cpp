@@ -46,22 +46,22 @@ void MultiLineInput::configure() {
 }
 
 
-bool MultiLineInput::startSession(PluginSession *ps) {
+bool MultiLineInput::startSession(AbstractPluginSession *ps) {
   _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool MultiLineInput::stopSession(PluginSession *ps) {
-  EventHandler *eh = _eventHandlers[ps->session()];
-  _eventHandlers.remove(ps->session());
+bool MultiLineInput::stopSession(const QString &session) {
+  EventHandler *eh = _eventHandlers[session];
+  _eventHandlers.remove(session);
   eh->deleteLater();
   qDebug() << "* removed MultiLineInput InputWidget for session"
-	   << ps->session();
+	   << session;
   return true;
 }
 
 
-MClientEventHandler* MultiLineInput::getEventHandler(QString s) {
-  return _eventHandlers[s].data();
+MClientEventHandler* MultiLineInput::getEventHandler(const QString &session) {
+  return _eventHandlers[session].data();
 }

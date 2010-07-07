@@ -1,6 +1,8 @@
 #ifndef PLUGINSESSION_H
 #define PLUGINSESSION_H
 
+#include "AbstractPluginSession.h"
+
 #include <QThread>
 #include <QHash>
 #include <QMultiMap>
@@ -24,18 +26,19 @@ class QPluginLoader;
 
 typedef QHash<QString, QPluginLoader*> PluginHash;
 
-class PluginSession : public QThread {
+class PluginSession : public AbstractPluginSession {
   Q_OBJECT
-    
+
   public:
-    PluginSession(const QString&, PluginManager *pm, QObject *parent=0);
+    PluginSession(const QString&, PluginManager *pm);
     ~PluginSession();
 
     // For posting events
     void customEvent(QEvent* e);
 
     PluginManager* getManager() const { return _pluginManager; }
-    CommandProcessor* getCommand() const { return _commandProcessor; }
+    //CommandProcessor* getCommand() const { return _commandProcessor; }
+    QObject* getCommand() const { return (QObject*)_commandProcessor; }
     AliasManager* getAlias() const { return _aliasManager; }
     ActionManager* getAction() const { return _actionManager; }
 

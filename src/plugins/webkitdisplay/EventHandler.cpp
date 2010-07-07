@@ -6,11 +6,11 @@
 #include <QVariant>
 
 #include "MClientEvent.h"
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 
 #include <QtWebKit>
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientDisplayHandler(ps, mp) {
   // Allowable Display Locations
   SET(_displayLocations, DL_DISPLAY);
@@ -59,8 +59,8 @@ void EventHandler::customEvent(QEvent *e) {
   }
 }
 
-QWidget* EventHandler::createWidget() {
-  _widget = new DisplayWidget;
+QWidget* EventHandler::createWidget(QWidget *parent) {
+  _widget = new DisplayWidget(parent);
 
   /* I made this blocking so that it doesn't look like the program
      has locked up. The problem is that the Javascript DOM is slow. */

@@ -6,12 +6,11 @@
 
 #include "MClientEvent.h"
 
-#include "PluginSession.h"
-#include "CommandProcessor.h"
+//#include "CommandProcessor.h"
 
 #include "StackedWidget.h"
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientDisplayHandler(ps, mp) {
   // Allowable Display Locations
   SET(_displayLocations, DL_INPUT);
@@ -25,10 +24,7 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-
-  else if (e->type() == 10001) {
+  if (e->type() == 10001) {
 
     // Forward the event to the next in the chain
     forwardEvent(e);
@@ -57,9 +53,8 @@ void EventHandler::customEvent(QEvent *e) {
 }
 
 
-QWidget* EventHandler::createWidget() {
-  _widget = new StackedWidget(this);
-
+QWidget* EventHandler::createWidget(QWidget *parent) {
+  _widget = new StackedWidget(this, parent);
   return _widget;
 }
 

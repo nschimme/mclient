@@ -5,7 +5,7 @@
 
 #include "EventHandler.h"
 
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 
 #include "CommandProcessor.h"
 #include "CommandEntry.h"
@@ -53,19 +53,19 @@ void QtScriptPlugin::configure() {
 }
 
 
-bool QtScriptPlugin::startSession(PluginSession *ps) {
+bool QtScriptPlugin::startSession(AbstractPluginSession *ps) {
   _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool QtScriptPlugin::stopSession(PluginSession *ps) {
-  _eventHandlers[ps->session()]->deleteLater();
-  _eventHandlers.remove(ps->session());
+bool QtScriptPlugin::stopSession(const QString &session) {
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
   return true;
 }
 
 
-MClientEventHandler* QtScriptPlugin::getEventHandler(QString s) {
+MClientEventHandler* QtScriptPlugin::getEventHandler(const QString &s) {
   return _eventHandlers[s].data();
 }

@@ -17,10 +17,10 @@ class WebKitDisplay : public MClientPlugin {
 
         // Plugin members
         void configure();
-        bool startSession(PluginSession *ps);
-        bool stopSession(PluginSession *ps);
+        bool startSession(AbstractPluginSession *ps);
+        bool stopSession(const QString &session);
 
-	MClientEventHandler* getEventHandler(QString s);
+	MClientEventHandler* getEventHandler(const QString &session);
 
     private:
 	QHash<QString, QPointer<EventHandler> > _eventHandlers;

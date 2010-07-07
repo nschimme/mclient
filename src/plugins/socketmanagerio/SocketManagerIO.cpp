@@ -3,7 +3,7 @@
 #include "EventHandler.h"
 
 #include "PluginManager.h"
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 #include "CommandProcessor.h"
 #include "CommandEntry.h"
 #include "ConfigManager.h"
@@ -82,28 +82,27 @@ void SocketManagerIO::configure() {
 }
 
 
-bool SocketManagerIO::startSession(PluginSession *ps) {
-  QString s = ps->session();
+bool SocketManagerIO::startSession(AbstractPluginSession *ps) {
+  const QString &s = ps->session();
   _eventHandlers[s] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool SocketManagerIO::stopSession(PluginSession *ps) {
-  QString s = ps->session();
-  _eventHandlers[ps->session()]->deleteLater();
-  _eventHandlers.remove(ps->session());
-  qDebug() << "* removed SocketReader for session" << s;
+bool SocketManagerIO::stopSession(const QString &session) {
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
+  qDebug() << "* removed SocketReader for session" << session;
   return true;
 }
 
 
-MClientEventHandler* SocketManagerIO::getEventHandler(QString s) {
-  if (_eventHandlers.contains(s))
-      return _eventHandlers[s].data();
+MClientEventHandler* SocketManagerIO::getEventHandler(const QString &session) {
+  if (_eventHandlers.contains(session))
+      return _eventHandlers[session].data();
   else {
       qDebug() << "! SocketManagerIO unable to find EventHandler for"
-               << s << "; hash is" << _eventHandlers;
+               << session << "; hash is" << _eventHandlers;
       return 0;
   }
 }

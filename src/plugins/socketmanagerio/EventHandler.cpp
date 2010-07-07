@@ -9,10 +9,10 @@
 #include <QAction>
 
 #include "MClientEvent.h"
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 #include "ConfigEntry.h"
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientEventHandler(ps, mp) {
   _socketReader = new SocketReader(ps->session(), this);
 
@@ -72,17 +72,12 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-  else if (e->type() == 10001) {    
+  if (e->type() == 10001) {    
 
     // Forward the event to the next in the chain
     forwardEvent(e);
 
     MClientEvent* me = static_cast<MClientEvent*>(e);
-    
-    // Forward the event to the next in the chain
-    forwardEvent(e);
 
     if(me->dataTypes().contains("SendToSocketData")) {
       QByteArray ba = me->payload()->toByteArray();

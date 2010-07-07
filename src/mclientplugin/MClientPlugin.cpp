@@ -68,11 +68,6 @@ bool MClientPlugin::configurable() const {
 }
 
 
-void MClientPlugin::setPluginManager(PluginManager *pm) {
-  _pluginManager = pm;
-}
-
-
 const QList<CommandEntry* > MClientPlugin::commandEntries() const {
   return _commandEntries;
 }

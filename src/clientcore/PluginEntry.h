@@ -1,13 +1,10 @@
 #ifndef PLUGINENTRY_H
 #define PLUGINENTRY_H
 
-#include "PluginEntry.h"
-
 #include <QHash>
 #include <QString>
 
 class QStringList;
-
 
 class PluginEntry {
 

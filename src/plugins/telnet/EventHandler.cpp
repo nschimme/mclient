@@ -68,7 +68,7 @@ struct cTelnetPrivate {
 #define DEFAULT_ENCODING "ISO 8859-1"
 
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientEventHandler(ps, mp) {
   /** KMuddy Telnet */
   d = new cTelnetPrivate;
@@ -109,10 +109,7 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-
-  else if (e->type() == 10001) {
+  if (e->type() == 10001) {
 
     // Forward the event to the next in the chain
     forwardEvent(e);

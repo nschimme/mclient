@@ -45,19 +45,19 @@ void MumeXML::configure() {
 }
 
 
-bool MumeXML::startSession(PluginSession *ps) {
+bool MumeXML::startSession(AbstractPluginSession *ps) {
   _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool MumeXML::stopSession(PluginSession *ps) {
-  _eventHandlers[ps->session()]->deleteLater();
-  _eventHandlers.remove(ps->session());
+bool MumeXML::stopSession(const QString &session) {
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
   return true;
 }
 
 
-MClientEventHandler* MumeXML::getEventHandler(QString s) {
+MClientEventHandler* MumeXML::getEventHandler(const QString &s) {
   return _eventHandlers[s].data();
 }

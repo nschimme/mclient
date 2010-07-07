@@ -5,10 +5,10 @@
 #include <QHash>
 #include <QPointer>
 
-class PluginManager;
-class PluginSession;
+class AbstractPluginSession;
 class MClientEventHandler;
 class CommandEntry;
+class ConfigEntry;
 
 class MClientPluginInterface {
     
@@ -43,13 +43,13 @@ class MClientPluginInterface {
         virtual void configure()=0;
 
         // Create objects local to one session
-        virtual bool startSession(PluginSession *ps)=0;
+        virtual bool startSession(AbstractPluginSession *ps)=0;
 
         // Destroy objects local to one session
-        virtual bool stopSession(PluginSession *ps)=0;
+        virtual bool stopSession(const QString &session)=0;
 
 	// Grab the event handler
-	virtual MClientEventHandler* getEventHandler(QString s)=0;
+	virtual MClientEventHandler* getEventHandler(const QString &session)=0;
 
 	// List of commands
 	virtual const QList<CommandEntry* > commandEntries() const=0;

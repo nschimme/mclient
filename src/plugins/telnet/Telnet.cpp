@@ -1,6 +1,6 @@
 #include "Telnet.h"
 
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 #include "EventHandler.h"
 #include <QDebug>
 
@@ -33,19 +33,19 @@ void Telnet::configure() {
 }
 
 
-bool Telnet::startSession(PluginSession *ps) {
+bool Telnet::startSession(AbstractPluginSession *ps) {
   _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool Telnet::stopSession(PluginSession *ps) {
-  _eventHandlers[ps->session()]->deleteLater();
-  _eventHandlers.remove(ps->session());
+bool Telnet::stopSession(const QString &session) {
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
   return true;
 }
 
 
-MClientEventHandler* Telnet::getEventHandler(QString s) {
+MClientEventHandler* Telnet::getEventHandler(const QString &s) {
   return _eventHandlers[s].data();
 }

@@ -154,13 +154,20 @@ void MainWindow::initDisplay(PluginSession *ps) {
       MClientEventHandler *eh = pi->getEventHandler(session);
       if (eh) {
 	// Create the widgets outside of the threads
-        MClientDisplayHandlerInterface *dh
-	  = qobject_cast<MClientDisplayHandlerInterface*>(eh);
-	if (dh) {
-	  // Initialize the display
-	  QPair<int, QWidget*> pair(dh->displayLocations(),
-				    dh->createWidget());
-	  widgetList << pair;
+	if (eh->inherits("MClientDisplayHandler")) {
+	  qDebug() << "* creating widgets for" << pi->shortName();
+	  MClientDisplayHandler *dh = (MClientDisplayHandler*)eh;
+	  if (dh) {
+	    // Initialize the display
+	    QWidget *widget = dh->createWidget(this);
+	    if (widget) {
+	      int displayLocations = dh->displayLocations();
+	      QPair<int, QWidget*> pair(displayLocations, widget);
+	      widgetList << pair;
+	    } else {
+	      qWarning() << "! Widget created by" << pi->shortName() << "was null!";
+	    }
+	  } else qWarning() << "! Unable to cast DisplayHandler";
 	  
         } else qDebug() << "! Display unable to cast DisplayHandler"
 			<< pi->shortName();

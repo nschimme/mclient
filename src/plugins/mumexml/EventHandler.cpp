@@ -8,7 +8,7 @@
 #include <QDebug>
 
 #include "MClientEvent.h"
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 
 /*
 const QByteArray EventHandler::greaterThanChar(">");
@@ -23,7 +23,7 @@ const QChar EventHandler::escChar('\x1B');
 //const QByteArray EventHandler::emptyByteArray("");
 
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientEventHandler(ps, mp) {
   _readingTag = false;
   _xmlMode = XML_NONE;
@@ -47,10 +47,7 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-
-  else if (e->type() == 10001) {
+  if (e->type() == 10001) {
 
     // Forward the event to the next in the chain
     forwardEvent(e);
@@ -87,7 +84,7 @@ void EventHandler::customEvent(QEvent *e) {
 	  QStringList sl("SendToSocketData");
 	  postSession(qv, sl);
 
-	}	  
+	}
       }
       
     }

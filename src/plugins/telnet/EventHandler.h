@@ -131,7 +131,7 @@ class EventHandler : public MClientEventHandler {
     Q_OBJECT
     
     public:
-         EventHandler(PluginSession *ps, MClientPlugin *mp);
+         EventHandler(AbstractPluginSession *ps, MClientPlugin *mp);
         ~EventHandler();
 
         void customEvent(QEvent* e);

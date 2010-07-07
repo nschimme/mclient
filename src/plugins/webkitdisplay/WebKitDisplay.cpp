@@ -1,6 +1,6 @@
 #include "WebKitDisplay.h"
 
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 
 #include "EventHandler.h"
 #include "MClientEvent.h"
@@ -36,23 +36,22 @@ void WebKitDisplay::configure() {
 }
 
 
-bool WebKitDisplay::startSession(PluginSession *ps) {
-  QString s = ps->session();
+bool WebKitDisplay::startSession(AbstractPluginSession *ps) {
+  const QString &s = ps->session();
   qDebug() << "* starting WebKitDisplay for session" << s;
   _eventHandlers[s] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool WebKitDisplay::stopSession(PluginSession *ps) {
-  QString s = ps->session();
-  qDebug() << "* removed Simple DisplayWidget for session" << s << this;
-  _eventHandlers[s]->deleteLater();
-  _eventHandlers.remove(s);
+bool WebKitDisplay::stopSession(const QString &session) {
+  qDebug() << "* removed Simple DisplayWidget for session" << session << this;
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
   return true;
 }
 
 
-MClientEventHandler* WebKitDisplay::getEventHandler(QString s) {
-  return _eventHandlers[s].data();
+MClientEventHandler* WebKitDisplay::getEventHandler(const QString &session) {
+  return _eventHandlers[session].data();
 }

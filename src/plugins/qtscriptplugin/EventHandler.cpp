@@ -6,12 +6,12 @@
 #include <QCoreApplication> // for sending command
 
 #include "MClientEvent.h"
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 #include "CommandProcessor.h"
 #include "ConfigEntry.h"
 #include "ScriptEngine.h"
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientEventHandler(ps, mp) {
 
   _scriptEngine = new ScriptEngine(this);
@@ -36,10 +36,7 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-
-  else {   
+  if (e->type() == 10001) {
 
     // Forward the event to the next in the chain
     forwardEvent(e);

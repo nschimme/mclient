@@ -19,7 +19,7 @@
 #include "SmartMenu.h"
 #include <QAction>
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientDisplayHandler(ps, mp) {
   // Allowable Display Locations
   SET(_displayLocations, DL_FLOAT);
@@ -35,10 +35,7 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if(e->type() == 10000)
-    engineEvent(e);
-
-  else {
+  if (e->type() == 10001) {
 
     // Forward the event to the next in the chain
     forwardEvent(e);
@@ -79,7 +76,7 @@ void EventHandler::customEvent(QEvent *e) {
 	// These tags get forwarded to the CommandProcessor
 	MClientEvent* nme = new MClientEvent(*me);
 	QCoreApplication::postEvent(_pluginSession->getCommand(), nme);
-	//qDebug() << "* forwarding to CommandProcessor";
+	qDebug() << "* forwarding to CommandProcessor";
 	
       }
 
@@ -114,8 +111,8 @@ void EventHandler::customEvent(QEvent *e) {
 }
 
 
-QWidget* EventHandler::createWidget() {
-  _mapper = new MapperManager(this);
+QWidget* EventHandler::createWidget(QWidget *parent) {
+  _mapper = new MapperManager(this, parent);
   //_mapper->start();
   return _mapper->getMapWindow();
 }

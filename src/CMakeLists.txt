@@ -5,19 +5,19 @@ add_definitions(-DQT_SHARED)
 
 # Source files
 set(mclient_SRCS main.cpp)
-foreach(dir mainwindow)
+foreach(dir)
   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.cpp")
   set(mclient_SRCS ${mclient_SRCS} ${files})
 endforeach()
 
 # Header Files
-foreach(dir mainwindow)
+foreach(dir)
   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.h")
   set(mclient_MOC_HDRS ${files})
 endforeach()
 
 # UI Files
-foreach(dir mainwindow)
+foreach(dir clientcore/display)
   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.ui")
   set(mclient_UIS ${files})
 endforeach()
@@ -40,7 +40,7 @@ if (MINGW)
                                            -I ${CMAKE_CURRENT_SOURCE_DIR}
                                            -i ${CMAKE_CURRENT_SOURCE_DIR}/resources/win32/mclient.rc
                                            -o ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
-        set(mmapper_WINRC ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
+        set(mclient_WINRC ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o)
     endif (WINDRES_EXECUTABLE)
 else (MINGW)
     set(mclient_WINRC ${CMAKE_CURRENT_SOURCE_DIR}/resources/win32/mclient.rc)
@@ -57,9 +57,10 @@ if (APPLE)
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
+    clientcore # TODO: Remove some of this
+    clientcore/command
+    clientcore/display
     mclientplugin
-    mainwindow
-    commandprocessor
 )
   
 QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
@@ -82,15 +83,12 @@ add_executable(mclient ${EXECUTABLE_FLAGS} #MACOSX_BUNDLE
 target_link_libraries(mclient
     ${QT_QTMAIN_LIBRARY}
     ${QT_LIBRARIES}
-    mclientplugin
-    mainwindow
-    commandprocessor
+    clientcore
 )
 
 # mClient's Core Engine
+add_subdirectory(clientcore)
 add_subdirectory(mclientplugin)
-add_subdirectory(mainwindow)
-add_subdirectory(commandprocessor)
 
 # Various Plugins
 add_subdirectory(plugins)

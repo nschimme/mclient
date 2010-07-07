@@ -1,20 +1,27 @@
 #ifndef MCLIENTDISPLAYHANDLER_H
 #define MCLIENTDISPLAYHANDLER_H
 
-#include "MClientDisplayHandlerInterface.h"
 #include "MClientEventHandler.h"
 #include <QWidget>
 
-class PluginSession;
+class AbstractPluginSession;
 class MClientPlugin;
 class QEvent;
 
-class MClientDisplayHandler : public MClientEventHandler, public MClientDisplayHandlerInterface {
+typedef quint8 MClientDisplayLocations;
+#define DL_DISPLAY    bit1 // Primary Display (Center Layout)
+#define DL_INPUT      bit2 // Primary Input   (Bottom Layout)
+#define DL_LEFT       bit3 // Dock Left
+#define DL_RIGHT      bit4 // Dock Right
+#define DL_BOTTOM     bit5 // Dock Bottom
+#define DL_TOP        bit6 // Dock Top
+#define DL_FLOAT      bit7 // Floating
+
+class MClientDisplayHandler : public MClientEventHandler {
     Q_OBJECT
-    Q_INTERFACES(MClientDisplayHandlerInterface)
 
     public:
-        MClientDisplayHandler(PluginSession *ps, MClientPlugin *mp);
+        MClientDisplayHandler(AbstractPluginSession *ps, MClientPlugin *mp);
         virtual ~MClientDisplayHandler();
 
         // Plugin members
@@ -24,7 +31,7 @@ class MClientDisplayHandler : public MClientEventHandler, public MClientDisplayH
         const MClientDisplayLocations& displayLocations() const;
 
         // Display members
-	virtual QWidget* createWidget();
+	virtual QWidget* createWidget(QWidget *parent=0);
 
    protected:
 	MClientDisplayLocations _displayLocations;

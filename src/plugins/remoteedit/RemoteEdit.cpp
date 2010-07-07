@@ -1,6 +1,6 @@
 #include "RemoteEdit.h"
 
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 #include "EventHandler.h"
 #include "CommandEntry.h"
 
@@ -46,19 +46,19 @@ void RemoteEdit::configure() {
 }
 
 
-bool RemoteEdit::startSession(PluginSession *ps) {
+bool RemoteEdit::startSession(AbstractPluginSession *ps) {
   _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool RemoteEdit::stopSession(PluginSession *ps) {
-  _eventHandlers[ps->session()]->deleteLater();
-  _eventHandlers.remove(ps->session());
+bool RemoteEdit::stopSession(const QString &session) {
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
   return true;
 }
 
 
-MClientEventHandler* RemoteEdit::getEventHandler(QString s) {
+MClientEventHandler* RemoteEdit::getEventHandler(const QString &s) {
   return _eventHandlers[s].data();
 }

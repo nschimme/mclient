@@ -1,7 +1,7 @@
 #include "ProxyManagerIO.h"
 #include "EventHandler.h"
 #include "CommandEntry.h"
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 
 Q_EXPORT_PLUGIN2(proxymanagerio, ProxyManagerIO)
 
@@ -42,19 +42,19 @@ void ProxyManagerIO::configure() {
 }
 
 
-bool ProxyManagerIO::startSession(PluginSession *ps) {
+bool ProxyManagerIO::startSession(AbstractPluginSession *ps) {
   _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool ProxyManagerIO::stopSession(PluginSession *ps) {
-  _eventHandlers[ps->session()]->deleteLater();
-  _eventHandlers.remove(ps->session());
+bool ProxyManagerIO::stopSession(const QString &session) {
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
   return true;
 }
 
 
-MClientEventHandler* ProxyManagerIO::getEventHandler(QString s) {
+MClientEventHandler* ProxyManagerIO::getEventHandler(const QString &s) {
   return _eventHandlers[s].data();
 }

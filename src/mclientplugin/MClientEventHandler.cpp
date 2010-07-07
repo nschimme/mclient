@@ -1,8 +1,5 @@
 #include "MClientEventHandler.h"
 
-#include "PluginManager.h"
-#include "PluginSession.h"
-
 #include "MClientPlugin.h"
 
 #include "MClientEvent.h"
@@ -18,11 +15,10 @@
 #include <QVariant>
 #include <QDebug>
 
-MClientEventHandler::MClientEventHandler(PluginSession *ps, MClientPlugin *mp)
-  : QObject(mp), _pluginSession(ps), _plugin(mp) {
-
-  // Retrieve the ConfigEntry
-  _config = _pluginSession->retrievePluginSettings(_plugin->shortName());
+MClientEventHandler::MClientEventHandler(AbstractPluginSession *ps, MClientPlugin *parent)
+  : QObject(parent), _pluginSession(ps) {
+  _session = _pluginSession->session();
+  _config = ps->retrievePluginSettings(parent->shortName());
 }
 
 
@@ -32,40 +28,21 @@ MClientEventHandler::~MClientEventHandler() {
 
 // Post an event
 void MClientEventHandler::postSession(QVariant* payload, QStringList tags) {
-  MClientEventData *med = new MClientEventData(payload, tags,
-					       _pluginSession->session());
+  MClientEventData *med = new MClientEventData(payload, tags, _session);
   MClientEvent* me = new MClientEvent(med);
   QCoreApplication::postEvent(_pluginSession, me);
 }
 
 
-void MClientEventHandler::postManager(QVariant* payload, QStringList tags, 
-			      QString session) {
-  MClientEvent* me = new MClientEvent(new MClientEventData(payload, tags,
-							   session));
+void MClientEventHandler::postManager(QVariant* payload, QStringList tags, QString session) {
+  MClientEvent* me = new MClientEvent(new MClientEventData(payload, tags, session));
   
-  QApplication::postEvent(_pluginSession->getManager(), me);
-}
-
-
-// Handles MClientEngineEvent
-void MClientEventHandler::engineEvent(QEvent *e) {
-  MClientEngineEvent* ee = static_cast<MClientEngineEvent*>(e);
-  //qDebug() << "#" << _shortName << "got engineEvent" << ee->dataType();
-  if (ee->dataType() == EE_MANAGER_POST) {
-    // We should never get one of these
-    
-  }
+  //QApplication::postEvent(_pluginSession->getManager(), me);
 }
 
 
 const MenuData& MClientEventHandler::createMenus() {
   return _menus;
-}
-
-
-MClientPlugin* MClientEventHandler::plugin() {
-  return _plugin;
 }
 
 
@@ -87,11 +64,3 @@ void MClientEventHandler::forwardEvent(QEvent *e) {
     }
   }
 }
-
-
-/*
-bool MClientEventHandler::loadSettings(const QHash<QString, QVariant> &hash) {
-  _settings = hash;
-}
-*/
-

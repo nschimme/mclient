@@ -10,18 +10,18 @@
 
 class QEvent;
 class MapperManager;
-class PluginSession;
+class AbstractPluginSession;
 
 class EventHandler : public MClientDisplayHandler {
     Q_OBJECT
     
     public:
-         EventHandler(PluginSession *ps, MClientPlugin *mp);
+         EventHandler(AbstractPluginSession *ps, MClientPlugin *mp);
         ~EventHandler();
 
         void customEvent(QEvent* e);
 
-	QWidget* createWidget();
+	QWidget* createWidget(QWidget *parent=0);
 
 	const MenuData& createMenus();
 

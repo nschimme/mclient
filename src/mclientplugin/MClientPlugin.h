@@ -8,7 +8,6 @@
 #include <QHash>
 #include <QPointer>
 
-class PluginManager;
 class MClientEventData;
 class MClientEventHandler;
 
@@ -50,16 +49,13 @@ class MClientPlugin : public QObject, public MClientPluginInterface {
         virtual void configure()=0;
 
         // Create objects local to one session
-        virtual bool startSession(PluginSession *ps)=0;
+        virtual bool startSession(AbstractPluginSession *ps)=0;
 
         // Destroy objects local to one session
-        virtual bool stopSession(PluginSession *ps)=0;
-
-	// Set the plugin manager
-	void setPluginManager(PluginManager *pm);
+        virtual bool stopSession(const QString &session)=0;
 
 	// Grab the event handler
-        virtual MClientEventHandler* getEventHandler(QString s)=0;
+        virtual MClientEventHandler* getEventHandler(const QString &s)=0;
         
 	// List of commands
 	const QList<CommandEntry* > commandEntries() const;
@@ -74,8 +70,6 @@ class MClientPlugin : public QObject, public MClientPluginInterface {
         QHash<QString, int> _receivesDataTypes;
 
 	QList<CommandEntry* > _commandEntries;
-
-	PluginManager *_pluginManager;
 };
 
 

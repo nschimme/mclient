@@ -31,6 +31,7 @@ add_library(multilineinput SHARED
 target_link_libraries(
     multilineinput
     mclientplugin
+    mainwindow
     ${QT_LIBRARIES}
 )
 

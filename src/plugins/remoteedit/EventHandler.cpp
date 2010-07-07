@@ -6,11 +6,11 @@
 
 #include <QDebug>
 
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 #include "MClientEvent.h"
 #include "EditSessionProcess.h"
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientEventHandler(ps, mp) {
   _state = NORMAL;
 }
@@ -21,10 +21,7 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-
-  else if (e->type() == 10001) {
+  if (e->type() == 10001) {
 
     // Forward the event to the next in the chain
     forwardEvent(e);

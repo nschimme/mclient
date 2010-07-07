@@ -8,11 +8,11 @@
 #include "ProxyServer.h"
 #include "ProxyConnection.h"
 
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 #include "CommandProcessor.h"
 #include "ConfigEntry.h"
 
-EventHandler::EventHandler(PluginSession *ps, MClientPlugin *mp)
+EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientEventHandler(ps, mp) {
   _proxyServer = new ProxyServer(this);
 
@@ -33,9 +33,7 @@ EventHandler::~EventHandler() {
 
 
 void EventHandler::customEvent(QEvent *e) {
-  if (e->type() == 10000)
-    engineEvent(e);
-  else if (e->type() == 10001) {
+  if (e->type() == 10001) {
 
     // Forward the event to the next in the chain
     forwardEvent(e);

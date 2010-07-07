@@ -3,7 +3,7 @@
 #include "EventHandler.h"
 
 #include "PluginManager.h"
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 #include "CommandProcessor.h"
 #include "CommandEntry.h"
 #include "ConfigManager.h"
@@ -61,23 +61,22 @@ void TellMessenger::configure() {
 }
 
 
-bool TellMessenger::startSession(PluginSession *ps) {
+bool TellMessenger::startSession(AbstractPluginSession *ps) {
   QString s = ps->session();
   _eventHandlers[s] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool TellMessenger::stopSession(PluginSession *ps) {
-  QString s = ps->session();
-  _eventHandlers[ps->session()]->deleteLater();
-  _eventHandlers.remove(ps->session());
-  qDebug() << "* removed SocketServer for session" << s;
+bool TellMessenger::stopSession(const QString &session) {
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
+  qDebug() << "* removed SocketServer for session" << session;
   return true;
 }
 
 
-MClientEventHandler* TellMessenger::getEventHandler(QString s) {
+MClientEventHandler* TellMessenger::getEventHandler(const QString &s) {
   if (_eventHandlers.contains(s))
       return _eventHandlers[s].data();
   else {

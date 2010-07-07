@@ -26,9 +26,8 @@
 #include <QDebug>
 #include <QVariant>
 
-PluginSession::PluginSession(const QString &s, PluginManager *pm,
-			     QObject *parent)
-  : QThread(parent), _session(s), _pluginManager(pm) {
+PluginSession::PluginSession(const QString &s, PluginManager *pm)
+  : AbstractPluginSession(), _session(s), _pluginManager(pm) {
 
   // This is usually mume
   _mume = true;
@@ -256,6 +255,11 @@ void PluginSession::startSession() {
       // Receive the event handler
       MClientEventHandler* eventHandler = iPlugin->getEventHandler(_session);
 
+      if (!eventHandler) {
+	qWarning() << "* eventHandler was invalid for " << iPlugin->shortName();
+	continue;
+      }
+
       // Insert datatypes this plugin wants into hash
       if(!iPlugin->receivesDataTypes().isEmpty()) {
 	/*
@@ -277,6 +281,7 @@ void PluginSession::startSession() {
     }
   }
 
+  qDebug() << "* Populating event chains...";
   // Identify the head of the event handler command chain
   QHash<QString, QMultiMap<int, MClientEventHandler*> >::const_iterator i
     = _receivesTypes.constBegin();
@@ -313,7 +318,7 @@ void PluginSession::stopSession() {
       // TODO
       //pi->saveSettings();
       qDebug() << "* sending stop to" << pi->shortName();
-      pi->stopSession(this);
+      pi->stopSession(_session);
     }
   }
 

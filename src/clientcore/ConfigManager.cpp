@@ -380,7 +380,7 @@ bool ConfigManager::writeProfileSettings(const QString &profileName) {
 
 bool ConfigManager::readPluginSettings(const QString &profileName,
 				       const QString &pluginName) {
-  qDebug() << "* reading plugin settings" << pluginName;
+  qDebug() << "* reading plugin settings" << pluginName << "for profile" << profileName;
   // Figure out which directory we are writing to
   QString dirName
     = _profileSettings[profileName]->value("profile/path",

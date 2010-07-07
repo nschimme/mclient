@@ -2,7 +2,7 @@
 
 #include "CommandEntry.h"
 #include "EventHandler.h"
-#include "PluginSession.h"
+#include "AbstractPluginSession.h"
 
 #include <QDebug>
 
@@ -55,20 +55,20 @@ void MMapperPlugin::configure() {
 }
 
 
-bool MMapperPlugin::startSession(PluginSession *ps) {
+bool MMapperPlugin::startSession(AbstractPluginSession *ps) {
   _eventHandlers[ps->session()] = new EventHandler(ps, this);
   return true;
 }
 
 
-bool MMapperPlugin::stopSession(PluginSession *ps) {
-  _eventHandlers[ps->session()]->deleteLater();
-  _eventHandlers.remove(ps->session());
-  qDebug() << "* removed MapperManager for session" << ps->session();
+bool MMapperPlugin::stopSession(const QString &session) {
+  _eventHandlers[session]->deleteLater();
+  _eventHandlers.remove(session);
+  qDebug() << "* removed MapperManager for session" << session;
   return true;
 }
 
 
-MClientEventHandler* MMapperPlugin::getEventHandler(QString s) {
+MClientEventHandler* MMapperPlugin::getEventHandler(const QString &s) {
   return _eventHandlers[s].data();
 }
