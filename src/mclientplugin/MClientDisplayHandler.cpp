@@ -21,6 +21,6 @@ const MClientDisplayLocations& MClientDisplayHandler::displayLocations() const {
 }
 
 
-QWidget* MClientDisplayHandler::createWidget(QWidget *parent) {
+QWidget* MClientDisplayHandler::createWidget(QWidget *) {
   return 0;
 }

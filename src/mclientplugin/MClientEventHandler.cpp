@@ -36,7 +36,7 @@ void MClientEventHandler::postSession(QVariant* payload, QStringList tags) {
 
 void MClientEventHandler::postManager(QVariant* payload, QStringList tags, QString session) {
   MClientEvent* me = new MClientEvent(new MClientEventData(payload, tags, session));
-  
+  (void)me;
   //QApplication::postEvent(_pluginSession->getManager(), me);
 }
 
