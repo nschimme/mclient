@@ -202,9 +202,9 @@ bool CommandTask::findCommand(const QString &rawCommand,
 	  qDebug() << "* LOCKING" << i.value()->pluginName();
 	  _semaphore.acquire();
 	  qDebug() << "* UNLOCKING" << i.value()->pluginName();
-	  return true;
 
 	}
+	return true;
 
       } else if (internalCommand(i.key(), arguments)) {
 	qDebug() << "* Internal command " << command << "was run";
