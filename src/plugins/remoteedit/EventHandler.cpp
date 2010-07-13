@@ -34,12 +34,14 @@ void EventHandler::customEvent(QEvent *e) {
 
       _key = me->payload()->toInt();
       _state = RECEIVED_KEY;
+      qDebug() << "* Remote editing protocol got edit key" << _key;
       
     }
     else if (me->dataTypes().contains("XMLEditTitle")) {
       if (_state == RECEIVED_KEY) {
 	_title = me->payload()->toByteArray();
 	_state = RECEIVED_TITLE;
+	qDebug() << "* Remote editing protocol got edit title" << _title;
       }
       else {
 	qWarning() << "! Remote editing protocol never got a key"
@@ -52,6 +54,7 @@ void EventHandler::customEvent(QEvent *e) {
     else if (me->dataTypes().contains("XMLEditBody")) {
       if (_state == RECEIVED_TITLE) {
 	_body = me->payload()->toByteArray();
+	qDebug() << "* Remote editing protocol got edit body" << _body;
 	editSession(_key, _title, _body);
 
       }
@@ -70,12 +73,14 @@ void EventHandler::customEvent(QEvent *e) {
 	_key = -1;
 	_title = me->payload()->toByteArray();
 	_state = RECEIVED_TITLE;
+	qDebug() << "* Remote editing protocol got view title" << _title;
       }
       
     }
     else if (me->dataTypes().contains("XMLViewBody")) {
       if (_state == RECEIVED_TITLE) {
 	_body = me->payload()->toByteArray();
+	qDebug() << "* Remote editing protocol got view body" << _body;
 	viewSession(_key, _title, _body);
 
       }
