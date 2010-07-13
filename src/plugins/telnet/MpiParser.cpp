@@ -85,7 +85,7 @@ bool MpiParser::isMpi(const char &input, QByteArray &cleanData) {
   default:
     switch (_mpiState) {
     case CHECK_MPI:
-      qDebug() << "got data for N!"  nput;
+      qDebug() << "got data for N!" << input;
       _mpiBuffer.append(input);
       break;
     case PARSE_MPI:
@@ -93,7 +93,7 @@ bool MpiParser::isMpi(const char &input, QByteArray &cleanData) {
       _mpiState = PARSE_TITLE;
     case PARSE_BODY:
     case PARSE_TITLE:
-      qDebug() << "got data for N!"  nput;
+      qDebug() << "got data for N!" << input;
       _mpiBuffer.append(input);	
       break;
     case GOT_N:
