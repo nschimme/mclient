@@ -10,6 +10,8 @@ class AbstractPluginSession : public QThread {
   Q_OBJECT
     
     public:
+        AbstractPluginSession(QObject *parent=0) : QThread(parent) {}
+  
         // The short name of the plugin used in hashes and maps
         virtual const QString& session() const=0;
 

@@ -1,7 +1,12 @@
 #!/bin/bash
 declare -i JFLAG
 if [ -e /proc/cpuinfo ]; then
+    # Linux
     PROCESSORS=`grep '^processor\s*:' /proc/cpuinfo | wc -l`
+    JFLAG=$PROCESSORS+1
+elif [ -e /usr/sbin/system_profiler ]; then
+    # Mac OS X
+    PROCESSORS=`system_profiler SPHardwareDataType -detailLevel mini | grep "Total Number Of Cores:" | cut -d : -f 2`
     JFLAG=$PROCESSORS+1
 else
     JFLAG=2

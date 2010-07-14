@@ -27,14 +27,14 @@
 #include <QVariant>
 
 PluginSession::PluginSession(const QString &s, PluginManager *pm)
-  : AbstractPluginSession(), _session(s), _pluginManager(pm) {
+  : AbstractPluginSession(pm), _session(s), _pluginManager(pm) {
 
   // This is usually mume
   _mume = true;
 
   // Create alias and action managers
-  _aliasManager = new AliasManager;
-  _actionManager = new ActionManager;
+  _aliasManager = new AliasManager(this);
+  _actionManager = new ActionManager(this);
 
   // Load aliases and actions (temporarily uses plugin code)
   getManager()->getConfig()->readPluginSettings(_session, "alias");

@@ -26,7 +26,7 @@ PluginManager* PluginManager::getInstance() {
 }
 
 PluginManager::PluginManager(QObject *parent) : QObject(parent) {
-    _configManager = new ConfigManager;
+    _configManager = new ConfigManager(this);
     _mainWindow = new MainWindow(this);
 
     qDebug() << "* All major objects created!";
@@ -88,8 +88,6 @@ PluginManager::~PluginManager() {
 
   // Remove entries in the available plugins list
   _availablePlugins.clear();
-
-  delete _configManager;
 
   qDebug() << "* PluginManager destroyed";
 }

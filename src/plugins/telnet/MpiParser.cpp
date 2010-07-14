@@ -104,7 +104,7 @@ bool MpiParser::isMpi(const char &input, QByteArray &cleanData) {
 	_mpiBuffer.clear();
 	qDebug() << "message too long" << cleanData;
 	_mpiState = NORMAL;
-	break;
+	return false;
 	
       } else if (_mpiBuffer.length() == MPILEN && _mpiBuffer == MPI) {
 	qDebug() << "CHECK_MPI";
@@ -178,6 +178,7 @@ bool MpiParser::parseBody(QByteArray &cleanData) {
     return false;
   }
   _mpiBuffer.clear();
+  _mpiTitle.clear();
   qDebug() << "XML: " << xml;
   cleanData.append(xml);
   qDebug() << cleanData;
