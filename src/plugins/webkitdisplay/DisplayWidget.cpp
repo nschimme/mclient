@@ -80,7 +80,7 @@ void DisplayWidget::appendText(const QString &output) {
     QWebElement doc = page()->mainFrame()->documentElement();
     doc.findFirst(".section").appendInside(output);
 #endif
-    qDebug() << "* Displaying (" << t.elapsed() << "ms):" << output;
+    //qDebug() << "* Displaying (" << t.elapsed() << "ms):" << output;
   }
   
 

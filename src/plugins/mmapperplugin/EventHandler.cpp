@@ -73,10 +73,11 @@ void EventHandler::customEvent(QEvent *e) {
       }
 
       if (display) {
-	// These tags get forwarded to the CommandProcessor
+	// These tags get forwarded to the CommandProcessor for actions/being displayed
+	// TODO: add a boolean for this to be displayed, so actions still trigger
 	MClientEvent* nme = new MClientEvent(*me);
 	QCoreApplication::postEvent(_pluginSession->getCommand(), nme);
-	qDebug() << "* forwarding to CommandProcessor";
+	//qDebug() << "* forwarding to CommandProcessor";
 	
       }
 

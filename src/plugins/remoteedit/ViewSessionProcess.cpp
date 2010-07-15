@@ -54,14 +54,11 @@ ViewSessionProcess::ViewSessionProcess(int key, const QByteArray &title,
     // Well, this might not hurt, might as well attempt it
     putenv(QString("TITLE=%1" + _title).toAscii().data());
 
-#ifndef __APPLE__
     // Start the process!
-    start("emacs", QStringList(fileName));
-#else
     QStringList args;
-    args << "-e" << "emacs" << fileName;
+    args << "-e" << "nano" << fileName;
     start("xterm", args);
-#endif
+
     qDebug() << "* View session" << key << title << "started";
 
   }
