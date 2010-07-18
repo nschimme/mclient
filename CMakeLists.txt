@@ -56,12 +56,5 @@ if (APPLE)
     #set(CMAKE_FIND_ROOT_PATH /Developer/SDKs/MacOSX10.4u.sdk)
 endif (APPLE)
 
-# Visual C++ Parallel Builds
-if ("$ENV{QMAKESPEC}" MATCHES "win32-msvc")
-    message(STATUS "Enabling parallel builds with the -MP CFLAG")
-    SET(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -MP")
-    SET(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -MP")
-endif ("$ENV{QMAKESPEC}" MATCHES "win32-msvc")
-
 # Add the rest of the sources
 add_subdirectory(src)

@@ -51,6 +51,11 @@ REM ####
 :msvc
 ECHO -- Microsoft Visual C++ compiler found
 cmake ../ %DFLAGS% -G "NMake Makefiles"
+FOR /f %%j in ("jom.exe") DO SET JOM_EXISTS=%%~dp$PATH:j
+IF /i "%JOM_EXISTS%" == "" GOTO :nojom
+jom && jom install
+GOTO :success
+:nojom
 nmake /NOLOGO && nmake /NOLOGO install
 GOTO :success
 
