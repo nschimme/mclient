@@ -7,7 +7,7 @@
     padding: 0 0 0 0;
     margin: 0 0 0 0;
     font-family: "Lucidatypewriter", monospace, mono;
-    font-size: 13px;
+    font-size:12px;
   }
 
   div {
@@ -21,6 +21,14 @@
   }
 
   .section {
+    //border: 1px solid yellow;
+    //margin: 1px 1px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-wrap: normal;
+  }
+
+  .prompt {
     //border: 1px solid yellow;
     //margin: 1px 1px;
     overflow: auto;
@@ -107,6 +115,19 @@
   .gray-bg {
     background-color: gray;
   }
+
+  .brightred {
+    color: #ff0000;
+  }
+
+  .brightgreen {
+    color: #00ff00;
+  }
+
+  .brightblue {
+    color: #0000ff;
+  }
+
 </style>
 <script type="text/javascript" src="qrc:/webkitdisplay/jquery.min.js"></script>
 <script type="text/javascript">
@@ -128,6 +149,7 @@ $(function(){
 </div>
 <div class="container">
 <div class="section"></div>
+<div class="prompt">PROMPT</div>
 </div>
 </div>
 </body>

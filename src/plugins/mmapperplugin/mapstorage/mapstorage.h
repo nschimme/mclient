@@ -30,9 +30,8 @@
 #include <QtGui>
 #include "defs.h"
 #include "abstractmapstorage.h"
-#include "oldconnection.h"
-#include "oldroom.h"
 #include "roomfactory.h"
+#include "mapfrontend.h"
 
 class MapStorage : public AbstractMapStorage {
 
@@ -54,11 +53,8 @@ private:
     RoomFactory factory;
     Room * loadRoom(QDataStream & stream, qint32 version);
     void loadExits(Room * room, QDataStream & stream, qint32 version);
-    Room * loadOldRoom(QDataStream & stream, ConnectionList & connectionList);
-    void loadOldConnection(Connection *, QDataStream & stream, RoomList & roomList);
     void loadMark(InfoMark * mark, QDataStream & stream, qint32 version);
     void saveMark(InfoMark * mark, QDataStream & stream);
-    void translateOldConnection(Connection *);
     void saveRoom(const Room * room, QDataStream & stream);
     void saveExits(const Room * room, QDataStream & stream);
     

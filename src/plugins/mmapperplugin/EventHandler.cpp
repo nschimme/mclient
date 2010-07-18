@@ -59,7 +59,7 @@ void EventHandler::customEvent(QEvent *e) {
 	emit name(me->payload()->toString());
 
       } else if (me->dataTypes().contains("XMLDescription")) {
-	display = false;
+	display = true;
 	emit description(me->payload()->toString());
 
       } else if (me->dataTypes().contains("XMLDynamicDescription")) {
