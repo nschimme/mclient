@@ -33,17 +33,20 @@ class RoomSelection;
 class ConnectionSelection;
 class RoomPropertySetter;
 class FindRoomsDlg;
+class ConfigDialog;
 
 class EventHandler;
 class MMapperPluginParser;
 class MainWindow;
 
-class MapperManager: public QThread {
+class MapperManager: public QObject {
   Q_OBJECT
 
   public:
-    MapperManager(EventHandler *, QObject *parent=0);
+    MapperManager(EventHandler *);
     ~MapperManager();
+
+    bool initDisplay(QWidget *parent);
 
     MapWindow *getMapWindow() { return _mapWindow; }
     Mmapper2PathMachine *getPathMachine() { return _pathMachine; }
@@ -88,6 +91,7 @@ class MapperManager: public QThread {
     void onMapMode();
     void onOfflineMode();
     void onFindRoom();
+    void onPreferences();
 
     void newRoomSelection(const RoomSelection*);
     void newConnectionSelection(ConnectionSelection*);
@@ -95,9 +99,6 @@ class MapperManager: public QThread {
   signals:
     void log(const QString&, const QString&);
     void initMapCanvas(MapData*, PrespammedPath*);
-
- protected:
-    void run();
 
   private:
     MapWindow *_mapWindow;

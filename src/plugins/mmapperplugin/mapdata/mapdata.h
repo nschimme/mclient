@@ -52,7 +52,7 @@ class MapData : public MapFrontend
   Q_OBJECT
   friend class CustomAction;
 public:
-  MapData();
+  MapData(bool threaded);
   virtual ~MapData();
 
 

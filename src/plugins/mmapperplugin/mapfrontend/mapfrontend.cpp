@@ -32,10 +32,11 @@ using namespace Qt;
 using namespace std;
 
 
-MapFrontend::MapFrontend(AbstractRoomFactory * in_factory) :
-    greatestUsedId(UINT_MAX),
-    mapLock(QMutex::Recursive),
-    factory(in_factory)
+MapFrontend::MapFrontend(bool threaded, AbstractRoomFactory * in_factory) :
+  Component(threaded), 
+  greatestUsedId(UINT_MAX),
+  mapLock(QMutex::Recursive),
+  factory(in_factory)
 {}
 
 MapFrontend::~MapFrontend()

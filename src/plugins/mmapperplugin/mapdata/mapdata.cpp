@@ -30,8 +30,8 @@
 
 using namespace std;
 
-MapData::MapData() :
-    MapFrontend(new RoomFactory),
+MapData::MapData(bool threaded) :
+    MapFrontend(threaded, new RoomFactory),
     m_dataChanged(false)
 {}
 

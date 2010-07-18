@@ -23,6 +23,7 @@ EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   : MClientDisplayHandler(ps, mp) {
   // Allowable Display Locations
   SET(_displayLocations, DL_FLOAT);
+  _mapper = new MapperManager(this);
 }
 
 
@@ -113,8 +114,7 @@ void EventHandler::customEvent(QEvent *e) {
 
 
 QWidget* EventHandler::createWidget(QWidget *parent) {
-  _mapper = new MapperManager(this, parent);
-  //_mapper->start();
+  _mapper->initDisplay(parent);
   return _mapper->getMapWindow();
 }
 
@@ -315,6 +315,11 @@ const MenuData& EventHandler::createMenus() {
   offlineModeAct->setCheckable(true);
   connect(offlineModeAct, SIGNAL(triggered()), _mapper, SLOT(onOfflineMode()));
 
+  preferencesAct = new QAction(QIcon(":/icons/preferences.png"), tr("MMapper configuration"), this);
+  preferencesAct->setShortcut(tr("Ctrl+P"));
+  preferencesAct->setStatusTip(tr("MMapper2 configuration"));
+  connect(preferencesAct, SIGNAL(triggered()), _mapper, SLOT(onPreferences()));
+
   mapModeActGroup = new QActionGroup(0);
   mapModeActGroup->setExclusive(true);
   mapModeActGroup->addAction(playModeAct);
@@ -347,6 +352,8 @@ const MenuData& EventHandler::createMenus() {
   mapperMenu->addAction(modeConnectionSelectAct);
   mapperMenu->addAction(modeMoveSelectAct);
   mapperMenu->addAction(modeInfoMarkEditAct);
+  mapperMenu->addSeparator();
+  mapperMenu->addAction(preferencesAct);
 
   roomMenu->addAction(findRoomsAct);
   roomMenu->addSeparator();

@@ -80,7 +80,7 @@ protected:
 
 
 public:
-  MapFrontend(AbstractRoomFactory * factory);
+  MapFrontend(bool threaded, AbstractRoomFactory * factory);
   virtual ~MapFrontend();
   virtual void clear();
   void removeSecretDoorNames();

@@ -91,6 +91,7 @@ public slots:
 	QPointer<QAction> connectToNeighboursRoomSelectionAct;
 
 	QPointer<QAction> findRoomsAct;
+	QPointer<QAction> preferencesAct;
 
 	QPointer<QAction> forceRoomAct;
 	QPointer<QAction> releaseAllPathsAct;

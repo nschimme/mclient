@@ -99,7 +99,7 @@ void EventHandler::customEvent(QEvent *e) {
 
     }
     else if (me->dataTypes().contains("SocketConnected")) {
-      //if (_pluginSession->isMUME()) sendMUMEIdentifyRequest();
+      if (_pluginSession->isMUME()) sendMUMEIdentifyRequest();
 
     }
   }

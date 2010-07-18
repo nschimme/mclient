@@ -56,8 +56,13 @@ ViewSessionProcess::ViewSessionProcess(int key, const QByteArray &title,
 
     // Start the process!
     QStringList args;
+#ifdef Q_WS_WIN
+    args << fileName;
+    start("notepad", args);
+#else
     args << "-e" << "nano" << fileName;
     start("xterm", args);
+#endif
 
     qDebug() << "* View session" << key << title << "started";
 
