@@ -62,7 +62,7 @@ void DisplayParser::parseDisplayData(QString text) {
   output.append(text.midRef(old));
 
   // Replace URLs with links
-  QRegExp urlRx("(\\b(https?|ftp|file):\\/\\/[a-zA-Z0-9+&@#\/%?=~_|!:,.;]*[a-zA-Z0-9+&@#\\/%=~_|])");
+  QRegExp urlRx("(\\b(https?|ftp|file):\\/\\/[a-zA-Z0-9+&@#\\/%?=~_|!:,.;]*[a-zA-Z0-9+&@#\\/%=~_|])");
   output.replace(urlRx, "<a href=\"\\1\" target=\"_blank\">\\1</a>");
 
   emit displayText(output);
