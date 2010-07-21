@@ -1,27 +1,27 @@
 /************************************************************************
 **
-** Authors:   Ulf Hermann <ulfonk_mennhar@gmx.de> (Alve), 
+** Authors:   Ulf Hermann <ulfonk_mennhar@gmx.de> (Alve),
 **            Marek Krejza <krejza@gmail.com> (Caligor)
 **
-** This file is part of the MMapper2 project. 
-** Maintained by Marek Krejza <krejza@gmail.com>
+** This file is part of the MMapper project. 
+** Maintained by Nils Schimmelmann <nschimme@gmail.com>
 **
-** Copyright: See COPYING file that comes with this distribution
+** This program is free software; you can redistribute it and/or
+** modify it under the terms of the GNU General Public License
+** as published by the Free Software Foundation; either version 2
+** of the License, or (at your option) any later version.
 **
-** This file may be used under the terms of the GNU General Public
-** License version 2.0 as published by the Free Software Foundation
-** and appearing in the file COPYING included in the packaging of
-** this file.  
+** This program is distributed in the hope that it will be useful,
+** but WITHOUT ANY WARRANTY; without even the implied warranty of
+** MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+** GNU General Public License for more details.
 **
-** THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-** EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-** MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-** NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-** LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-** OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-** WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+** You should have received a copy of the GNU General Public License
+** along with this program; if not, write to the:
+** Free Software Foundation, Inc.
+** 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 **
-*************************************************************************/
+************************************************************************/
 
 #include "roomfactory.h"
 #include "mmapper2exit.h"
@@ -190,7 +190,7 @@ ComparisonResult RoomFactory::compareWeakProps(const Room * room, const ParseEve
       if (mFlags & EF_NO_MATCH) continue;
       else
       {
-        ExitsFlagsType eThisExit = eFlags >> (dir * 3);
+        ExitsFlagsType eThisExit = eFlags >> (dir * 4);
         ExitsFlagsType diff = (eThisExit ^ mFlags);
         if (diff & (EF_EXIT | EF_DOOR))
         {
@@ -198,10 +198,10 @@ ComparisonResult RoomFactory::compareWeakProps(const Room * room, const ParseEve
           {
             if (!tolerance)
             {
-              if (!(mFlags & EF_EXIT) && (eThisExit & EF_DOOR))
-                tolerance = true;
-              else if (mFlags & EF_DOOR)
-                tolerance = true;
+              if (!(mFlags & EF_EXIT) && (eThisExit & EF_DOOR)) // We have no exit on record and there is a secret door
+		tolerance = true;
+	      else if (mFlags & EF_DOOR) // We have a secret door on record
+		tolerance = true;
               else return CR_DIFFERENT;
             }
             else return CR_DIFFERENT;
@@ -209,6 +209,8 @@ ComparisonResult RoomFactory::compareWeakProps(const Room * room, const ParseEve
           else different = true;
         }
 	else if (diff & EF_ROAD)
+	  tolerance = true;
+	else if (diff & EF_CLIMB)
 	  tolerance = true;
       }
     }
@@ -231,15 +233,15 @@ void RoomFactory::update(Room * room, const ParseEvent * event) const
       for (int dir = 0; dir < 6; ++dir)
       {
 
-        ExitFlags mFlags = (eFlags >> (dir * 3) & (EF_EXIT | EF_DOOR | EF_ROAD));
+        ExitFlags mFlags = (eFlags >> (dir * 4) & (EF_EXIT | EF_DOOR | EF_ROAD | EF_CLIMB));
 
         Exit & e = room->exit(dir);
-        if (getFlags(e) & EF_DOOR && !(mFlags & EF_DOOR))
+        if (getFlags(e) & EF_DOOR && !(mFlags & EF_DOOR)) // We have a secret door on record
         {
           mFlags |= EF_DOOR;
           mFlags |= EF_EXIT;
         }
-        if ((mFlags & EF_DOOR) && (mFlags & EF_ROAD))
+        if ((mFlags & EF_DOOR) && (mFlags & EF_ROAD)) // TODO: Door and road is confusing??
         {
           mFlags |= EF_NO_MATCH;
         }
@@ -251,7 +253,7 @@ void RoomFactory::update(Room * room, const ParseEvent * event) const
       for (int dir = 0; dir < 6; ++dir)
       {
         Exit & e = room->exit(dir);
-        ExitFlags mFlags = (eFlags >> (dir * 3) & (EF_EXIT | EF_DOOR | EF_ROAD));
+        ExitFlags mFlags = (eFlags >> (dir * 4) & (EF_EXIT | EF_DOOR | EF_ROAD | EF_CLIMB));
         updateExit(e, mFlags);
       }
     }

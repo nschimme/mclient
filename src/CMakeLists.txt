@@ -35,7 +35,7 @@ if (MINGW)
     QT_QUERY_QMAKE(WINDRES_EXECUTABLE "QMAKE_RC")
     if (WINDRES_EXECUTABLE)
         message(STATUS "Found windres: ${WINDRES_EXECUTABLE}")
-        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mmapper2_rc.o
+        add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o
                            COMMAND ${WINDRES_EXECUTABLE}
                                            -I ${CMAKE_CURRENT_SOURCE_DIR}
                                            -i ${CMAKE_CURRENT_SOURCE_DIR}/resources/win32/mclient.rc
@@ -69,10 +69,10 @@ QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
 # Build the executable
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(EXECUTABLE_FLAGS WIN32)
+    set(EXECUTABLE_FLAGS WIN32 MACOSX_BUNDLE)
 endif (CMAKE_BUILD_TYPE STREQUAL "Release")
 
-add_executable(mclient ${EXECUTABLE_FLAGS} #MACOSX_BUNDLE
+add_executable(mclient ${EXECUTABLE_FLAGS}
     ${mclient_SRCS}
     ${mclient_MOC_SRCS}
     ${mclient_UIS_H}
@@ -83,6 +83,8 @@ add_executable(mclient ${EXECUTABLE_FLAGS} #MACOSX_BUNDLE
 target_link_libraries(mclient
     ${QT_QTMAIN_LIBRARY}
     ${QT_LIBRARIES}
+    ${OPENGL_gl_LIBRARY}
+    ${ZLIB_LIBRARIES}
     clientcore
 )
 

@@ -120,25 +120,33 @@ void AbstractParser::parsePrompt(QString& prompt){
 
 void AbstractParser::parseExits(QString& str)
 {
-  m_exitsFlags = EXITS_FLAGS_VALID;
-  
-  //const char* data = str.toAscii().data();
+  m_exitsFlags = 0;
   bool doors=FALSE;
   bool road=FALSE;
+  bool climb=FALSE;
+  bool portal=FALSE;
+
   int length = str.length();
-  
   for (int i=7; i<length; i++){
     switch ((int)(str.at(i).toAscii())){
     case 40: doors=true;break;    // (
     case 91: doors=true;break;    // [
+    case 35: doors=true;break;    // #
     case 61: road=true;break;     // =
     case 45: road=true;break;     // -
-      
+    case 47: climb=true;break;    // //
+    case 92: climb=true;break;    // \
+    case 123: portal=true;break;  // {
+
     case 110:  // n
       if ( (i+2)<length && (str.at(i+2).toAscii()) == 'r') //north
         {
           i+=5;
-          if (doors){
+	  if (climb) {
+	    SET(m_exitsFlags,CLIMB_N);
+            SET(m_exitsFlags,EXIT_N);
+	    climb=false;
+	  } else if (doors){
             SET(m_exitsFlags,DOOR_N);
             SET(m_exitsFlags,EXIT_N);
             doors=false;
@@ -152,10 +160,14 @@ void AbstractParser::parseExits(QString& str)
       else
 	i+=4;  //none
       break;
-      
+
     case 115:  // s
       i+=5;
-      if (doors){
+      if (climb) {
+	SET(m_exitsFlags,CLIMB_S);
+	SET(m_exitsFlags,EXIT_S);
+	climb=false;
+      } else if (doors){
 	SET(m_exitsFlags,DOOR_S);
 	SET(m_exitsFlags,EXIT_S);
 	doors=false;
@@ -166,10 +178,14 @@ void AbstractParser::parseExits(QString& str)
 	road=false;
       }
       break;
-      
+
     case 101:  // e
       i+=4;
-      if (doors){
+      if (climb) {
+	SET(m_exitsFlags,CLIMB_E);
+	SET(m_exitsFlags,EXIT_E);
+	climb=false;
+      } else if (doors){
 	SET(m_exitsFlags,DOOR_E);
 	SET(m_exitsFlags,EXIT_E);
 	doors=false;
@@ -180,10 +196,14 @@ void AbstractParser::parseExits(QString& str)
 	road=false;
       }
       break;
-      
+
     case 119:  // w
       i+=4;
-      if (doors){
+      if (climb) {
+	SET(m_exitsFlags,CLIMB_W);
+	SET(m_exitsFlags,EXIT_W);
+	climb=false;
+      } else if (doors){
 	SET(m_exitsFlags,DOOR_W);
 	SET(m_exitsFlags,EXIT_W);
 	doors=false;
@@ -194,10 +214,14 @@ void AbstractParser::parseExits(QString& str)
 	road=false;
       }
       break;
-      
+
     case 117:  // u
       i+=2;
-      if (doors){
+      if (climb) {
+	SET(m_exitsFlags,CLIMB_U);
+	SET(m_exitsFlags,EXIT_U);
+	climb=false;
+      } else if (doors){
 	SET(m_exitsFlags,DOOR_U);
 	SET(m_exitsFlags,EXIT_U);
 	doors=false;
@@ -208,10 +232,14 @@ void AbstractParser::parseExits(QString& str)
 	road=false;
       }
       break;
-      
+
     case 100:  // d
       i+=4;
-      if (doors){
+      if (climb) {
+	SET(m_exitsFlags,CLIMB_D);
+	SET(m_exitsFlags,EXIT_D);
+	climb=false;
+      } else if (doors){
 	SET(m_exitsFlags,DOOR_D);
 	SET(m_exitsFlags,EXIT_D);
 	doors=false;
@@ -226,10 +254,8 @@ void AbstractParser::parseExits(QString& str)
     }
   }
 
-  // if we can't parse the exit then its invalid
-  if (m_exitsFlags == EXITS_FLAGS_VALID) {
-    m_exitsFlags = 0;
-  }
+  // If there is't a portal then we can trust the exits
+  if (!portal) SET(m_exitsFlags, EXITS_FLAGS_VALID);
 
   Coordinate c;
   QByteArray dn = emptyByteArray;
