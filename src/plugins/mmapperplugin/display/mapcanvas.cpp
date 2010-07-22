@@ -1463,6 +1463,91 @@ MapCanvas::~MapCanvas()
     glCallList(m_room_gllist);
   }
 
+  void MapCanvas::drawRoomDoorName(const Room *sourceRoom, uint sourceDir, const Room *targetRoom, uint targetDir)
+  {
+    assert(sourceRoom != NULL);
+    assert(targetRoom != NULL);
+
+    qint32 srcX = sourceRoom->getPosition().x;
+    qint32 srcY = sourceRoom->getPosition().y;
+    qint32 tarX = targetRoom->getPosition().x;
+    qint32 tarY = targetRoom->getPosition().y;
+    qint32 dX = srcX - tarX;
+    qint32 dY = srcY - tarY;
+
+    QString name;
+    bool together = false;
+
+    if (ISSET(getFlags(targetRoom->exit(targetDir)), EF_DOOR) && // the other room has a door?
+        !getDoorName(targetRoom->exit(targetDir)).isEmpty() && // has a door on both sides...
+        abs(dX) <= 1 && abs(dY) <= 1) // the door is close by!
+    {
+      // skip the other direction since we're printing these together
+      if (sourceDir % 2 == 1)
+        return;
+
+      together = true;
+
+      // no need for duplicating names (its spammy)
+      const QString &sourceName = getDoorName(sourceRoom->exit(sourceDir));
+      const QString &targetName = getDoorName(targetRoom->exit(targetDir));
+      if (sourceName != targetName)
+        name =  sourceName + "/" + targetName;
+      else
+        name = sourceName;
+    }
+    else
+      name = getDoorName(sourceRoom->exit(sourceDir));
+
+    glPushMatrix();
+
+    // box
+    qreal width = m_glFontMetrics->width(name) * 0.022f / m_scaleFactor;
+    qreal height = m_glFontMetrics->height() * 0.007f / m_scaleFactor;
+
+    if (together)
+      glTranslated(srcX-(width/2.0)-(dX*0.5), srcY-0.5-(dY*0.5), 0.0);
+    else
+    {
+      switch (sourceDir)
+      {
+        case ED_NORTH:
+          glTranslated(srcX-(width/2.0), srcY-0.65, 0.0);
+          break;
+        case ED_SOUTH:
+          glTranslated(srcX-(width/2.0), srcY-0.15, 0.0);
+          break;
+        case ED_WEST:
+          glTranslated(srcX-(width/2.0), srcY-0.5, 0.0);
+          break;
+        case ED_EAST:
+          glTranslated(srcX-(width/2.0), srcY-0.35, 0.0);
+          break;
+        case ED_UP:
+          glTranslated(srcX-(width/2.0), srcY-0.85, 0.0);
+          break;
+        case ED_DOWN:
+          glTranslated(srcX-(width/2.0), srcY-0.0, 0.0);
+      };
+    }
+    glColor4d(0, 0, 0, 0.3);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glBegin(GL_POLYGON);
+    glVertex3d(0.0, 0.0, 1.0);
+    glVertex3d(0.0, 0.25+height, 1.0);
+    glVertex3d(0.2+width, 0.25+height, 1.0);
+    glVertex3d(0.2+width, 0.0, 1.0);
+    glEnd();
+    glDisable(GL_BLEND);
+
+    // text
+    glColor4d(1.0, 1.0, 1.0, 1.0);
+    renderText (0.1, 0.25, 1.2f, name, *m_glFont );
+    glEnable(GL_DEPTH_TEST);
+
+    glPopMatrix();
+  }
 
   void MapCanvas::drawRoom(const Room *room, const std::vector<Room *> & rooms, const std::vector<std::set<RoomRecipient *> > & locks)
   {
@@ -2010,8 +2095,7 @@ MapCanvas::~MapCanvas()
 
     if (m_scaleFactor >= 0.15)
     {
-
-           //draw connections
+      //draw connections and doors
       uint sourceId = room->getId();
       uint targetId;
       const Room *targetRoom;
@@ -2024,14 +2108,14 @@ MapCanvas::~MapCanvas()
       {
         uint targetDir = opposite(i);
         const Exit & sourceExit = exitslist[i];
-               //outgoing connections
+        //outgoing connections
         std::set<uint>::const_iterator itOut = sourceExit.outBegin();
         while (itOut != sourceExit.outEnd()) {
           targetId = *itOut;
           targetRoom = rooms[targetId];
           rx = targetRoom->getPosition().x;
           ry = targetRoom->getPosition().y;
-          if ((targetId >= sourceId) || // draw exits if targetId >= sourceId ...
+          if ( (targetId >= sourceId) || // draw exits if targetId >= sourceId ...
                ( ( ( rx < m_visibleX1-1) || (rx > m_visibleX2+1) ) ||  // or if target room is not visible
                ( ( ry < m_visibleY1-1) || (ry > m_visibleY2+1) ) ) )
           {
@@ -2063,8 +2147,6 @@ MapCanvas::~MapCanvas()
             if (oneway)
               drawConnection( room, targetRoom, (ExitDirection)i, (ExitDirection)(opposite(i)), true, ISSET(getFlags(sourceExit),EF_EXIT) );
           }
-          itOut++;
-        }
 
                //incoming connections (only for oneway connections from rooms, that are not visible)
         std::set<uint>::const_iterator itIn = exitslist[i].inBegin();
@@ -2084,6 +2166,29 @@ MapCanvas::~MapCanvas()
             }
           }
           itIn++;
+        }
+
+         // draw door names
+        if (Config().m_drawDoorNames && m_scaleFactor >= 0.40 &&
+            ISSET(getFlags(room->exit((ExitDirection)i)), EF_DOOR) &&
+            !getDoorName(room->exit((ExitDirection)i)).isEmpty())
+        {
+          if ( targetRoom->exit(opposite(i)).containsOut(sourceId))
+            targetDir = opposite(i);
+          else
+          {
+            for (int j = 0; j < 7; ++j) {
+              if (targetRoom->exit(j).containsOut(sourceId))
+              {
+                targetDir = j;
+                break;
+              }
+            }
+          }
+          drawRoomDoorName(room, i, targetRoom, targetDir);
+        }
+
+        itOut++;
         }
       }
     }

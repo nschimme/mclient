@@ -78,7 +78,7 @@ void EventHandler::customEvent(QEvent *e) {
       else if (s.startsWith("SocketConnected")) {
 	if (_pluginSession->isMUME()) { 
 	  qDebug() << "* sent mume MPI XML request";
-	  QVariant* qv = new QVariant(QByteArray("~$#EX\n1"));
+	  QVariant* qv = new QVariant(QByteArray("~$#EX1\n1"));
 	  QStringList sl("SendToSocketData");
 	  postSession(qv, sl);
 

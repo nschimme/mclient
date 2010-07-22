@@ -70,6 +70,7 @@ class MapCanvas : public QGLWidget//, public RoomRecipient
       CMM_CREATE_ROOMS, CMM_CREATE_CONNECTIONS, CMM_CREATE_ONEWAY_CONNECTIONS, CMM_EDIT_INFOMARKS};
 
       void drawRoom(const Room* room, const std::vector<Room *> & rooms, const std::vector<std::set<RoomRecipient *> > & locks);
+      void drawRoomDoorName(const Room *sourceRoom, uint sourceDir, const Room *targetRoom, uint targetDir);
 
     void init(MapData *mapData, PrespammedPath* pp);      
 
