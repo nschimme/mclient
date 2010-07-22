@@ -29,7 +29,6 @@ EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
 
 
 EventHandler::~EventHandler() {
-  _scriptEngine->deleteLater();
   qDebug() << "* removed QtScriptPlugin for session"
 	   << _pluginSession->session();
 }

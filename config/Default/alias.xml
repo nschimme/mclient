@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<aliases size="21" version="1.0">
+<aliases size="17" version="1.0">
 <array1 name="/belt"><command>#split rem belt;put belt backpack;get 2.belt backpack;wear belt;wear all belt</command></array1>
 <array2 name="/leather"><command>#split rem all.metal;wear shield;get all.leather backpack;wear all.leather;put all.metal backpack</command></array2>
 <array3 name="/metal"><command>#split rem all.leather;get all.metal backpack;wear all.metal;put all.leather backpack</command></array3>
@@ -21,24 +21,4 @@
     info XPCOUNTER: %x %t %X %T %L.
     </command>
 </array17>
-<array18 name="xpcalc" group="XP Counter">
-    <command>
-    #script xpcnt_gain_xp = $1 - xpcnt_old_xp; xpcnt_session_xp += xpcnt_gain_xp; xpcnt_gain_tp = $2 - xpcnt_old_tp; xpcnt_session_tp += xpcnt_gain_tp; xpcnt_old_xp = $1; xpcnt_old_tp = $2; xpcnt_need_xp = $3; xpcnt_need_tp = $4;
-    </command>
-</array18>
-<array19 name="xpprint" group="XP Counter">
-    <command>
-    #script print("\r - Gained:  xp:" + xpcnt_gain_xp + "\ttp:" + xpcnt_gain_tp + "\n"); print(" - Needed:  xp:" + xpcnt_need_xp + "\ttp:" + xpcnt_need_tp + "\n"); print(" - Session: xp:" + xpcnt_session_xp + "\ttp:" + xpcnt_session_tp + "  \tSession: " + xpcnt_session_time + " min.\n"); print(" - Rate:    xp:" + xpcnt_hour_xp + "\ttp:" + xpcnt_hour_tp + "\n");
-    </command>
-</array19>
-<array20 name="xprate" group="XP Counter">
-    <command>
-    #script with (Math) {xpcnt_session_time = $1; xpcnt_hour_xp = floor(60 * xpcnt_session_xp/xpcnt_session_time); xpcnt_hour_tp = floor(60 * xpcnt_session_tp/xpcnt_session_time);}
-    </command>
-</array20>
-<array21 name="statbar" group="XP Counter">
-    <command>
-    #script with (Math) {print("Trip: " + xpcnt_session_xp + " xp, " + xpcnt_session_tp + " tp; " + floor(xpcnt_hour_xp/1000) + "k xp/hr, " + xpcnt_hour_tp + " tp/hr.\n");}
-    </command>
-</array21>
 </aliases>

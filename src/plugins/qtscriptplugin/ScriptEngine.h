@@ -21,7 +21,7 @@ class ScriptEngine : public QScriptEngine {
 	void parseInput(const QString&);
 	void displayData(const QString&);
 
-protected slots:
+public slots:
         bool evaluateExpression(const QString&);
         bool variableCommand(const QString&);
 	void handleException(const QScriptValue &value);

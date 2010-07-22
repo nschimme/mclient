@@ -18,14 +18,12 @@
    <array4 label="stat_xp" pattern="^Needed: (?:\033\[[^m]*m)*([0-9,]+)(?:\033\[[^m]*m)* xp, (?:\033\[[^m]*m)*([0-9,]+)(?:\033\[[^m]*m)* tp.">
       <command>
       #alias tnl=emote needs $1 xp and $2 tp to level.
-      statbar
+      #script xpcnt.statbar();
       </command>
    </array4>
    <array5 label="xpcounter1" pattern="^XPCOUNTER: (\d+) (\d+) (\d+) (\d+) (\d+)\." group="XP Counter" substitute="true">
       <command>
-      xpcalc $1 $2 $3 $4
-      xprate $5
-      xpprint
+	#script xpcnt.calc($1, $2, $3, $4); xpcnt.rate($5); xpcnt.display();
       </command>
    </array5>
    <array6 label="xpcounter2" pattern="^You (receive your share of|feel more) experienced?\." group="XP Counter">
@@ -35,13 +33,12 @@
    </array6>
    <array7 label="xpcounter3" pattern="^(Welcome to the land of Middle-earth|Reconnecting)\." group="XP Counter">
       <command>
-      info This ranks you as %M. XP: %x TP: %t
-      #script xpcnt_session_xp=0; xpcnt_session_tp=0; xpcnt_session_time=1; xpcnt_hour_xp=0;  xpcnt_hour_tp=0;
+	info This ranks you as %M. XP: %x TP: %t
       </command>
    </array7>
    <array8 label="xpcounter4" pattern="^This ranks you as (.+). XP: (\d+) TP: (\d+)" group="XP Counter" substitute="true">
       <command>
-      #script name="$1"; xpcnt_old_xp=$2; xpcnt_old_tp=$3;
+	#script name="$1"; xpcnt = new function() { var sessionXp=0; var sessionTp=0; var sessionTime=1; var hourXp=0; var hourTp=0; var oldXp=$2; var oldTp=$3; var gainXp=0; var gainTp=0; var needXp=0; var needTp=0;this.calc = function(newXp, newTp, newNeedXp, newNeedTp) { gainXp = newXp - oldXp; sessionXp += gainXp; gainTp = newTp - oldTp; sessionTp += gainTp; oldXp = newXp; oldTp = newTp; needXp = newNeedXp; needTp = newNeedTp; }; this.rate = function(newSessionTime) {sessionTime = newSessionTime; hourXp = Math.floor(60 * sessionXp/sessionTime); hourTp = Math.floor(60 * sessionTp/sessionTime);}; this.statbar = function() {print("Trip: " + sessionXp + " xp, " + sessionTp + " tp; " + Math.floor(hourXp/1000) + "k xp/hr, " + hourTp + " tp/hr.\n");}; this.display = function() {print("\r - Gained:  xp:" + gainXp + "\ttp:" + gainTp + "\n"); print(" - Needed:  xp:" + needXp + "\ttp:" + needTp + "\n"); print(" - Session: xp:" + sessionXp + "\ttp:" + sessionTp + "  \tSession: " + sessionTime + " min.\n"); print(" - Rate:    xp:" + hourXp + "\ttp:" + hourTp + "\n");} };
       </command>
    </array8>
 </actions>

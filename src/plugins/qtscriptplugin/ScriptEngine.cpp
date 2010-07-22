@@ -1,4 +1,5 @@
 #include "ScriptEngine.h"
+#include "TimerClass.h"
 
 #include <QApplication>
 #include <QDebug>
@@ -60,6 +61,9 @@ ScriptEngine::ScriptEngine(QObject* parent) : QScriptEngine(parent) {
   globalObject().setProperty("send", sendFunction, functionFlags);
   QScriptValue emulateFunction = newFunction(emulate);
   globalObject().setProperty("emulate", emulateFunction, functionFlags);
+
+  TimerClass *timerClass = new TimerClass(this);
+  globalObject().setProperty("Timer", timerClass->constructor());
   
   // Debugging Information
   qDebug() << "* ScriptEngine thread:" << this->thread();
