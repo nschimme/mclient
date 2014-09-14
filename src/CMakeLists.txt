@@ -5,19 +5,13 @@ add_definitions(-DQT_SHARED)
 
 # Source files
 set(mclient_SRCS main.cpp)
-foreach(dir)
+foreach(dir display config)
   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.cpp")
   set(mclient_SRCS ${mclient_SRCS} ${files})
 endforeach()
 
-# Header Files
-foreach(dir)
-  file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.h")
-  set(mclient_MOC_HDRS ${files})
-endforeach()
-
 # UI Files
-foreach(dir clientcore/display)
+foreach(dir display)
   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.ui")
   set(mclient_UIS ${files})
 endforeach()
@@ -57,14 +51,12 @@ if (APPLE)
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    clientcore # TODO: Remove some of this
-    clientcore/command
-    clientcore/display
-    mclientplugin
+    ${CMAKE_CURRENT_SOURCE_DIR}/display
+    display
+    config
 )
   
 QT5_WRAP_UI(mclient_UIS_H ${mclient_UIS})
-QT5_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
 QT5_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
 # Build the executable
@@ -83,17 +75,18 @@ add_executable(mclient ${EXECUTABLE_FLAGS}
 target_link_libraries(mclient
     Qt5::Widgets
     Qt5::Core
+    Qt5::Xml
+    Qt5::WebKitWidgets
     ${OPENGLGL_LIBRARIES}
     ${ZLIB_LIBRARIES}
-    clientcore
 )
 
 # mClient's Core Engine
-add_subdirectory(clientcore)
-add_subdirectory(mclientplugin)
+#add_subdirectory(clientcore)
+#add_subdirectory(mclientplugin)
 
 # Various Plugins
-add_subdirectory(plugins)
+#add_subdirectory(plugins)
 
 # Installation Location
 if (NOT DEFINED ${MCLIENT_BIN_DIR})

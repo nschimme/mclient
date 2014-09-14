@@ -17,31 +17,9 @@
 #include "WindowActionManager.h"
 #include "MainWindow.h"
 
-#include "PluginSession.h"
-#include "PluginManager.h"
-#include "MClientEvent.h"
-#include "SmartMenuBar.h"
-
-WindowActionManager* WindowActionManager::_pinstance = 0;
-
-WindowActionManager *WindowActionManager::instance(MainWindow *parent) {
-  if(!_pinstance) {
-    _pinstance = new WindowActionManager(parent);
-    qDebug("Action Manager created.");
-  }
-  return _pinstance;
-}
-
-
-void WindowActionManager::destroy() {
-  delete this;
-}
-
-
 WindowActionManager::WindowActionManager(MainWindow *parent) {
-  _mainWindow = parent;
+    _mainWindow = parent;
 }
-
 
 WindowActionManager::~WindowActionManager() {
 }
@@ -140,10 +118,7 @@ void WindowActionManager::disableActions(bool value)
 }
 
 
-void WindowActionManager::createMenus() {
-  SmartMenuBar *menuBar = static_cast<SmartMenuBar*>(_mainWindow->menuBar());
-  //QMenuBar *menuBar = _mainWindow->menuBar();
-
+void WindowActionManager::createMenus(QMenuBar *menuBar) {
   fileMenu = menuBar->addMenu(tr("&File"));
   fileMenu->addSeparator();
   fileMenu->addAction(exitAct);
@@ -249,6 +224,7 @@ void WindowActionManager::clientHelp() {
 
 void WindowActionManager::postEvent(QVariant *payload, const QStringList& tags) {
   // TODO: Replace with EngineEvents
+    /*
   QString session = _mainWindow->currentSession();
   PluginSession *ps
     = _mainWindow->getPluginManager()->getPluginSession(session);
@@ -256,6 +232,7 @@ void WindowActionManager::postEvent(QVariant *payload, const QStringList& tags) 
   MClientEvent *me
     = new MClientEvent(new MClientEventData(payload, tags, session));
   QCoreApplication::postEvent(ps, me);
+  */
 }
 
 void WindowActionManager::openMumeWebsite()

@@ -4,9 +4,9 @@ project(mclient)
 # Set up Qt5
 find_package(Qt5Core REQUIRED)
 find_package(Qt5Widgets REQUIRED)
-find_package(ZLIB REQUIRED)
-find_package(OpenGL REQUIRED)
-find_package(Qt5OpenGL REQUIRED)
+#find_package(ZLIB REQUIRED)
+#find_package(OpenGL REQUIRED)
+#find_package(Qt5OpenGL REQUIRED)
 find_package(Qt5Network REQUIRED)
 find_package(Qt5Xml REQUIRED)
 find_package(Qt5WebkitWidgets REQUIRED)
@@ -15,7 +15,7 @@ find_package(Qt5Script REQUIRED)
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 # Instruct CMake to run moc automatically when needed.
-#set(CMAKE_AUTOMOC ON)
+set(CMAKE_AUTOMOC ON)
 
 # mClient's version number
 set(MCLIENT_VERSION "pre-release alpha")

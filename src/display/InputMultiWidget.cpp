@@ -1,4 +1,4 @@
-#include "InputWidget.h"
+#include "InputMultiWidget.h"
 
 #include <QDebug>
 #include <QKeyEvent>
@@ -14,7 +14,7 @@
 // Word History
 #include <QStringList>
 
-InputWidget::InputWidget(QWidget* parent) 
+InputMultiWidget::InputMultiWidget(QWidget* parent)
     : QPlainTextEdit(parent) {
 
   // Size Policy
@@ -45,18 +45,18 @@ InputWidget::InputWidget(QWidget* parent)
 }
 
 
-QSize InputWidget::sizeHint() const {
+QSize InputMultiWidget::sizeHint() const {
   return minimumSize();
 }
 
 
-InputWidget::~InputWidget() {
+InputMultiWidget::~InputMultiWidget() {
   delete _lineIterator;
   delete _tabIterator;
 }
 
 
-void InputWidget::keyPressEvent(QKeyEvent *event) {
+void InputMultiWidget::keyPressEvent(QKeyEvent *event) {
   if (event->key() !=  Qt::Key_Tab) _tabState = NORMAL;
 
   // Check for key bindings
@@ -124,7 +124,7 @@ void InputWidget::keyPressEvent(QKeyEvent *event) {
 }
 
 
-void InputWidget::keypadMovement(int key) {
+void InputMultiWidget::keypadMovement(int key) {
   switch (key) {
   case Qt::Key_Up:
     emit sendUserInput("north", _echoMode);
@@ -167,7 +167,7 @@ void InputWidget::keypadMovement(int key) {
 }
 
 
-void InputWidget::wordHistory(int key) {
+void InputMultiWidget::wordHistory(int key) {
   QTextCursor cursor = textCursor();
   switch (key) {
   case Qt::Key_Up:
@@ -191,7 +191,7 @@ void InputWidget::wordHistory(int key) {
 }
 
 
-void InputWidget::detectedLineChange() {
+void InputMultiWidget::detectedLineChange() {
   /*
   qDebug() << "InputWidget resizing!";
   QSize size = document()->documentLayout()->documentSize().toSize();
@@ -204,7 +204,7 @@ void InputWidget::detectedLineChange() {
 }
 
 
-void InputWidget::gotInput() {
+void InputMultiWidget::gotInput() {
   selectAll();
   emit sendUserInput(toPlainText(), _echoMode);
   if (_echoMode) {
@@ -216,7 +216,7 @@ void InputWidget::gotInput() {
 }
 
 
-void InputWidget::toggleEchoMode(bool b) {
+void InputMultiWidget::toggleEchoMode(bool b) {
   _echoMode = b;
   clear();
   if (_echoMode) {
@@ -230,7 +230,7 @@ void InputWidget::toggleEchoMode(bool b) {
 }
 
 
-void InputWidget::addLineHistory(const QString &string) {
+void InputMultiWidget::addLineHistory(const QString &string) {
   if (!string.isEmpty()) {
     qDebug() << "* adding line history:" << string;
     _lineHistory << string;
@@ -240,13 +240,13 @@ void InputWidget::addLineHistory(const QString &string) {
 }
 
 
-void InputWidget::addTabHistory(const QString &string) {
+void InputMultiWidget::addTabHistory(const QString &string) {
   QStringList list = string.split(QRegExp("\\W+"), QString::SkipEmptyParts);
   addTabHistory(list);
 }
 
 
-void InputWidget::addTabHistory(const QStringList &list) {
+void InputMultiWidget::addTabHistory(const QStringList &list) {
   foreach (QString word, list)
     if (word.length() > 3) {
       qDebug() << "* adding word history:" << word;
@@ -257,7 +257,7 @@ void InputWidget::addTabHistory(const QStringList &list) {
 }
 
 
-void InputWidget::forwardHistory() {
+void InputMultiWidget::forwardHistory() {
   if (!_lineIterator->hasNext()) {
     qDebug() << "* no newer word history to go to";
     clear();
@@ -283,7 +283,7 @@ void InputWidget::forwardHistory() {
 }
 
 
-void InputWidget::backwardHistory() {
+void InputMultiWidget::backwardHistory() {
   if (!_lineIterator->hasPrevious()) {
     qDebug() << "* no older word history to go to";
     return ;
@@ -308,7 +308,7 @@ void InputWidget::backwardHistory() {
 }
 
 
-void InputWidget::showCommandHistory() {
+void InputMultiWidget::showCommandHistory() {
   QString message("#history:\r\n");
   int i = 1;
   foreach (QString s, _lineHistory)
@@ -321,7 +321,7 @@ void InputWidget::showCommandHistory() {
 }
 
 
-void InputWidget::tabWord() {
+void InputMultiWidget::tabWord() {
   QTextCursor current = textCursor();
   current.select(QTextCursor::WordUnderCursor);
   switch (_tabState) {

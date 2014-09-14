@@ -27,29 +27,29 @@
 #include <QPointer>
 #include <QPluginLoader>
 
-class PluginManager;
-class PluginSession;
-class QuickConnectDialog;
 class WindowActionManager;
+class ConfigManager;
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
     public:
-  MainWindow(PluginManager *pm);
+  MainWindow(ConfigManager *cfg);
   ~MainWindow();
-  
-  const QString currentSession() const;
 
-  PluginManager* getPluginManager() const { return _pluginManager; }
-
+    const QString currentSession() const;
+ /*
+   signals:
+    void startSession(const QString &s);
+    void stopSession(const QString &s);
+    void doneLoading();
+*/
 public slots:
-    void start();
-    void initDisplay(PluginSession *);
+    void initDisplay(const QString&);
     void startProfile(const QString&);
 
 private slots:
-    void changeConfiguration();
+    //void changeConfiguration();
     void manageProfiles();
     void aliasEditor();
 
@@ -62,21 +62,15 @@ private slots:
     QString _currentProfile;
     QTabWidget *_tabWidget;
     QHash<QString, QDockWidget*> _dockWidgets;
-    PluginManager *_pluginManager;
     WindowActionManager *_actMgr;
+    ConfigManager *_cfg;
 
-    QPointer<QuickConnectDialog> _quickConnectDlg;
-    QPointer<QSplashScreen> _splash;
-    QPointer<QWidget> _display, _input;
+    QWidget *_display;
+    QWidget *_input;
 
     void readSettings();
     void writeSettings();
     bool maybeSave();
-
-   signals:
-    void startSession(const QString &s);
-    void stopSession(const QString &s);
-    void doneLoading();
 };
 
 #endif

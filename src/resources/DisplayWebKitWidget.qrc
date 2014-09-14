@@ -1,0 +1,7 @@
+<!DOCTYPE RCC><RCC version="1.0">
+<qresource prefix="/webkitdisplay" >
+	<file alias="jquery.min.js">webkit/jquery.min.js</file>
+	<file alias="page.html">webkit/page.html</file>
+	<file alias="frame.html">webkit/frame.html</file>
+</qresource>
+</RCC>

@@ -1,20 +1,20 @@
-#include "StackedWidget.h"
-
-#include "EventHandler.h"
 #include "InputWidget.h"
-#include "PasswordWidget.h"
+
+#include "InputMultiWidget.h"
+#include "InputPasswordWidget.h"
 #include <QDebug>
 
-StackedWidget::StackedWidget(EventHandler *eh, QWidget* parent) 
+InputWidget::InputWidget(QWidget* parent)
   : QStackedWidget(parent) {
 
-  _inputWidget = new InputWidget;
-  _passwordWidget = new PasswordWidget;
+  _inputWidget = new InputMultiWidget;
+  _passwordWidget = new InputPasswordWidget;
   addWidget(_inputWidget);
   addWidget(_passwordWidget);
   setFocusProxy(_inputWidget);
 
-  // EventHandler -> StackedWidget
+  /*
+  // EventHandler -> InputWidget
   connect(eh, SIGNAL(setEchoMode(bool)),
 	  SLOT(toggleEchoMode(bool)));
   
@@ -31,10 +31,11 @@ StackedWidget::StackedWidget(EventHandler *eh, QWidget* parent)
   // Password Widget -> EventHandler
   connect(_passwordWidget, SIGNAL(sendUserInput(const QString&, bool)),
 	  eh, SLOT(sendUserInput(const QString&, bool)));
+    */
 }
 
 
-StackedWidget::~StackedWidget() {
+InputWidget::~InputWidget() {
   _inputWidget->disconnect();
   _passwordWidget->disconnect();
   _inputWidget->deleteLater();
@@ -42,7 +43,7 @@ StackedWidget::~StackedWidget() {
 }
 
 
-void StackedWidget::toggleEchoMode(bool localEcho) {
+void InputWidget::toggleEchoMode(bool localEcho) {
   if (localEcho) {
     setFocusProxy(_inputWidget);
     setCurrentWidget(_inputWidget);

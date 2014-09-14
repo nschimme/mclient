@@ -80,7 +80,7 @@ void QuickConnectDialog::doubleClicked(const QModelIndex &index) {
 
 /* Objects */
 
-QuickConnectDialog::QuickConnectDialog(ConfigManager *mgr, QWidget *parent)
+QuickConnectDialog::QuickConnectDialog(ConfigManager *mgr, QMainWindow *parent)
   : QDialog(parent), _mgr(mgr)
 {
   setupUi(this);
@@ -104,6 +104,8 @@ QuickConnectDialog::QuickConnectDialog(ConfigManager *mgr, QWidget *parent)
   profileView->selectionModel()->select(selection, QItemSelectionModel::Select);
   selectionChanged(profileView->selectionModel()->selection());
 
+  connect(this, SIGNAL(profileSelected(const QString&)),
+          parent, SLOT(startProfile(const QString&)));
 
   connect(playButton, SIGNAL(clicked() ), this, SLOT(playClicked() ));
   connect(profileButton, SIGNAL(clicked() ), this, SLOT(profileClicked() ));

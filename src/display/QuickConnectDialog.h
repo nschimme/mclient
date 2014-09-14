@@ -17,6 +17,7 @@
 #ifndef _QUICKCONNECTDIALOG_H
 #define _QUICKCONNECTDIALOG_H
 
+#include <QMainWindow>
 #include <QDialog>
 #include <QPointer>
 #include "ui_QuickConnectDialog.h"
@@ -29,7 +30,7 @@ class QuickConnectDialog : public QDialog, public Ui::QuickConnectDialog
   Q_OBJECT
 
   public:
-    QuickConnectDialog(ConfigManager *mgr, QWidget* parent=0);
+    QuickConnectDialog(ConfigManager *mgr, QMainWindow* parent=0);
     virtual ~QuickConnectDialog();
 
   signals:

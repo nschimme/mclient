@@ -26,11 +26,11 @@ class WindowActionManager: public QObject {
   Q_OBJECT
 
   public:
-    static WindowActionManager* instance(MainWindow *parent = 0);
-    void destroy();
+    WindowActionManager(MainWindow*);
+    ~WindowActionManager();
 
     void createActions();
-    void createMenus();
+    void createMenus(QMenuBar* menuBar);
     void createToolBars();
     void createStatusBar();
 
@@ -48,12 +48,6 @@ public slots:
     void openMumeForum();
     void openMumeWiki();
     void newbieHelp();
-
- protected:
-    WindowActionManager(MainWindow*);
-    ~WindowActionManager();
-    
-    static WindowActionManager* _pinstance;
 
   private:
     void disableActions(bool value);
