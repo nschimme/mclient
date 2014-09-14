@@ -94,7 +94,7 @@ void ProxyConnection::onPasswordRead() {
 			 "\r\n"
 			 "Your IP (%1) has been logged.\033[0m\r\n")
 		 .arg(_peerAddress)
-		 .toAscii());
+         .toLatin1());
     _socket->flush();
     qDebug() << "* Proxy did not recognize password attempt:"
 	     << ba << "from IP address"

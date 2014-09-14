@@ -123,7 +123,7 @@ public:
     case Qt::DisplayRole:
       return item->data(index.column());
     case Qt::DecorationRole:
-      return qVariantValue<QColor>(QColor(Qt::red));
+      return QVariant(QColor(Qt::red));
     case Qt::CheckStateRole: 
       return QVariant(Qt::Checked);
     case Qt::ToolTipRole:

@@ -1,5 +1,6 @@
 #include "SocketManagerIOConfig.h"
 
+#include <QtWidgets>
 #include <QGroupBox>
 #include <QLabel>
 #include <QLineEdit>

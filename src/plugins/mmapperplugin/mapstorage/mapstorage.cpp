@@ -266,7 +266,7 @@ void MapStorage::loadMark(InfoMark * mark, QDataStream & stream, qint32 /*versio
   stream >> vqba; 
   if (postfix != 0 && postfix != 1)
   {
-    vqba += QString("_m%1").arg(postfix).toAscii();
+    vqba += QString("_m%1").arg(postfix).toLatin1();
   }   
   mark->setName(vqba);
   stream >> vqba; mark->setText(vqba);

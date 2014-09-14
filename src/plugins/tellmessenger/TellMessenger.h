@@ -13,6 +13,7 @@ class QEvent;
 
 class TellMessenger : public MClientPlugin {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "tellmessenger.json")
 
     public:
         TellMessenger(QObject* parent=0);

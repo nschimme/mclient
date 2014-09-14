@@ -24,7 +24,7 @@
 **
 ************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 #include "generalpage.h"
 #include "configuration.h"
 

@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(mumexml_MOC_SRCS ${mumexml_MOC_HDRS})
-QT4_WRAP_UI(mumexml_UIS_H ${mumexml_UIS})
-QT4_ADD_RESOURCES(mumexml_RCC_SRCS ${mumexml_RCS})
+QT5_WRAP_CPP(mumexml_MOC_SRCS ${mumexml_MOC_HDRS})
+QT5_WRAP_UI(mumexml_UIS_H ${mumexml_UIS})
+QT5_ADD_RESOURCES(mumexml_RCC_SRCS ${mumexml_RCS})
 
 add_library(mumexml SHARED
     ${mumexml_SRCS}

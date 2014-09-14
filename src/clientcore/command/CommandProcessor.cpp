@@ -15,7 +15,7 @@
 #include <QSemaphore>
 
 CommandProcessor::CommandProcessor(PluginSession *ps)
-  : QThread(0), _pluginSession(ps) {
+  : QObject(0), _pluginSession(ps) {
   _delim = QChar(';');  // Command delimeter symbol
   _symbol = QChar('#'); // Command prefix symbol
 
@@ -91,7 +91,7 @@ void CommandProcessor::customEvent(QEvent* e) {
 
     } else if (me->dataTypes().contains("UnlockProcessor")) {
       qDebug() << "* got UNLOCK message";
-      _task->_semaphore.release();
+      //_task->_semaphore.release();
 
     }
   }
@@ -138,7 +138,7 @@ void CommandProcessor::run() {
   // Start the command task threads
   _task = new CommandTask(this);
   
-  exec();
+  //exec();
   qDebug() << "CommandProcessor" << QThread::currentThread() << "done";
 }
 

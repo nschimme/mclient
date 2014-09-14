@@ -10,7 +10,8 @@ class EventHandler;
 
 class WebKitDisplay : public MClientPlugin {
     Q_OBJECT
-    
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "webkitdisplay.json")
+
     public:
         WebKitDisplay(QWidget* parent=0);
         ~WebKitDisplay();

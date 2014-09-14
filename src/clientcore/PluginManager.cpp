@@ -263,7 +263,8 @@ void PluginManager::initSession(const QString &s) {
   if (!_pluginSessions.contains(s)) {
     PluginSession *ps = new PluginSession(s, this);
     _pluginSessions.insert(s, ps);
-    ps->start(QThread::TimeCriticalPriority);
+    //ps->start(QThread::TimeCriticalPriority);
+    ps->run();
 
   }
   else {

@@ -10,9 +10,7 @@
 #include "CommandProcessor.h"
 #include "CommandEntry.h"
 
-Q_EXPORT_PLUGIN2(qtscriptplugin, QtScriptPlugin)
-
-QtScriptPlugin::QtScriptPlugin(QObject *parent) 
+QtScriptPlugin::QtScriptPlugin(QObject *parent)
         : MClientPlugin(parent) {
     _shortName = "qtscriptplugin";
     _longName = "QtScripting Plugin";

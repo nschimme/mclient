@@ -28,7 +28,8 @@ class EventHandler;
 
 class Telnet : public MClientPlugin {
     Q_OBJECT
-    
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "telnet.json")
+
     public:
         Telnet(QObject* parent=0);
         ~Telnet();

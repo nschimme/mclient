@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(simpledisplay_MOC_SRCS ${simpledisplay_MOC_HDRS})
-QT4_WRAP_UI(simpledisplay_UIS_H ${simpledisplay_UIS})
-QT4_ADD_RESOURCES(simpledisplay_RCC_SRCS ${simpledisplay_RCS})
+QT5_WRAP_CPP(simpledisplay_MOC_SRCS ${simpledisplay_MOC_HDRS})
+QT5_WRAP_UI(simpledisplay_UIS_H ${simpledisplay_UIS})
+QT5_ADD_RESOURCES(simpledisplay_RCC_SRCS ${simpledisplay_RCS})
 
 add_library(simpledisplay SHARED
     ${simpledisplay_SRCS}

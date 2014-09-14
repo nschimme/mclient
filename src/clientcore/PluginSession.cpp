@@ -48,7 +48,8 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm)
 
   // Create the command processor
   _commandProcessor = new CommandProcessor(this);
-  _commandProcessor->start();
+  //_commandProcessor->start();
+  _commandProcessor->run();
   connect(_commandProcessor, SIGNAL(quit()),
 	  _pluginManager->getMainWindow(), SLOT(close()));
 
@@ -60,7 +61,7 @@ PluginSession::PluginSession(const QString &s, PluginManager *pm)
 	  SLOT(doneLoading()));
 
   qDebug() << "* PluginSession" << _session
-	   << "created with thread:" << QThread::currentThread();
+       << "created with thread:" << QThread::currentThread();
 }
 
 
@@ -74,8 +75,8 @@ PluginSession::~PluginSession() {
   }
   */
 
-  exit();
-  wait();
+  //exit();
+  //wait();
   deleteLater();
   qDebug() << "* PluginSession" << _session << "destroyed";
 }
@@ -89,7 +90,7 @@ void PluginSession::run() {
   qDebug() << "* PluginSession" << _session
 	   << "is running with thread:" << QThread::currentThread();
   emit doneLoading(this);
-  exec();
+  //exec();
 }
 
 

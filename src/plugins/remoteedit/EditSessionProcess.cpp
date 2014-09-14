@@ -78,7 +78,7 @@ void EditSessionProcess::cancelEdit() {
     .arg(keystr.length())
     .arg(keystr);
   qDebug() << "* Edit session" << _key << "writing to socket:" << buffer;
-  emit sendToSocket(buffer.toAscii());
+  emit sendToSocket(buffer.toLatin1());
   deleteLater();
 }
 
@@ -95,7 +95,7 @@ void EditSessionProcess::finishEdit() {
     .arg(MPI)
     .arg(_body.length() + keystr.length())
     .arg(keystr);
-  _body.prepend(buffer.toAscii());
+  _body.prepend(buffer.toLatin1());
 
   qDebug() << "* Edit session" << _key << "writing to socket:" << _body;
   emit sendToSocket(_body);

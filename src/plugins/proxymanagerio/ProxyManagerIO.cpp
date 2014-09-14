@@ -3,9 +3,6 @@
 #include "CommandEntry.h"
 #include "AbstractPluginSession.h"
 
-Q_EXPORT_PLUGIN2(proxymanagerio, ProxyManagerIO)
-
-
 ProxyManagerIO::ProxyManagerIO(QObject* parent) : MClientPlugin(parent) {
   _shortName = "proxymanagerio";
   _longName = "ProxyManager";

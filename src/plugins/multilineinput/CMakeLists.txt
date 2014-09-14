@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(multilineinput_MOC_SRCS ${multilineinput_MOC_HDRS})
-QT4_WRAP_UI(multilineinput_UIS_H ${multilineinput_UIS})
-QT4_ADD_RESOURCES(multilineinput_RCC_SRCS ${multilineinput_RCS})
+QT5_WRAP_CPP(multilineinput_MOC_SRCS ${multilineinput_MOC_HDRS})
+QT5_WRAP_UI(multilineinput_UIS_H ${multilineinput_UIS})
+QT5_ADD_RESOURCES(multilineinput_RCC_SRCS ${multilineinput_RCS})
 
 add_library(multilineinput SHARED
     ${multilineinput_SRCS}

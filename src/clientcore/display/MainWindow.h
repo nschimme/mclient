@@ -22,6 +22,7 @@
 #ifndef MainWindow_H
 #define MainWindow_H
 
+#include <QtWidgets>
 #include <QtGui>
 #include <QPointer>
 #include <QPluginLoader>

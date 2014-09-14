@@ -32,7 +32,7 @@ file(GLOB_RECURSE mclient_RCS
 # Application Icon
 if (MINGW)
     # Query qmake for windres executable name
-    QT_QUERY_QMAKE(WINDRES_EXECUTABLE "QMAKE_RC")
+    #QT_QUERY_QMAKE(WINDRES_EXECUTABLE "QMAKE_RC")
     if (WINDRES_EXECUTABLE)
         message(STATUS "Found windres: ${WINDRES_EXECUTABLE}")
         add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/mclient_rc.o
@@ -63,9 +63,9 @@ include_directories(
     mclientplugin
 )
   
-QT4_WRAP_UI(mclient_UIS_H ${mclient_UIS})
-QT4_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
-QT4_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
+QT5_WRAP_UI(mclient_UIS_H ${mclient_UIS})
+QT5_WRAP_CPP(mclient_MOC_SRCS ${mclient_MOC_HDRS})
+QT5_ADD_RESOURCES(mclient_RCC_SRCS ${mclient_RCS})
 
 # Build the executable
 if (CMAKE_BUILD_TYPE STREQUAL "Release")
@@ -81,9 +81,9 @@ add_executable(mclient ${EXECUTABLE_FLAGS}
 )
 
 target_link_libraries(mclient
-    ${QT_QTMAIN_LIBRARY}
-    ${QT_LIBRARIES}
-    ${OPENGL_gl_LIBRARY}
+    Qt5::Widgets
+    Qt5::Core
+    ${OPENGLGL_LIBRARIES}
     ${ZLIB_LIBRARIES}
     clientcore
 )
@@ -96,8 +96,19 @@ add_subdirectory(mclientplugin)
 add_subdirectory(plugins)
 
 # Installation Location
+if (NOT DEFINED ${MCLIENT_BIN_DIR})
+    message(STATUS "Defaulting MCLIENT_BIN_DIR to \".\"")
+    SET(MCLIENT_BIN_DIR ".")
+endif (NOT DEFINED ${MCLIENT_BIN_DIR})
+if (NOT DEFINED ${MCLIENT_PLUGINS_DIR})
+   message(STATUS "Defaulting MCLIENT_PLUGINS_DIR to \"plugins\"")
+   SET(MCLIENT_PLUGINS_DIR "plugins")
+endif (NOT DEFINED ${MCLIENT_PLUGINS_DIR})
+
 if (NOT APPLE)
    install(TARGETS mclient
+           #ARCHIVE DESTINATION ${MCLIENT_BIN_DIR}
+           #LIBRARY DESTINATION ${MCLIENT_BIN_DIR}
            RUNTIME DESTINATION ${MCLIENT_BIN_DIR}
 	   COMPONENT applications)
 endif (NOT APPLE)
@@ -106,33 +117,29 @@ endif (NOT APPLE)
 if (WIN32)
     # Install Library Files
     # Note: this is not necessary if Qt is compiled statically
+    get_target_property(QT_CORE_LIBRARY_DIR Qt5::Core LOCATION)
+    string(REPLACE "Qt5Core.dll" "" QT_LIBRARY_DIR ${QT_CORE_LIBRARY_DIR})
     message(STATUS "Qt libraries are at ${QT_LIBRARY_DIR}")
     if (CMAKE_BUILD_TYPE STREQUAL "Release")
-       if (NOT EXISTS "${QT_LIBRARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll")
-           set (QT_LIBRARY_DIR ${QT_LIBRARY_DIR}/../bin)
-       endif (NOT EXISTS "${QT_LIBRARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll")
        install(FILES
-           "${QT_LIBRARY_DIR}/QtCore${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtGui${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtNetwork${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtXml${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtOpenGL${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtWebKit${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/Qt5Core.dll"
+           "${QT_LIBRARY_DIR}/Qt5Gui.dll"
+           "${QT_LIBRARY_DIR}/Qt5Network.dll"
+           "${QT_LIBRARY_DIR}/Qt5Xml.dll"
+           "${QT_LIBRARY_DIR}/Qt5OpenGL.dll"
+           "${QT_LIBRARY_DIR}/Qt5WebKit.dll"
            DESTINATION .
            COMPONENT libraries
        )
     else (CMAKE_BUILD_TYPE STREQUAL "Release")
        # Debug Libraries (not necessary if compiling for release)
-       if (NOT EXISTS "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll")
-           set (QT_LIBRARY_DIR ${QT_LIBRARY_DIR}/../bin)
-       endif (NOT EXISTS "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll")
        install(FILES
-           "${QT_LIBRARY_DIR}/QtCored${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtGuid${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtNetworkd${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtXmld${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtOpenGLd${QT_VERSION_MAJOR}.dll"
-           "${QT_LIBRARY_DIR}/QtWebKitd${QT_VERSION_MAJOR}.dll"
+           "${QT_LIBRARY_DIR}/Qt5Cored.dll"
+           "${QT_LIBRARY_DIR}/Qt5Guid.dll"
+           "${QT_LIBRARY_DIR}/Qt5Networkd.dll"
+           "${QT_LIBRARY_DIR}/Qt5Xmld.dll"
+           "${QT_LIBRARY_DIR}/Qt5OpenGLd.dll"
+           "${QT_LIBRARY_DIR}/Qt5WebKitd.dll"
            DESTINATION .
            COMPONENT libraries
        )
@@ -146,7 +153,7 @@ if (WIN32)
         message(STATUS "MingW library is at ${MINGW_LIBRARY_DIR}")
 
         install(FILES 
-            "${MINGW_LIBRARY_DIR}/mingwm10.dll"
+            "${MINGW_LIBRARY_DIR}/libwinpthread-1.dll"
 	    DESTINATION .
 	    COMPONENT libraries
 	)

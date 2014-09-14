@@ -52,7 +52,7 @@ ViewSessionProcess::ViewSessionProcess(int key, const QByteArray &title,
     _file.close();
 
     // Well, this might not hurt, might as well attempt it
-    putenv(QString("TITLE=%1" + _title).toAscii().data());
+    putenv(QString("TITLE=%1" + _title).toLatin1().data());
 
     // Start the process!
     QStringList args;

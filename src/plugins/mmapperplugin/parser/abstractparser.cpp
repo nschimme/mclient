@@ -75,7 +75,7 @@ QString& AbstractParser::removeAnsiMarks(QString& str) {
       continue;
     }
     if (started) continue;
-    out.append((str.at(i).toAscii()));
+    out.append((str.at(i).toLatin1()));
   }
   str = out;
   return str;
@@ -86,9 +86,9 @@ void AbstractParser::parsePrompt(QString& prompt){
   quint8 index = 0;
   int sv;
 
-  emit sendPromptLineEvent(m_stringBuffer.toAscii());
+  emit sendPromptLineEvent(m_stringBuffer.toLatin1());
 
-  switch (sv=(int)((prompt[index]).toAscii())) {
+  switch (sv=(int)((prompt[index]).toLatin1())) {
   case 64: index++;m_promptFlags=SUN_ROOM;break; // @  direct sunlight
   case 42: index++;m_promptFlags=SUN_ROOM;break; // *  indoor/cloudy sun
   case 33: index++;break;                        // !  artifical light
@@ -97,7 +97,7 @@ void AbstractParser::parsePrompt(QString& prompt){
   default:;
   }
 
-  switch ( sv = (int)(prompt[index]).toAscii() )
+  switch ( sv = (int)(prompt[index]).toLatin1() )
   {
     case 91: SET(m_promptFlags,RTT_INDOORS); break; // [  // indoors
     case 35: SET(m_promptFlags,RTT_CITY); break; // #  // city
@@ -128,7 +128,7 @@ void AbstractParser::parseExits(QString& str)
 
   int length = str.length();
   for (int i=7; i<length; i++){
-    switch ((int)(str.at(i).toAscii())){
+    switch ((int)(str.at(i).toLatin1())){
     case 40: doors=true;break;    /* ( */
     case 91: doors=true;break;    /* [ */
     case 35: doors=true;break;    /* # */
@@ -139,7 +139,7 @@ void AbstractParser::parseExits(QString& str)
     case 123: portal=true;break;  /* { */
 
     case 110:  // n
-      if ( (i+2)<length && (str.at(i+2).toAscii()) == 'r') //north
+      if ( (i+2)<length && (str.at(i+2).toLatin1()) == 'r') //north
         {
           i+=5;
 	  if (climb) {
@@ -276,10 +276,10 @@ void AbstractParser::parseExits(QString& str)
 
   for (uint i=0;i<6;i++)
     {
-      dn = m_mapData->getDoorName(c, i).toAscii();
+      dn = m_mapData->getDoorName(c, i).toLatin1();
       if ( dn != emptyByteArray )
 	{
-	  doorNames << dn;
+      doorNames << dn;
 	  noDoors = false;
 	  switch (i)
 	    {
@@ -318,7 +318,7 @@ void AbstractParser::parseExits(QString& str)
       
     }
 
-  emit sendToUser(str.trimmed().toAscii()+cn);
+  emit sendToUser(str.trimmed().toLatin1()+cn);
 }
 
 void AbstractParser::emulateExits()
@@ -415,8 +415,8 @@ bool AbstractParser::parseUserCommands(QString& command)
   {
     if (str.startsWith("_gt")) // grouptell
     {
-      if (!str.section(" ",1,1).toAscii().isEmpty()) {
-        QByteArray data = str.remove(0, 4).toAscii(); // 3 is length of "_gt "
+      if (!str.section(" ",1,1).toLatin1().isEmpty()) {
+        QByteArray data = str.remove(0, 4).toLatin1(); // 3 is length of "_gt "
         //qDebug( "Sending a G-tell from local user: %s", (const char *) data);
         emit sendGroupTellEvent(data);
       }
@@ -451,7 +451,7 @@ bool AbstractParser::parseUserCommands(QString& command)
     }
     else if (str.startsWith("_door"))
     {
-      if (!str.section(" ",2,2).toAscii().isEmpty())
+      if (!str.section(" ",2,2).toLatin1().isEmpty())
         emit sendToUser("--->Incorrect Command. Perhaps you meant _name?\n\r");
       else {
         if (str.section(" ",1,1)=="n") toggleExitFlagCommand(EF_DOOR, NORTH);
@@ -805,13 +805,13 @@ bool AbstractParser::parseUserCommands(QString& command)
       return false;
     }
     if (str=="_pdynamic") {
-      emit sendToUser(m_dynamicRoomDesc.toAscii());
+      emit sendToUser(m_dynamicRoomDesc.toLatin1());
       emit sendToUser((QByteArray)"OK.\r\n");
       if (Config().m_mapMode == 2) emit sendToUser("\r\n>");
       return false;
     }
     if (str=="_pstatic") {
-      emit sendToUser(m_staticRoomDesc.toAscii());
+      emit sendToUser(m_staticRoomDesc.toLatin1());
       emit sendToUser((QByteArray)"OK.\r\n");
       if (Config().m_mapMode == 2) emit sendToUser("\r\n>");
       return false;
@@ -1141,9 +1141,9 @@ void AbstractParser::offlineCharacterMove(CommandIdType direction)
 void AbstractParser::sendRoomInfoToUser(const Room* r)
 {
   if (!r) return;
-  emit sendToUser((QByteArray)"\r\n"+getName(r).toAscii()+(QByteArray)"\r\n");
-  emit sendToUser(getDescription(r).toAscii().replace("\n","\r\n"));
-  emit sendToUser(getDynamicDescription(r).toAscii().replace("\n","\r\n"));
+  emit sendToUser((QByteArray)"\r\n"+getName(r).toLatin1()+(QByteArray)"\r\n");
+  emit sendToUser(getDescription(r).toLatin1().replace("\n","\r\n"));
+  emit sendToUser(getDynamicDescription(r).toLatin1().replace("\n","\r\n"));
 }
 
 void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
@@ -1210,7 +1210,7 @@ void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
 
   for (uint i=0;i<6;i++)
   {
-    dn = m_mapData->getDoorName(r->getPosition(), i).toAscii();
+    dn = m_mapData->getDoorName(r->getPosition(), i).toLatin1();
     if ( dn != emptyByteArray )
     {
       doorNames << dn;
@@ -1252,7 +1252,7 @@ void AbstractParser::sendRoomExitsInfoToUser(const Room* r)
 
   }
 
-  emit sendToUser(etmp.toAscii()+cn);
+  emit sendToUser(etmp.toLatin1()+cn);
 }
 
 void AbstractParser::sendPromptSimulationToUser()
@@ -1304,7 +1304,7 @@ void AbstractParser::performDoorCommand(DirectionType direction, DoorActionType 
   else
     c = m_mapData->getPosition();
 
-  dn = m_mapData->getDoorName(c, direction).toAscii();
+  dn = m_mapData->getDoorName(c, direction).toLatin1();
 
   bool needdir = false;
 
@@ -1316,7 +1316,7 @@ void AbstractParser::performDoorCommand(DirectionType direction, DoorActionType 
   else
     for (int i=0; i<6; i++)
   {
-    if ( (((DirectionType)i) != direction) && (m_mapData->getDoorName(c, (DirectionType)i).toAscii() == dn) )
+    if ( (((DirectionType)i) != direction) && (m_mapData->getDoorName(c, (DirectionType)i).toLatin1() == dn) )
       needdir = true;
   }
 
@@ -1387,7 +1387,7 @@ void AbstractParser::genericDoorCommand(QString command, DirectionType direction
   else
     c = m_mapData->getPosition();
 
-  dn = m_mapData->getDoorName(c, direction).toAscii();
+  dn = m_mapData->getDoorName(c, direction).toLatin1();
 
   bool needdir = false;
 
@@ -1399,7 +1399,7 @@ void AbstractParser::genericDoorCommand(QString command, DirectionType direction
   else
     for (int i=0; i<6; i++)
   {
-    if ( (((DirectionType)i) != direction) && (m_mapData->getDoorName(c, (DirectionType)i).toAscii() == dn) )
+    if ( (((DirectionType)i) != direction) && (m_mapData->getDoorName(c, (DirectionType)i).toLatin1() == dn) )
       needdir = true;
   }
 
@@ -1455,12 +1455,12 @@ void AbstractParser::genericDoorCommand(QString command, DirectionType direction
 
   if (Config().m_mapMode != 2)  // online mode
   {
-    emit sendToMud(command.toAscii());
-    emit sendToUser("--->" + command.toAscii());
+    emit sendToMud(command.toLatin1());
+    emit sendToUser("--->" + command.toLatin1());
   }
   else
   {
-    emit sendToUser("--->" + command.toAscii());
+    emit sendToUser("--->" + command.toLatin1());
     emit sendToUser("OK.\r\n");
   }
 }
@@ -1476,7 +1476,7 @@ void AbstractParser::nameDoorCommand(QString doorname, DirectionType direction)
 
   //if (doorname.isEmpty()) toggleExitFlagCommand(EF_DOOR, direction);
   m_mapData->setDoorName(c, doorname, direction);
-  emit sendToUser("--->Doorname set to: " + doorname.toAscii() + "\n\r");
+  emit sendToUser("--->Doorname set to: " + doorname.toLatin1() + "\n\r");
 }
 
 void AbstractParser::toggleExitFlagCommand(uint flag, DirectionType direction)
@@ -1521,7 +1521,7 @@ void AbstractParser::toggleExitFlagCommand(uint flag, DirectionType direction)
       break;
   }
 
-  emit sendToUser("--->" + flagname.toAscii() + " exit " + toggle.toAscii() + "\n\r");
+  emit sendToUser("--->" + flagname.toLatin1() + " exit " + toggle.toLatin1() + "\n\r");
 }
 
 void AbstractParser::toggleDoorFlagCommand(uint flag, DirectionType direction)
@@ -1566,7 +1566,7 @@ void AbstractParser::toggleDoorFlagCommand(uint flag, DirectionType direction)
       break;
   }
 
-  emit sendToUser("--->" + flagname.toAscii() + " door " + toggle.toAscii() + "\n\r");
+  emit sendToUser("--->" + flagname.toLatin1() + " door " + toggle.toLatin1() + "\n\r");
 }
 
 void AbstractParser::setRoomFieldCommand(uint flag, uint field)
@@ -1600,7 +1600,7 @@ void AbstractParser::toggleRoomFlagCommand(uint flag, uint field)
   else
     toggle = "disabled";
 
-  emit sendToUser("--->Room flag " + toggle.toAscii() + "\n\r");
+  emit sendToUser("--->Room flag " + toggle.toLatin1() + "\n\r");
 }
 QString& AbstractParser::latinToAscii(QString& str) {
     // latin1 to 7-bit Ascii

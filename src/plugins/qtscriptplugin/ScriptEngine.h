@@ -1,6 +1,7 @@
 #ifndef SCRIPTENGINE_H
 #define SCRIPTENGINE_H
 
+#include <QtScript>
 #include <QScriptEngine>
 
 namespace {

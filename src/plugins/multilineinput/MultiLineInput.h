@@ -11,7 +11,8 @@ class QEvent;
 
 class MultiLineInput : public MClientPlugin {
     Q_OBJECT
-    
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "multilineinput.json")
+
     public:
         MultiLineInput(QObject* parent=0);
         ~MultiLineInput();

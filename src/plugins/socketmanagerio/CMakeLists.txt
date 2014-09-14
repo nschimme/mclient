@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(socketmanagerio_MOC_SRCS ${socketmanagerio_MOC_HDRS})
-QT4_WRAP_UI(socketmanagerio_UIS_H ${socketmanagerio_UIS})
-QT4_ADD_RESOURCES(socketmanagerio_RCC_SRCS ${socketmanagerio_RCS})
+QT5_WRAP_CPP(socketmanagerio_MOC_SRCS ${socketmanagerio_MOC_HDRS})
+QT5_WRAP_UI(socketmanagerio_UIS_H ${socketmanagerio_UIS})
+QT5_ADD_RESOURCES(socketmanagerio_RCC_SRCS ${socketmanagerio_RCS})
 
 add_library(socketmanagerio SHARED
     ${socketmanagerio_SRCS}
@@ -32,7 +32,8 @@ target_link_libraries(
     socketmanagerio
     mclientplugin
     mainwindow
-    ${QT_LIBRARIES}
+    Qt5::Widgets
+    Qt5::Network
 )
 
 INSTALL(TARGETS socketmanagerio

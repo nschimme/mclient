@@ -10,7 +10,8 @@ class EventHandler;
 
 class QtScriptPlugin : public MClientPlugin {
     Q_OBJECT
-    
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "qtscriptplugin.json")
+
     public:
         QtScriptPlugin(QObject* parent=0);
         ~QtScriptPlugin();

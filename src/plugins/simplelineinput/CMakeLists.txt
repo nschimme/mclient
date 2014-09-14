@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(simplelineinput_MOC_SRCS ${simplelineinput_MOC_HDRS})
-QT4_WRAP_UI(simplelineinput_UIS_H ${simplelineinput_UIS})
-QT4_ADD_RESOURCES(simplelineinput_RCC_SRCS ${simplelineinput_RCS})
+QT5_WRAP_CPP(simplelineinput_MOC_SRCS ${simplelineinput_MOC_HDRS})
+QT5_WRAP_UI(simplelineinput_UIS_H ${simplelineinput_UIS})
+QT5_ADD_RESOURCES(simplelineinput_RCC_SRCS ${simplelineinput_RCS})
 
 add_library(simplelineinput SHARED
     ${simplelineinput_SRCS}

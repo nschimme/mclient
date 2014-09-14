@@ -6,9 +6,6 @@
 
 #include <QDebug>
 
-Q_EXPORT_PLUGIN2(remoteedit, RemoteEdit)
-
-
 RemoteEdit::RemoteEdit(QObject* parent) 
         : MClientPlugin(parent) {
     _shortName = "remoteedit";

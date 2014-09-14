@@ -42,7 +42,7 @@ void DisplayParser::userInput(const QString &text) {
 
 
 void DisplayParser::parseDisplayData(QString text) {
-  text = Qt::escape(text);
+  text = text.toHtmlEscaped();
 
   // ANSI Removal
   QRegExp ansiRx("\\0033\\[((?:\\d+;)*\\d+)m");

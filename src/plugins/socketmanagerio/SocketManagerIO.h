@@ -13,6 +13,7 @@ class QEvent;
 
 class SocketManagerIO : public MClientPlugin {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "socketmanagerio.json")
 
     public:
         SocketManagerIO(QObject* parent=0);

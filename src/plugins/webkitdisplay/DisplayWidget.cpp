@@ -2,7 +2,7 @@
 #include "DisplayWidget.h"
 
 #include <QDebug>
-#include <QtWebKit>
+#include <QtWebKitWidgets>
 #include <QWebFrame>
 #include <QWebElement>
 

@@ -107,7 +107,7 @@ void ClientTextEdit::displayText(const QString& str) {
     if ((k = blocks[i].indexOf(subBlockRx)) != -1) {
       j = 0;
       do {
-        //qDebug("j%d k%d %s", j, k, blocks[i].toAscii().data());
+        //qDebug("j%d k%d %s", j, k, blocks[i].toLatin1().data());
         if (blocks[i].length() > 2) { // this is for the "You begin to search.." etc lines
           _cursor.insertText(blocks[i].mid(j, k), _format);
           moveCursor(-1);
@@ -122,7 +122,7 @@ void ClientTextEdit::displayText(const QString& str) {
 
     /*
     for (j = 0; (j = subBlockRx.indexIn(blocks[i], j)) != -1; j += subBlockRx.matchedLength()) {
-    qDebug("%s", subBlock.join(",").toAscii().data());
+    qDebug("%s", subBlock.join(",").toLatin1().data());
       if (subBlockRx.cap(1).contains(QRegExp("\\0010"))) {
         _cursor.insertText(blockIterator.next(), _format);
         moveCursor(-1);

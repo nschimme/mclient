@@ -50,7 +50,7 @@ void SocketReader::sendToSocket(const QByteArray &ba) {
     }
     
     _socket->write(ba);
-    //qDebug() << "* wrote to socket" << ba.size() << ":" << ba;
+    qDebug() << "* wrote to socket" << ba.size() << ":" << ba;
   }
 }
 

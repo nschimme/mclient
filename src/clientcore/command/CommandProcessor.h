@@ -1,7 +1,7 @@
 #ifndef COMMANDPROCESSOR_H
 #define COMMANDPROCESSOR_H
 
-#include <QThread>
+#include <QObject>
 #include <QMap>
 #include <QMultiHash>
 #include <QStringList>
@@ -13,7 +13,7 @@ class PluginSession;
 
 typedef QMap<QString, CommandEntry*> CommandMapping;
 
-class CommandProcessor : public QThread {
+class CommandProcessor : public QObject {
     Q_OBJECT
     
     public:
@@ -35,8 +35,8 @@ class CommandProcessor : public QThread {
 
 	CommandTask* getTask() const { return _task; }
 
+    void run();
  protected:
-	void run();
 
    private:
 	/** Commands Section */

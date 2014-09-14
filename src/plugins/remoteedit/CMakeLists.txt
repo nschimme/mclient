@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(remoteedit_MOC_SRCS ${remoteedit_MOC_HDRS})
-QT4_WRAP_UI(remoteedit_UIS_H ${remoteedit_UIS})
-QT4_ADD_RESOURCES(remoteedit_RCC_SRCS ${remoteedit_RCS})
+QT5_WRAP_CPP(remoteedit_MOC_SRCS ${remoteedit_MOC_HDRS})
+QT5_WRAP_UI(remoteedit_UIS_H ${remoteedit_UIS})
+QT5_ADD_RESOURCES(remoteedit_RCC_SRCS ${remoteedit_RCS})
 
 add_library(remoteedit SHARED
     ${remoteedit_SRCS}

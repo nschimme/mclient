@@ -4,8 +4,6 @@
 #include "EventHandler.h"
 #include <QDebug>
 
-Q_EXPORT_PLUGIN2(telnet, Telnet)
-
 Telnet::Telnet(QObject* parent) 
         : MClientPlugin(parent) {
     _shortName = "telnetdatafilter";

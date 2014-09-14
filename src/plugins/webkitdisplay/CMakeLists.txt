@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(webkitdisplay_MOC_SRCS ${webkitdisplay_MOC_HDRS})
-QT4_WRAP_UI(webkitdisplay_UIS_H ${webkitdisplay_UIS})
-QT4_ADD_RESOURCES(webkitdisplay_RCC_SRCS ${webkitdisplay_RCS})
+QT5_WRAP_CPP(webkitdisplay_MOC_SRCS ${webkitdisplay_MOC_HDRS})
+QT5_WRAP_UI(webkitdisplay_UIS_H ${webkitdisplay_UIS})
+QT5_ADD_RESOURCES(webkitdisplay_RCC_SRCS ${webkitdisplay_RCS})
 
 add_library(webkitdisplay SHARED
     ${webkitdisplay_SRCS}
@@ -31,7 +31,7 @@ add_library(webkitdisplay SHARED
 target_link_libraries(
     webkitdisplay
     mclientplugin
-    ${QT_LIBRARIES}
+    Qt5::WebKitWidgets
 )
 
 INSTALL(TARGETS webkitdisplay

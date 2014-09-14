@@ -14,6 +14,7 @@
  *                                                                         *
  ***************************************************************************/
 
+#include <QtWidgets>
 #include <QtGui>
 #include <QTextStream>
 #include <QCloseEvent>

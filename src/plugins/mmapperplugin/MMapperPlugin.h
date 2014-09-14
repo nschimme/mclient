@@ -9,6 +9,7 @@ class EventHandler;
 
 class MMapperPlugin : public MClientPlugin {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "mmapperplugin.json")
 
     public:
         MMapperPlugin(QObject* parent=0);

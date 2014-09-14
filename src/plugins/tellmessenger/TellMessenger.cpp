@@ -10,9 +10,6 @@
 
 #include <QDebug>
 
-Q_EXPORT_PLUGIN2(tellmessenger, TellMessenger)
-
-
 TellMessenger::TellMessenger(QObject* parent) 
         : MClientPlugin(parent) {
     

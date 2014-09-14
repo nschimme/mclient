@@ -11,6 +11,8 @@
 class MClientEventData;
 class MClientEventHandler;
 
+#define MClientPluginInterface_iid "org.mClient.Plugins.MClientPluginInterface"
+
 class MClientPlugin : public QObject, public MClientPluginInterface {
     Q_OBJECT
     Q_INTERFACES(MClientPluginInterface)

@@ -12,6 +12,7 @@ class EventHandler;
 
 class ProxyManagerIO : public MClientPlugin {
     Q_OBJECT
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "proxymanagerio.json")
 
     public:
         ProxyManagerIO(QObject* parent=0);

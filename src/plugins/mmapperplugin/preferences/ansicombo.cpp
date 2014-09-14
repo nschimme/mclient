@@ -26,7 +26,7 @@
 
 #include "ansicombo.h"
 #include <QtGui>
-
+#include <QtWidgets>
 
 AnsiCombo::AnsiCombo(QWidget *parent) : super(parent)
 {

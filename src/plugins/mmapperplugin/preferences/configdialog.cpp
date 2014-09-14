@@ -23,7 +23,7 @@
 **
 *************************************************************************/
 
-#include <QtGui>
+#include <QtWidgets>
 
 #include "configdialog.h"
 #include "generalpage.h"

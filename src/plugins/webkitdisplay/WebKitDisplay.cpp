@@ -9,8 +9,6 @@
 #include <QEvent>
 #include <QVariant>
 
-Q_EXPORT_PLUGIN2(webkitdisplay, WebKitDisplay)
-
 WebKitDisplay::WebKitDisplay(QWidget* parent) 
         : MClientPlugin(parent) {
     _shortName = "webkitdisplay";

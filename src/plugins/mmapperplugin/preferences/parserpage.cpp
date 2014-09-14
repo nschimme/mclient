@@ -24,7 +24,7 @@
 *************************************************************************/
 
 
-#include <QtGui>
+#include <QtWidgets>
 #include "parserpage.h"
 #include "configuration.h"
 #include "defs.h"
@@ -157,7 +157,7 @@ void ParserPage::testPatternClicked(){
 	if ((pattern)[0] != '#') {
 	}
 	else{
-		switch ((int)(pattern[1]).toAscii()){
+        switch ((int)(pattern[1]).toLatin1()){
 		case 33:  // !
 			rx.setPattern((pattern).remove(0,2));
 			if(rx.exactMatch(str)) matches = TRUE;

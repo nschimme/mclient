@@ -2,7 +2,7 @@
 #define TIMERCLASS_H
 
 #include <QTimer>
-#include <QtCore/QObject>
+#include <QtCore>
 #include <QtScript/QScriptClass>
 #include <QtScript/QScriptString>
 

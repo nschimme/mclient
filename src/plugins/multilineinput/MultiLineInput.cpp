@@ -7,9 +7,6 @@
 #include "CommandEntry.h"
 #include "PluginSession.h"
 
-Q_EXPORT_PLUGIN2(multilineinput, MultiLineInput)
-
-
 MultiLineInput::MultiLineInput(QObject* parent) 
         : MClientPlugin(parent) {
     _shortName = "multilineinput";

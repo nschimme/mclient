@@ -67,7 +67,7 @@ void MMapperPluginParser::prompt(QString text) {
 
 
 void MMapperPluginParser::move(const QString &text) {
-  switch (text.at(0).toAscii()) {
+  switch (text.at(0).toLatin1()) {
     case 'n':
       _move = CID_NORTH;
       break;
@@ -81,7 +81,7 @@ void MMapperPluginParser::move(const QString &text) {
       _move = CID_WEST;
       break;
     case 'u':
-      switch (text.at(1).toAscii()) {
+      switch (text.at(1).toLatin1()) {
       case 'p':
 	_move = CID_UP;
 	break;
@@ -138,7 +138,7 @@ void MMapperPluginParser::submit() {
 void MMapperPluginParser::userInput(QString text) {
   qDebug() << "* MMapperPluginParser got input" << text;
   if (parseUserCommands(text))
-    emit sendToMud(text.toAscii());
+    emit sendToMud(text.toLatin1());
 }
 
 

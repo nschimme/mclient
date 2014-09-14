@@ -1,16 +1,21 @@
-cmake_minimum_required (VERSION 2.6)
+cmake_minimum_required (VERSION 3.0)
 project(mclient)
 
-# Set up Qt4
-find_package(Qt4 REQUIRED)
-find_package(OpenGL REQUIRED)
+# Set up Qt5
+find_package(Qt5Core REQUIRED)
+find_package(Qt5Widgets REQUIRED)
 find_package(ZLIB REQUIRED)
-set(QT_USE_QTNETWORK TRUE)
-set(QT_USE_QTXML TRUE)
-set(QT_USE_QTWEBKIT TRUE)
-set(QT_USE_QTSCRIPT TRUE)
-set(QT_USE_QTOPENGL TRUE)
-include(${QT_USE_FILE})
+find_package(OpenGL REQUIRED)
+find_package(Qt5OpenGL REQUIRED)
+find_package(Qt5Network REQUIRED)
+find_package(Qt5Xml REQUIRED)
+find_package(Qt5WebkitWidgets REQUIRED)
+find_package(Qt5Script REQUIRED)
+
+# Find includes in corresponding build directories
+set(CMAKE_INCLUDE_CURRENT_DIR ON)
+# Instruct CMake to run moc automatically when needed.
+#set(CMAKE_AUTOMOC ON)
 
 # mClient's version number
 set(MCLIENT_VERSION "pre-release alpha")

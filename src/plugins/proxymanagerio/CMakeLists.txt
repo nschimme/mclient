@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(proxymanagerio_MOC_SRCS ${proxymanagerio_MOC_HDRS})
-QT4_WRAP_UI(proxymanagerio_UIS_H ${proxymanagerio_UIS})
-QT4_ADD_RESOURCES(proxymanagerio_RCC_SRCS ${proxymanagerio_RCS})
+QT5_WRAP_CPP(proxymanagerio_MOC_SRCS ${proxymanagerio_MOC_HDRS})
+QT5_WRAP_UI(proxymanagerio_UIS_H ${proxymanagerio_UIS})
+QT5_ADD_RESOURCES(proxymanagerio_RCC_SRCS ${proxymanagerio_RCS})
 
 add_library(proxymanagerio SHARED
     ${proxymanagerio_SRCS}
@@ -31,7 +31,7 @@ add_library(proxymanagerio SHARED
 target_link_libraries(
     proxymanagerio
     mclientplugin
-    ${QT_LIBRARIES}
+    Qt5::Network
 )
 
 INSTALL(TARGETS proxymanagerio

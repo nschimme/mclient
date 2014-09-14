@@ -277,7 +277,7 @@ bool MapperManager::saveAs()
   QFileDialog save(_mapWindow, "Choose map file name ...");
   save.setFileMode(QFileDialog::AnyFile);
   save.setDirectory(QDir::current());
-  save.setFilter("MMapper2 (*.mm2)");
+  save.setNameFilter("MMapper2 (*.mm2)");
   save.setDefaultSuffix("mm2");
   save.setAcceptMode(QFileDialog::AcceptSave);
   QStringList fileNames;

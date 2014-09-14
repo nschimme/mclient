@@ -10,12 +10,8 @@
 
 #include <QDebug>
 
-Q_EXPORT_PLUGIN2(socketmanagerio, SocketManagerIO)
-
-
-SocketManagerIO::SocketManagerIO(QObject* parent) 
+SocketManagerIO::SocketManagerIO(QObject* parent)
         : MClientPlugin(parent) {
-    
     _shortName = "socketmanagerio";
     _longName = "SocketManager";
     _description = "A socket plugin that reads from sockets and inserts the data back into the stream.";

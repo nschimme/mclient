@@ -14,7 +14,7 @@ add_subdirectory(mumexml)
 add_subdirectory(mmapperplugin)
 add_subdirectory(proxymanagerio)
 add_subdirectory(remoteedit)
-add_subdirectory(qtscriptplugin)
+#add_subdirectory(qtscriptplugin)
 add_subdirectory(tellmessenger)
 
 # Display-Input Plugins

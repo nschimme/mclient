@@ -120,7 +120,7 @@ void EventHandler::parse(const QByteArray& line) {
 	//*
         //send characters (ignore whitespace as this can be pretty print)
 	QRegExp rx("^\\s+?(\n.+)");
-	rx.setMinimal(true);
+    rx.setMinimal(true);
 	QString temp(_tempCharacters);
 	temp.replace(rx, "\\1");
 	_tempCharacters = temp.toLatin1();
@@ -622,7 +622,7 @@ bool EventHandler::element(const QByteArray& line) {
       if (line.startsWith("/body")) {
 	_xmlMode = XML_VIEW;
 	// TODO md5 checksum (requires attributes)
-	QByteArray fromBase64 = QByteArray::fromBase64(_buffer.toAscii());
+    QByteArray fromBase64 = QByteArray::fromBase64(_buffer.toLatin1());
 	_buffer = fromBase64.data();
 
 	// Post View/Body Event
@@ -679,7 +679,7 @@ bool EventHandler::element(const QByteArray& line) {
     case '/':
       if (line.startsWith("/body")) {
 	_xmlMode = XML_EDIT;
-	QByteArray fromBase64 = QByteArray::fromBase64(_buffer.toAscii());
+    QByteArray fromBase64 = QByteArray::fromBase64(_buffer.toLatin1());
 	_buffer = fromBase64.data();
 
 	// Post Edit/Body Event

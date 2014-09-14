@@ -116,7 +116,7 @@ const QString& CommandTask::parseArguments(QString &arguments,
     int i, leftCount = 0, rightCount = 0, escapedChar = 0;
     for (i = 0; i < arguments.length(); i++) {
       //qDebug() << arguments[i] << leftCount << rightCount << escapedChar;
-      switch (arguments.at(i).toAscii()) {
+      switch (arguments.at(i).toLatin1()) {
       case '\\':
 	escapedChar = i;
 	break;
@@ -200,7 +200,7 @@ bool CommandTask::findCommand(const QString &rawCommand,
 	if (i.value()->locking()) {
 	  // External command handler
 	  qDebug() << "* LOCKING" << i.value()->pluginName();
-	  _semaphore.acquire();
+      //_semaphore.acquire();
 	  qDebug() << "* UNLOCKING" << i.value()->pluginName();
 
 	}
@@ -235,7 +235,7 @@ bool CommandTask::internalCommand(const QString &command,
     QRegExp rx("\\\\(.)");
     int pos = 0;
     while ((pos = rx.indexIn(temp, pos)) != -1) {
-      switch (rx.cap(1).at(0).toAscii()) {
+      switch (rx.cap(1).at(0).toLatin1()) {
       case 'r':
 	temp.replace(pos, 2, "\r");
 	break;

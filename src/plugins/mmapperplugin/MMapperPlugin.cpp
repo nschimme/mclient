@@ -6,9 +6,6 @@
 
 #include <QDebug>
 
-Q_EXPORT_PLUGIN2(mmapperplugin, MMapperPlugin)
-
-
 MMapperPlugin::MMapperPlugin(QObject* parent) 
         : MClientPlugin(parent) {
     

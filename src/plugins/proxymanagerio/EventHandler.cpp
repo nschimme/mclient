@@ -20,7 +20,7 @@ EventHandler::EventHandler(AbstractPluginSession *ps, MClientPlugin *mp)
   QString password = _config->value("config/proxy/password", "").toString();
   int port = _config->value("config/proxy/port", "4243").toInt();
 
-  _proxyServer->password(password.toAscii());
+  _proxyServer->password(password.toLatin1());
   _proxyServer->port(port);
   _proxyServer->start();
 

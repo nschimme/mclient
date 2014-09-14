@@ -5,9 +5,6 @@
 
 #include <QDebug>
 
-Q_EXPORT_PLUGIN2(mumexml, MumeXML)
-
-
 MumeXML::MumeXML(QObject* parent) 
         : MClientPlugin(parent) {
     _shortName = "mumexmlfilter";

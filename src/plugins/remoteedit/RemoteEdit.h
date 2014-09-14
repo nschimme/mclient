@@ -8,7 +8,8 @@ class EventHandler;
 
 class RemoteEdit : public MClientPlugin {
     Q_OBJECT
-    
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "remoteedit.json")
+
     public:
         RemoteEdit(QObject* parent=0);
         ~RemoteEdit();

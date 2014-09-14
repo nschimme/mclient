@@ -1,10 +1,9 @@
 # mmapperplugin
-
-if (NOT MINGW)
-    find_package(ZLIB REQUIRED)
-else (NOT MINGW)
-    message(STATUS "Warning: MingW requires zlib to be installed manually")
-endif (NOT MINGW)
+if (NOT ZLIB_FOUND)
+    message(STATUS "WARNING: Could NOT find zlib")
+else (NOT ZLIB FOUND)
+    message(STATUS "ZLIB at ${ZLIB_INCLUDE_DIRS} and ${ZLIB_LIBRARY}")
+endif (NOT ZLIB_FOUND)
 
 # Source Files
 file(GLOB_RECURSE mmapperplugin_SRCS
@@ -46,12 +45,13 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/parser
     ${CMAKE_CURRENT_SOURCE_DIR}/pathmachine
     ${CMAKE_CURRENT_SOURCE_DIR}/preferences
-    ${ZLIB_INCLUDE_DIR}
+    ${ZLIB_INCLUDE_DIRS}
+    ${OpenGL_INCLUDE_DIRS}
 )
 
-QT4_WRAP_CPP(mmapperplugin_MOC_SRCS ${mmapperplugin_MOC_HDRS})
-QT4_WRAP_UI(mmapperplugin_UIS_H ${mmapperplugin_UIS})
-QT4_ADD_RESOURCES(mmapperplugin_RCC_SRCS ${mmapperplugin_RCS})
+QT5_WRAP_CPP(mmapperplugin_MOC_SRCS ${mmapperplugin_MOC_HDRS})
+QT5_WRAP_UI(mmapperplugin_UIS_H ${mmapperplugin_UIS})
+QT5_ADD_RESOURCES(mmapperplugin_RCC_SRCS ${mmapperplugin_RCS})
 
 add_library(mmapperplugin SHARED ${mmapperplugin_SRCS}
     ${mmapperplugin_MOC_SRCS} ${mmapperplugin_RCC_SRCS}
@@ -59,7 +59,10 @@ add_library(mmapperplugin SHARED ${mmapperplugin_SRCS}
 target_link_libraries(mmapperplugin
      mclientplugin
      mainwindow
-     ${QT_LIBRARIES}
+     Qt5::OpenGL
+     Qt5::Widgets
+     ${OPENGL_LIBRARIES}
+     ${ZLIB_LIBRARIES}
 )
 
 INSTALL(TARGETS mmapperplugin

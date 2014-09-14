@@ -17,8 +17,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(commandprocessor_MOC_SRCS ${commandprocessor_MOC_HDRS})
-QT4_WRAP_UI(commandprocessor_UIS_H ${commandprocessor_UIS})
+QT5_WRAP_CPP(commandprocessor_MOC_SRCS ${commandprocessor_MOC_HDRS})
+QT5_WRAP_UI(commandprocessor_UIS_H ${commandprocessor_UIS})
 
 add_library(commandprocessor STATIC
     ${commandprocessor_SRCS}
@@ -30,5 +30,6 @@ add_library(commandprocessor STATIC
 target_link_libraries(
     commandprocessor
     mclientplugin
-    ${QT_LIBRARIES}
+    Qt5::Core
+    Qt5::Widgets
 )

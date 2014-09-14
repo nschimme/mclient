@@ -8,7 +8,8 @@ class EventHandler;
 
 class MumeXML : public MClientPlugin {
     Q_OBJECT
-    
+    Q_PLUGIN_METADATA(IID MClientPluginInterface_iid FILE "mumexml.json")
+
     public:
         MumeXML(QObject* parent=0);
         ~MumeXML();

@@ -22,8 +22,8 @@ include_directories(
 add_subdirectory(command)
 add_subdirectory(display)
   
-QT4_WRAP_CPP(clientcore_MOC_SRCS ${clientcore_MOC_HDRS})
-QT4_WRAP_UI(clientcore_UIS_H ${clientcore_UIS})
+QT5_WRAP_CPP(clientcore_MOC_SRCS ${clientcore_MOC_HDRS})
+QT5_WRAP_UI(clientcore_UIS_H ${clientcore_UIS})
 
 add_library(clientcore STATIC
     ${clientcore_SRCS}
@@ -36,6 +36,8 @@ target_link_libraries(
     clientcore
     commandprocessor
     mainwindow
-    ${QT_LIBRARIES}
+    Qt5::Core
+    Qt5::Widgets
+    Qt5::Xml
 )
 

@@ -17,9 +17,9 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(qtscriptplugin_MOC_SRCS ${qtscriptplugin_MOC_HDRS})
-QT4_WRAP_UI(qtscriptplugin_UIS_H ${qtscriptplugin_UIS})
-QT4_ADD_RESOURCES(qtscriptplugin_RCC_SRCS ${qtscriptplugin_RCS})
+QT5_WRAP_CPP(qtscriptplugin_MOC_SRCS ${qtscriptplugin_MOC_HDRS})
+QT5_WRAP_UI(qtscriptplugin_UIS_H ${qtscriptplugin_UIS})
+QT5_ADD_RESOURCES(qtscriptplugin_RCC_SRCS ${qtscriptplugin_RCS})
 
 add_library(qtscriptplugin SHARED
     ${qtscriptplugin_SRCS}
@@ -31,7 +31,8 @@ add_library(qtscriptplugin SHARED
 target_link_libraries(
     qtscriptplugin
     mclientplugin
-    ${QT_LIBRARIES}
+    Qt5::Script
+    Qt5::Core
 )
 
 INSTALL(TARGETS qtscriptplugin

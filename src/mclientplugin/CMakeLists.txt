@@ -17,8 +17,8 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}
 )
   
-QT4_WRAP_CPP(mclientplugin_MOC_SRCS ${mclientplugin_MOC_HDRS})
-QT4_WRAP_UI(mclientplugin_UIS_H ${mclientplugin_UIS})
+QT5_WRAP_CPP(mclientplugin_MOC_SRCS ${mclientplugin_MOC_HDRS})
+QT5_WRAP_UI(mclientplugin_UIS_H ${mclientplugin_UIS})
 
 add_library(mclientplugin STATIC
     ${mclientplugin_SRCS}
@@ -30,6 +30,7 @@ add_library(mclientplugin STATIC
 target_link_libraries(
     mclientplugin
     commandprocessor
-    ${QT_LIBRARIES}
+    Qt5::Widgets
+    Qt5::Core
 )
 

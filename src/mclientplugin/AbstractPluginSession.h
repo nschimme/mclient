@@ -1,16 +1,16 @@
 #ifndef ABSTRACTPLUGINSESSION_H
 #define ABSTRACTPLUGINSESSION_H
 
-#include <QThread>
+#include <QObject>
 #include <QString>
 
 class ConfigEntry;
 
-class AbstractPluginSession : public QThread {
+class AbstractPluginSession : public QObject {
   Q_OBJECT
-    
+
     public:
-        AbstractPluginSession(QObject *parent=0) : QThread(parent) {}
+        AbstractPluginSession(QObject *parent=0) : QObject(parent) {}
   
         // The short name of the plugin used in hashes and maps
         virtual const QString& session() const=0;
