@@ -1,0 +1,6 @@
+winbuild/
+build/
+*CMakeFiles/
+*.bak
+*.user
+*~
