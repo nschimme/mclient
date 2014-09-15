@@ -1,55 +1,75 @@
 #include "InputWidget.h"
 
 #include "InputMultiWidget.h"
-#include "InputPasswordWidget.h"
 #include <QDebug>
 
 InputWidget::InputWidget(QWidget* parent)
-  : QStackedWidget(parent) {
+    : QStackedWidget(parent), _localEcho(true) {
 
-  _inputWidget = new InputMultiWidget;
-  _passwordWidget = new InputPasswordWidget;
-  addWidget(_inputWidget);
-  addWidget(_passwordWidget);
-  setFocusProxy(_inputWidget);
-
-  /*
-  // EventHandler -> InputWidget
-  connect(eh, SIGNAL(setEchoMode(bool)),
-	  SLOT(toggleEchoMode(bool)));
-  
-  // EventHandler <-> Input Widget
-  connect(_inputWidget, SIGNAL(sendUserInput(const QString&, bool)),
-	  eh, SLOT(sendUserInput(const QString&, bool)));
-  connect(_inputWidget, SIGNAL(displayMessage(const QString &)),
-	  eh, SLOT(displayMessage(const QString &)));
-  connect(eh, SIGNAL(showCommandHistory()),
-	  _inputWidget, SLOT(showCommandHistory()));
-  connect(eh, SIGNAL(addTabHistory(const QStringList &)),
-	  _inputWidget, SLOT(addTabHistory(const QStringList &)));
-  
-  // Password Widget -> EventHandler
-  connect(_passwordWidget, SIGNAL(sendUserInput(const QString&, bool)),
-	  eh, SLOT(sendUserInput(const QString&, bool)));
+    // Multiline Input Widget
+    _inputWidget = new InputMultiWidget(this);
+    addWidget(_inputWidget);
+    /*
+     *     void sendUserInput(const QString&);
+    void resizeSplitter(QWidget*);
+    void displayMessage(const QString &);
     */
+    connect(_inputWidget, SIGNAL(sendUserInput(QString)),
+            SLOT(gotMultiLineInput(QString)));
+    connect(_inputWidget, SIGNAL(displayMessage(QString)),
+            SLOT(relayMessage(QString)));
+
+    // Password Widget
+    _passwordWidget = new QLineEdit(this);
+    _passwordWidget->setMaxLength(255);
+    _passwordWidget->setEchoMode(QLineEdit::Password);
+    addWidget(_passwordWidget);
+    connect(_passwordWidget, SIGNAL(returnPressed()),
+            SLOT(gotPasswordInput()));
+
+    // Grab focus
+    setFocusProxy(_inputWidget);
 }
 
-
 InputWidget::~InputWidget() {
-  _inputWidget->disconnect();
-  _passwordWidget->disconnect();
-  _inputWidget->deleteLater();
-  _passwordWidget->deleteLater();
+    _inputWidget->disconnect();
+    _passwordWidget->disconnect();
+    _inputWidget->deleteLater();
+    _passwordWidget->deleteLater();
 }
 
 
 void InputWidget::toggleEchoMode(bool localEcho) {
-  if (localEcho) {
-    setFocusProxy(_inputWidget);
-    setCurrentWidget(_inputWidget);
-  }
-  else {
-    setFocusProxy(_passwordWidget);
-    setCurrentWidget(_passwordWidget);
-  }
+    _localEcho = localEcho;
+    _inputWidget->setEchoMode(_localEcho);
+    if (_localEcho) {
+        setFocusProxy(_inputWidget);
+        setCurrentWidget(_inputWidget);
+    }
+    else {
+        setFocusProxy(_passwordWidget);
+        setCurrentWidget(_passwordWidget);
+    }
+}
+
+void InputWidget::gotPasswordInput() {
+    _passwordWidget->selectAll();
+    QString input = _passwordWidget->text() + "\n";
+    _passwordWidget->clear();
+
+    emit sendUserInput(input.toLatin1());
+}
+
+void InputWidget::gotMultiLineInput(QString input) {
+    QString str = input.append("\n");
+
+    if (_localEcho) {
+        emit displayMessage(str);
+    }
+
+    emit sendUserInput(str.toLatin1());
+}
+
+void InputWidget::relayMessage(const QString &message) {
+    emit displayMessage(message);
 }

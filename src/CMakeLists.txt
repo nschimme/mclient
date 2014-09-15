@@ -5,7 +5,7 @@ add_definitions(-DQT_SHARED)
 
 # Source files
 set(mclient_SRCS main.cpp)
-foreach(dir display config)
+foreach(dir display config socket protocol session)
   file(GLOB_RECURSE files RELATIVE ${CMAKE_CURRENT_SOURCE_DIR} "${dir}/*.cpp")
   set(mclient_SRCS ${mclient_SRCS} ${files})
 endforeach()
@@ -51,8 +51,10 @@ if (APPLE)
 include_directories(
     ${CMAKE_CURRENT_BINARY_DIR}
     ${CMAKE_CURRENT_SOURCE_DIR}
-    ${CMAKE_CURRENT_SOURCE_DIR}/display
     display
+    protocol
+    socket
+    session
     config
 )
   

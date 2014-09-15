@@ -5,6 +5,8 @@
 #include <QWidget>
 #include <QWebView>
 
+class DisplayParser;
+
 class DisplayWebKitWidget : public QWebView {
     Q_OBJECT
     
@@ -29,6 +31,8 @@ private:
     int _currentCharacterCount, _maxCharacterCount;
 
     bool _scrollToBottom;
+
+    DisplayParser* _ansiParser;
 };
 
 

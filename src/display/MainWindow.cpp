@@ -15,12 +15,11 @@
  ***************************************************************************/
 
 #include <QtWidgets>
-#include <QTextStream>
 #include <QCloseEvent>
 #include <QTabWidget>
-#include <QSplitter>
 
 #include "MainWindow.h"
+#include "Session.h"
 #include "WindowActionManager.h"
 #include "ConfigManager.h"
 
@@ -28,11 +27,8 @@
 #include "ProfileManagerDialog.h"
 //#include "AliasEditorDialog.h"
 
-#include "InputWidget.h"
-#include "DisplayWebKitWidget.h"
-
-MainWindow::MainWindow(ConfigManager* cfg) {
-    _cfg = cfg;
+MainWindow::MainWindow(ConfigManager* cfg) :
+    QMainWindow(), _cfg(cfg) {
     setWindowIcon(QIcon(":/mainwindow/m.png"));
     readSettings();
 
@@ -47,7 +43,6 @@ MainWindow::MainWindow(ConfigManager* cfg) {
     /** Create Primary Display Widgets */
     _tabWidget = new QTabWidget();
     setCentralWidget(_tabWidget);
-    initDisplay("test");
 
     qDebug() << "MainWindow created with thread:" << this->thread();
 }
@@ -63,63 +58,9 @@ void MainWindow::startProfile(const QString &profile) {
     qDebug() << "* starting profile" << profile;
 
     setCurrentProfile(profile);
-    //emit startSession(profile);
-}
 
-
-void MainWindow::initDisplay(const QString& session) {
-    // Create the layout
-    QVBoxLayout *layout = new QVBoxLayout();
-    layout->setSpacing(0);
-    layout->setContentsMargins(0, 0, 0, 0);
-
-    // Add the primary widgets to the smart splitter
-    QSplitter *_splitter = new QSplitter(Qt::Vertical);
-    _tabWidget->addTab(_splitter, _currentProfile);
-
-    _display = new DisplayWebKitWidget(this);
-    _input = new InputWidget(this);
-
-    _splitter->addWidget(_display);
-    _splitter->setCollapsible(_splitter->indexOf(_display), false);
-
-    _splitter->addWidget(_input);
-    _splitter->setCollapsible(_splitter->indexOf(_input), false);
-
-    /*
-      // Display the widget if it floats (or is unsupported)
-      QDockWidget *dockWidget = new QDockWidget(this);
-      dockWidget->setAllowedAreas(Qt::AllDockWidgetAreas);
-      dockWidget->setFeatures(QDockWidget::DockWidgetMovable
-                  | QDockWidget::DockWidgetFloatable
-                  );
-      dockWidget->setWidget(widgetList[i].second);
-      dockWidget->setFloating(false);
-      addDockWidget(Qt::RightDockWidgetArea, dockWidget);
-      _dockWidgets.insert("test", dockWidget);
-      //widgetList.at(i).second->show();
-    */
-
-    // Display Main Window
-    qDebug() << "* Displaying Main Window";
-    show();
-
-    // Connect the signals/slots
-    _display->setFocusProxy(_input);
-    _input->setFocus();
-
-    connect(_actMgr->copyAct, SIGNAL(triggered()),
-            _display, SLOT(copy()));
-    connect(_actMgr->pasteAct, SIGNAL(triggered()),
-            _input, SLOT(paste()));
-    connect(_display, SIGNAL(copyAvailable(bool)),
-            _actMgr->cutAct, SLOT(setEnabled(bool)));
-    connect(_display, SIGNAL(copyAvailable(bool)),
-            _actMgr->copyAct, SLOT(setEnabled(bool)));
-    connect(_actMgr->cutAct, SIGNAL(triggered()),
-            _display, SLOT(cut()));
-
-    //emit doneLoading();
+    Session *session = new Session(this);
+    _tabWidget->addTab(session, profile);
 
 }
 

@@ -6,29 +6,26 @@
 class DisplayParser : public QObject {
     Q_OBJECT
     
-    public:
-        DisplayParser(QObject *parent=0);
-        ~DisplayParser();
+public:
+    DisplayParser(QObject *parent=0);
+    ~DisplayParser();
 
-public slots:
-        void userInput(const QString&);
-        void displayData(const QString&);
+    QString parseDisplayData(const QString&);
 
- protected:
-	static const QChar greaterThanChar;
-	static const QChar lessThanChar;
-	static const QString greaterThanTemplate;
-	static const QString lessThanTemplate;
-	
-    private:
-	bool _foreground, _background, _bold, _underline;
-	bool _blink, _inverse, _strikethrough;
+protected:
+    static const QChar greaterThanChar;
+    static const QChar lessThanChar;
+    static const QString greaterThanTemplate;
+    static const QString lessThanTemplate;
 
-	void parseDisplayData(QString);
-	QString convertANSI(int code);
+private:
+    bool _foreground, _background, _bold, _underline;
+    bool _blink, _inverse, _strikethrough;
 
- signals:
-	void displayText(const QString&);
+    QString convertANSI(int code);
+
+signals:
+    void displayText(const QString&);
 
 };
 

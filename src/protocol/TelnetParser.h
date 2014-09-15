@@ -3,7 +3,7 @@
 
 #include <QObject>
 
-class EventHandler;
+class Session;
 class MpiParser;
 
 struct cTelnetPrivate;
@@ -136,7 +136,7 @@ class TelnetParser : public QObject {
     Q_OBJECT
     
     public:
-         TelnetParser(EventHandler *eh);
+         TelnetParser(Session *session);
         ~TelnetParser();
 
 public slots:
@@ -180,7 +180,6 @@ public slots:
 
  private:
 	QByteArray _cleanData;
-	EventHandler *_eventHandler;
 
 	MpiParser *_mpiParser;
 };

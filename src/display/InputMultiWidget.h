@@ -11,14 +11,12 @@ public:
     ~InputMultiWidget();
 
     QSize sizeHint() const;
-
-    //void customEvent(QEvent *e);
+    void setEchoMode(bool echoMode);
 
 protected:
     void keyPressEvent(QKeyEvent *event);
 
 public slots:
-    void toggleEchoMode(bool);
     void showCommandHistory();
     void addTabHistory(const QStringList &);
 
@@ -47,7 +45,7 @@ private:
     void addTabHistory(const QString &);
 
 signals:
-    void sendUserInput(const QString&, bool);
+    void sendUserInput(const QString&);
     void resizeSplitter(QWidget*);
     void displayMessage(const QString &);
 };

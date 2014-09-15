@@ -1,4 +1,5 @@
 #include "DisplayWebKitWidget.h"
+#include "DisplayParser.h"
 
 #include <QDebug>
 #include <QtWebKitWidgets>
@@ -11,6 +12,7 @@
 
 DisplayWebKitWidget::DisplayWebKitWidget(QWidget* parent) : QWebView(parent) {
     QWidget::setMinimumSize(0, 30);
+    _ansiParser = new DisplayParser(this);
 
     // Sections Information
     _currentSection = 0;
@@ -40,10 +42,12 @@ DisplayWebKitWidget::~DisplayWebKitWidget() {
 
 
 void DisplayWebKitWidget::appendText(const QString &output) {
+    QString html = _ansiParser->parseDisplayData(output);
+
     _scrollToBottom = true;
 
     // Maximum Amount of Permitted Characters/Sections
-    _currentCharacterCount += output.size();
+    _currentCharacterCount += html.size();
     if (_currentCharacterCount >= _maxCharacterCount) {
         _currentCharacterCount = 0;
 
@@ -58,7 +62,7 @@ void DisplayWebKitWidget::appendText(const QString &output) {
         QTime t;
         t.start();
         QWebElement doc = page()->mainFrame()->documentElement();
-        doc.findFirst(".section").appendInside(output);
+        doc.findFirst(".section").appendInside(html);
         //qDebug() << "* Displaying (" << t.elapsed() << "ms):" << output;
     }
 

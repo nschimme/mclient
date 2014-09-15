@@ -18,8 +18,8 @@
  ***************************************************************************/
 
 #include "TelnetParser.h"
-#include "EventHandler.h"
 #include "MpiParser.h"
+#include "Session.h"
 
 #include <QDebug>
 #include <QStringList>
@@ -66,9 +66,10 @@ struct cTelnetPrivate {
 
 #define DEFAULT_ENCODING "ISO 8859-1"
 
-TelnetParser::TelnetParser(EventHandler *eh)
-  : QObject(eh), _eventHandler(eh) {
+TelnetParser::TelnetParser(Session *session)
+  : QObject(session) {
 
+    /*
   connect(_eventHandler, SIGNAL(sendData(const QByteArray &)), SLOT(unIACData(const QByteArray &)));
   connect(_eventHandler, SIGNAL(readData(const QByteArray &)),SLOT(readData(const QByteArray &)));
   connect(_eventHandler, SIGNAL(windowSizeChanged(int, int)), SLOT(windowSizeChanged(int, int)));
@@ -77,6 +78,7 @@ TelnetParser::TelnetParser(EventHandler *eh)
   connect(this, SIGNAL(socketWrite(const QByteArray &)), _eventHandler, SLOT(socketWrite(const QByteArray &)));
   connect(this, SIGNAL(echoModeChanged(bool)), _eventHandler, SLOT(echoModeChanged(bool)));
   connect(this, SIGNAL(displayData(const QString &, bool)), _eventHandler, SLOT(displayData(const QString &, bool)));
+*/
 
   /** KMuddy Telnet */
   d = new cTelnetPrivate;  
@@ -120,7 +122,7 @@ void TelnetParser::socketConnected() {
 	
   reset ();	
   d->sentbytes = 0;
-	
+
   //negotiate some telnet options, if allowed
   if (d->startupneg) {
     //NAWS (used to send info about window size)
@@ -130,7 +132,7 @@ void TelnetParser::socketConnected() {
     //we will send our terminal type
     sendTelnetOption (TN_WILL, OPT_TERMINAL_TYPE);
   }
-	
+
 }
 
 void TelnetParser::setupEncoding() {

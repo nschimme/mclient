@@ -21,6 +21,7 @@
 
 class MainWindow;
 class QActionGroup;
+class Session;
 
 class WindowActionManager: public QObject {
   Q_OBJECT
@@ -84,6 +85,8 @@ public slots:
 
     QToolBar *editToolBar;
     QToolBar *connectToolBar;
+
+    friend class Session;
 };
 
 #endif /* _WINDOWACTIONMANAGER_H_ */

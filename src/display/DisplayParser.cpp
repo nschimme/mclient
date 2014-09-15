@@ -30,19 +30,8 @@ DisplayParser::DisplayParser(QObject* parent) : QObject(parent) {
 DisplayParser::~DisplayParser() {
 }
 
-
-void DisplayParser::displayData(const QString &text) {
-  parseDisplayData(text);
-}
-
-
-void DisplayParser::userInput(const QString &text) {
-  parseDisplayData(text);
-}
-
-
-void DisplayParser::parseDisplayData(QString text) {
-  text = text.toHtmlEscaped();
+QString DisplayParser::parseDisplayData(const QString& data) {
+  QString text = data.toHtmlEscaped();
 
   // ANSI Removal
   QRegExp ansiRx("\\0033\\[((?:\\d+;)*\\d+)m");
@@ -65,7 +54,7 @@ void DisplayParser::parseDisplayData(QString text) {
   QRegExp urlRx("(\\b(https?|ftp|file):\\/\\/[a-zA-Z0-9+&@#\\/%?=~_|!:,.;]*[a-zA-Z0-9+&@#\\/%=~_|])");
   output.replace(urlRx, "<a href=\"\\1\" target=\"_blank\">\\1</a>");
 
-  emit displayText(output);
+  return output;
 }
 
 QString DisplayParser::convertANSI(int code) {

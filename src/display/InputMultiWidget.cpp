@@ -127,34 +127,34 @@ void InputMultiWidget::keyPressEvent(QKeyEvent *event) {
 void InputMultiWidget::keypadMovement(int key) {
   switch (key) {
   case Qt::Key_Up:
-    emit sendUserInput("north", _echoMode);
+    emit sendUserInput("north");
     break;
   case Qt::Key_Down:
-    emit sendUserInput("south", _echoMode);
+    emit sendUserInput("south");
     break;
   case Qt::Key_Left:
-    emit sendUserInput("west", _echoMode);
+    emit sendUserInput("west");
     break;
   case Qt::Key_Right:
-    emit sendUserInput("east", _echoMode);
+    emit sendUserInput("east");
     break;
   case Qt::Key_PageUp:
-    emit sendUserInput("up", _echoMode);
+    emit sendUserInput("up");
     break;
   case Qt::Key_PageDown:
-    emit sendUserInput("down", _echoMode);
+    emit sendUserInput("down");
     break;
   case Qt::Key_Clear: // Numpad 5
-    emit sendUserInput("exits", _echoMode);
+    emit sendUserInput("exits");
     break;
   case Qt::Key_Home:
-    emit sendUserInput("open exit", _echoMode);
+    emit sendUserInput("open exit");
     break;
   case Qt::Key_End:
-    emit sendUserInput("close exit", _echoMode);
+    emit sendUserInput("close exit");
     break;
   case Qt::Key_Insert:
-    emit sendUserInput("flee", _echoMode);
+    emit sendUserInput("flee");
     break;
   case Qt::Key_Delete:
   case Qt::Key_Plus:
@@ -206,7 +206,7 @@ void InputMultiWidget::detectedLineChange() {
 
 void InputMultiWidget::gotInput() {
   selectAll();
-  emit sendUserInput(toPlainText(), _echoMode);
+  emit sendUserInput(toPlainText());
   if (_echoMode) {
     addLineHistory(toPlainText());
     addTabHistory(toPlainText());
@@ -216,17 +216,9 @@ void InputMultiWidget::gotInput() {
 }
 
 
-void InputMultiWidget::toggleEchoMode(bool b) {
+void InputMultiWidget::setEchoMode(bool b) {
   _echoMode = b;
   clear();
-  if (_echoMode) {
-    //setEchoMode(QLineEdit::Normal);
-
-  }
-  else {
-    //setEchoMode(QLineEdit::Password);
-
-  }
 }
 
 

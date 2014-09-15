@@ -19,8 +19,8 @@
  ***************************************************************************/
 
 
-#ifndef MainWindow_H
-#define MainWindow_H
+#ifndef MAINWINDOW_H
+#define MAINWINDOW_H
 
 #include <QtWidgets>
 #include <QtGui>
@@ -29,23 +29,23 @@
 
 class WindowActionManager;
 class ConfigManager;
+class Session;
 
 class MainWindow : public QMainWindow {
-  Q_OBJECT
+    Q_OBJECT
 
-    public:
-  MainWindow(ConfigManager *cfg);
-  ~MainWindow();
+public:
+    MainWindow(ConfigManager *cfg);
+    ~MainWindow();
 
     const QString currentSession() const;
- /*
+    /*
    signals:
     void startSession(const QString &s);
     void stopSession(const QString &s);
     void doneLoading();
 */
 public slots:
-    void initDisplay(const QString&);
     void startProfile(const QString&);
 
 private slots:
@@ -55,22 +55,20 @@ private slots:
 
     void setCurrentProfile(const QString &profile);
 
- protected:   
+protected:
     void closeEvent(QCloseEvent *event);
 
-  private:
+private:
     QString _currentProfile;
     QTabWidget *_tabWidget;
-    QHash<QString, QDockWidget*> _dockWidgets;
     WindowActionManager *_actMgr;
     ConfigManager *_cfg;
-
-    QWidget *_display;
-    QWidget *_input;
 
     void readSettings();
     void writeSettings();
     bool maybeSave();
+
+    friend class Session;
 };
 
-#endif
+#endif /* MAINWINDOW_H */
