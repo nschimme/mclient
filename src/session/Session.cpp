@@ -6,6 +6,7 @@
 #include "SocketReader.h"
 #include "TelnetParser.h"
 #include "MumeXML.h"
+#include "RemoteEdit.h"
 
 #include "InputWidget.h"
 #include "DisplayWebKitWidget.h"
@@ -23,6 +24,7 @@ Session::Session(MainWindow *window)
     _socket = new SocketReader(this);
     _telnet = new TelnetParser(this);
     _xml = new MumeXML(this);
+    _remote = new RemoteEdit(this);
 
     // Add the primary widgets to the smart splitter
     _display = new DisplayWebKitWidget(this);
@@ -69,6 +71,7 @@ Session::Session(MainWindow *window)
     wireSocketSignals();
     wireTelnetSignals();
     wireXMLSignals();
+    wireRemoteEditSignals();
 
     // Input
     connect(_input, SIGNAL(sendUserInput(const QByteArray&)),
@@ -107,12 +110,13 @@ void Session::wireSocketSignals() {
 
     connect(_socket, SIGNAL(socketReadData(const QByteArray &)),
             _telnet, SLOT(readData(const QByteArray &)));
-    connect(_socket, SIGNAL(socketOpened()),
-            _telnet, SLOT(socketConnected()));
-    connect(_socket, SIGNAL(socketOpened()),
-            _xml, SLOT(socketConnected()));
     connect(_socket, SIGNAL(displayMessage(const QString &)),
             _display, SLOT(appendText(const QString &)));
+
+    // Socket Connected
+    connect(_socket, SIGNAL(socketOpened()), _telnet, SLOT(socketConnected()));
+    connect(_socket, SIGNAL(socketOpened()), _xml, SLOT(socketConnected()));
+    connect(_socket, SIGNAL(socketOpened()), _remote, SLOT(socketConnected()));
 }
 
 void Session::wireTelnetSignals() {
@@ -163,13 +167,16 @@ void Session::wireXMLSignals() {
     connect(_xml, SIGNAL(xmlAvoidDamage(const QString&)), _display, SLOT(appendText(const QString &)));
     connect(_xml, SIGNAL(xmlMovement(const QString&)), _display, SLOT(appendText(const QString &)));
 
-    /*
-    connect(_xml, SIGNAL(xmlViewTitle(const QString&)), _display, SLOT(appendText(const QString &)));
-    connect(_xml, SIGNAL(xmlViewBody(const QString&)), _display, SLOT(appendText(const QString &)));
-    connect(_xml, SIGNAL(xmlEditBody(const QString&)), _display, SLOT(appendText(const QString &)));
-    connect(_xml, SIGNAL(xmlEditTitle(const QString&)), _display, SLOT(appendText(const QString &)));
-    connect(_xml, SIGNAL(xmlEditKey(const int)), _display, SLOT(appendText(const int)));
-    */
+    connect(_xml, SIGNAL(xmlViewTitle(const QString&)), _remote, SLOT(setViewTitle(const QString &)));
+    connect(_xml, SIGNAL(xmlViewBody(const QString&)), _remote, SLOT(setViewBody(const QString &)));
+    connect(_xml, SIGNAL(xmlEditBody(const QString&)), _remote, SLOT(setEditBody(const QString &)));
+    connect(_xml, SIGNAL(xmlEditTitle(const QString&)), _remote, SLOT(setEditTitle(const QString &)));
+    connect(_xml, SIGNAL(xmlEditKey(const int)), _remote, SLOT(setEditKey(const int)));
+}
+
+void Session::wireRemoteEditSignals() {
+    connect(_remote, SIGNAL(sendToSocket(const QByteArray &)),
+            _socket, SLOT(sendToSocket(QByteArray)));
 }
 
 const QString Session::name() const {

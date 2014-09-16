@@ -13,6 +13,7 @@ class MumeXML;
 
 class InputWidget;
 class DisplayWebKitWidget;
+class RemoteEdit;
 
 class Session : public QSplitter {
     Q_OBJECT
@@ -27,6 +28,7 @@ private:
     void wireSocketSignals();
     void wireTelnetSignals();
     void wireXMLSignals();
+    void wireRemoteEditSignals();
 
     MainWindow *_window;
     WindowActionManager *_actMgr;
@@ -38,6 +40,7 @@ private:
     SocketReader *_socket;
     TelnetParser *_telnet;
     MumeXML *_xml;
+    RemoteEdit *_remote;
 };
 
 #endif /* SESSION_H */

@@ -16,6 +16,8 @@ public:
 
 public slots:
     void toggleEchoMode(bool);
+
+protected slots:
     void gotPasswordInput();
     void gotMultiLineInput(QString);
     void relayMessage(const QString &);

@@ -13,7 +13,7 @@
  *   GNU General Public License for more details.                          *
  *                                                                         *
  ***************************************************************************/
- 
+
 #ifndef _EDITSESSIONPROCESS_H_
 #define _EDITSESSIONPROCESS_H_
 
@@ -24,27 +24,27 @@
 #define MPI "~$#E"
 
 class EditSessionProcess: public ViewSessionProcess {
-  Q_OBJECT
+    Q_OBJECT
 
-  public:
+public:
     EditSessionProcess(int key, const QByteArray &title,
-		       const QByteArray &body, QObject *parent=0);
+                       const QByteArray &body, QObject *parent=0);
     ~EditSessionProcess();
 
 private slots:
     void onError(QProcess::ProcessError);
     void onFinished(int, QProcess::ExitStatus);
 
- protected:
+protected:
     void cancelEdit();
     void finishEdit();
 
-  private:
+signals:
+    void cancel(const int);
+    void save(const QByteArray &, const int);
+
+private:
     QDateTime _previousTime;
-
- signals:
-    void sendToSocket(const QByteArray &);
-
 };
 
 #endif /* _EDITSESSIONPROCESS_H_ */
