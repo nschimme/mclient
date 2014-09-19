@@ -295,7 +295,7 @@ void TelnetParser::processTelnetCommand (const QByteArray &command) {
         {
           if ((option == OPT_SUPPRESS_GA) || (option == OPT_STATUS) ||
               (option == OPT_TERMINAL_TYPE) || (option == OPT_NAWS) ||
-	      (option == OPT_ECHO))
+              (option == OPT_ECHO) || (option == OPT_MUME_MPI))
                  //these options are supported
           {
             sendTelnetOption (TN_DO, option);
@@ -304,7 +304,9 @@ void TelnetParser::processTelnetCommand (const QByteArray &command) {
 	    if (option == OPT_ECHO) {
 	      d->echoMode = false;
 	      emit echoModeChanged(d->echoMode);
-	    }
+        } else if (option == OPT_MUME_MPI) {
+            qDebug() << "* MUME MPI support enabled";
+            emit mumeMpiEnabled();
           }
           else
           {
@@ -560,8 +562,8 @@ void TelnetParser::readData (const QByteArray &data) {
       emit displayData(unicodeData, true); // with GO-AHEAD
       
       //we'll need to prepend a new-line in next data sending
-      d->prependGANewLine = true;
-      //we got a prompt
+      //d->prependGANewLine = true;
+      //we got a prompt (MUME doesn't like this)
       
       //clean the flag, and the data (so that we don't send it multiple times)
       _cleanData.clear();

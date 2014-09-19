@@ -126,6 +126,7 @@ else does it ;))
 #define OPT_TIMING_MARK (unsigned char) 6
 #define OPT_TERMINAL_TYPE (unsigned char) 24
 #define OPT_NAWS (unsigned char) 31
+#define OPT_MUME_MPI (unsigned char) 42
 
 //telnet SB suboption types
 #define TNSB_IS (char) 0
@@ -160,6 +161,9 @@ public slots:
 
 	/** toggles echo mode for passwords */
 	void echoModeChanged(bool);
+
+    /** enables MUME MPI support */
+    void mumeMpiEnabled();
 	
  protected:
 	void reset ();
